@@ -177,30 +177,20 @@ html, body {
   font-weight: bold;
 }
 
-/* TYPOGRAPHY CONTAINER (Full viewport fit) */
+/* TYPOGRAPHY CONTAINER (Full screen layout with wrapping) */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
   width: 100vw;
   padding: 15px 25px;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: space-between;
   justify-content: space-between;
-  align-items: stretch;
   overflow: hidden !important;
 }
 
-.log-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  line-height: 0.85;
-}
-
 .log-word {
-  font-size: var(--dynamic-font-size, 3rem);
   text-transform: uppercase;
   letter-spacing: 1px;
   color: transparent;
@@ -209,6 +199,10 @@ html, body {
   user-select: none;
   cursor: pointer;
   white-space: nowrap;
+  line-height: 0.9;
+  margin-right: 0.4em;
+  margin-bottom: 0.15em;
+  display: inline-block;
 }
 
 /* Hover Effect -> Red glow */
@@ -233,15 +227,15 @@ body.solid-style .log-word:hover {
 /* Drift Animation */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
   100% { transform: translateY(0px); }
 }
 
-body.drift-mode .log-row:nth-child(even) {
+body.drift-mode .log-word:nth-child(even) {
   animation: ambientDrift 4s ease-in-out infinite;
 }
 
-body.drift-mode .log-row:nth-child(odd) {
+body.drift-mode .log-word:nth-child(odd) {
   animation: ambientDrift 6s ease-in-out infinite reverse;
 }
 
