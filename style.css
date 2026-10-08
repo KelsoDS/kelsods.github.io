@@ -218,6 +218,7 @@ body.solid-style .log-word:hover {
   text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
 }
 
+/* DRIFT ANIMATIE */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-6px); }
@@ -230,6 +231,27 @@ body.drift-mode .log-word:nth-child(even) {
 
 body.drift-mode .log-word:nth-child(odd) {
   animation: ambientDrift 6s ease-in-out infinite reverse;
+}
+
+/* PIXELATED FONT EFFECT & GLITCH ANIMATIE */
+@keyframes pixelGlitch {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(1px, -1px); }
+  75% { transform: translate(-1px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+.log-word.pixelated {
+  font-family: 'Press Start 2P', monospace, courier !important;
+  letter-spacing: 0px;
+  image-rendering: pixelated;
+  text-rendering: geometricPrecision;
+  display: inline-block;
+}
+
+body.pixel-mode .log-word.pixelated {
+  animation: pixelGlitch 0.3s steps(2, start) infinite;
 }
 
 /* Modals */
