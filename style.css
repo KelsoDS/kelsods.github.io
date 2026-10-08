@@ -4,7 +4,7 @@
   padding: 0;
 }
 
-/* Scrollbars overal uitschakelen op de hoofdpagina */
+/* Scrollen volledig uitschakelen */
 html, body {
   width: 100vw;
   height: 100vh;
@@ -12,6 +12,8 @@ html, body {
   background-color: #000000;
   color: #ffffff;
   font-family: Impact, 'Arial Black', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Control Panel / Topbar */
@@ -76,6 +78,10 @@ html, body {
 .btn.active-mode {
   background: #ffffff;
   color: #000000;
+  border-color: #ffffff;
+}
+
+.btn-primary {
   border-color: #ffffff;
 }
 
@@ -160,38 +166,43 @@ html, body {
   font-weight: bold;
 }
 
-/* TYPOGRAPHY CONTAINER (MET AUTO-SCALING) */
+/* TYPOGRAPHY CONTAINER (Vult exact het overgebleven scherm) */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
   width: 100vw;
-  padding: 10px 15px;
+  padding: 15px 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
   overflow: hidden !important;
-  text-align: justify;
-  text-justify: inter-word;
-  line-height: 0.95;
 }
 
-.typography-container::after {
-  content: "";
-  display: inline-block;
+/* Elk rijtje strekt uit over de volle breedte */
+.log-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
+  line-height: 0.85;
 }
 
+/* Basisschrift: Gecontroleerde dynamische lettergrootte */
 .log-word {
-  display: inline-block;
-  font-size: 1em; /* Maakt gebruik van de dynamische font-size van de container */
+  font-size: var(--dynamic-font-size, 3rem);
   text-transform: uppercase;
+  letter-spacing: 1px;
   color: transparent;
   -webkit-text-stroke: 1.5px #ffffff;
-  margin-right: 0.2em;
   transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
   user-select: none;
   cursor: pointer;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
-/* Hover Effect */
+/* Hover Effect -> Rood met gloed */
 .log-word:hover {
   color: #ff3333 !important;
   -webkit-text-stroke: 1.5px #ff3333 !important;
@@ -213,16 +224,16 @@ body.solid-style .log-word:hover {
 /* Drift Animatie */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-8px); }
   100% { transform: translateY(0px); }
 }
 
-body.drift-mode .log-word:nth-child(even) {
+body.drift-mode .log-row:nth-child(even) {
   animation: ambientDrift 4s ease-in-out infinite;
 }
 
-body.drift-mode .log-word:nth-child(odd) {
-  animation: ambientDrift 5s ease-in-out infinite reverse;
+body.drift-mode .log-row:nth-child(odd) {
+  animation: ambientDrift 6s ease-in-out infinite reverse;
 }
 
 /* Modals */
