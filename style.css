@@ -4,12 +4,14 @@
   padding: 0;
 }
 
-body {
+/* Scrollen volledig uitschakelen */
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
   background-color: #000000;
   color: #ffffff;
   font-family: Impact, 'Arial Black', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -20,8 +22,9 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  padding: 15px 25px;
-  background: rgba(0, 0, 0, 0.85);
+  height: 60px;
+  padding: 10px 25px;
+  background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -76,7 +79,6 @@ body {
   border-color: #ffffff;
 }
 
-/* Active State Knop Indicatie */
 .btn.active-mode {
   background: #ffffff;
   color: #000000;
@@ -102,7 +104,7 @@ body {
   background-color: #000000;
 }
 
-/* Navigation Drawer (Hamburger Menu) */
+/* Navigation Drawer (Sluiting gegarandeerd met translateX(-100%)) */
 .nav-drawer {
   position: fixed;
   top: 0;
@@ -164,63 +166,63 @@ body {
   font-weight: bold;
 }
 
-/* Typography Container */
+/* Typography Container (Geen Scroll, dynamische hoogte) */
 .typography-container {
-  margin-top: 70px;
-  padding: 20px 30px;
+  margin-top: 60px;
+  height: calc(100vh - 60px);
+  width: 100%;
+  padding: 15px 25px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: calc(100vh - 70px);
-  width: 100%;
+  justify-content: space-evenly;
+  overflow: hidden;
 }
 
 .log-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   width: 100%;
-  margin-bottom: 12px;
-  line-height: 0.9;
+  line-height: 0.85;
 }
 
 /* Basisschrift: Outline */
 .log-word {
-  font-size: clamp(2rem, 5.5vw, 7.5rem);
+  font-size: var(--dynamic-font-size, 3.5rem);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: transparent;
   -webkit-text-stroke: 1.5px #ffffff;
   transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
   user-select: none;
-}
-
-/* Hover Effect in Outline Modus -> Rood met gloed */
-.log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 1.5px #ff3333 !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
   cursor: pointer;
 }
 
-/* Solid Modus Stijl */
-body.solid-style .log-word {
-  color: #ffffff;
-  -webkit-text-stroke: 0px transparent;
-}
-
-/* Hover Effect in Solid Modus -> Ook Rood met gloed */
-body.solid-style .log-word:hover {
+/* Hover Effect in OUTLINE modus -> Rood met gloed */
+.log-word:hover {
   color: #ff3333 !important;
-  -webkit-text-stroke: 0px transparent !important;
+  -webkit-text-stroke: 1.5px #ff3333 !important;
   text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
 }
 
-/* Projection Drift Animatie */
+/* SOLID modus stijl */
+body.solid-style .log-word {
+  color: #ffffff !important;
+  -webkit-text-stroke: 0px transparent !important;
+}
+
+/* Hover Effect in SOLID modus -> ZEKER Rood met gloed */
+body.solid-style .log-word:hover {
+  color: #ff3333 !important;
+  -webkit-text-stroke: 0px transparent !important;
+  text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
+}
+
+/* Animation Drift Animatie */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
+  50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
 }
 
@@ -234,8 +236,10 @@ body.drift-mode .log-row:nth-child(odd) {
 
 /* Photo Page Stijlen */
 .photo-grid-container {
-  margin-top: 80px;
+  margin-top: 60px;
   padding: 30px;
+  height: calc(100vh - 60px);
+  overflow-y: auto !important;
 }
 
 .photo-grid {
@@ -295,23 +299,22 @@ body.drift-mode .log-row:nth-child(odd) {
   color: #ffffff;
 }
 
-/* Lightbox Modal */
-.lightbox {
+/* Lightbox & Modals */
+.lightbox, .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 3000;
 }
 
-.lightbox.hidden {
-  display: none;
+.lightbox.hidden, .modal-overlay.hidden {
+  display: none !important;
 }
 
 .lightbox img {
@@ -335,24 +338,6 @@ body.drift-mode .log-row:nth-child(odd) {
   font-size: 2.5rem;
   color: #ffffff;
   cursor: pointer;
-}
-
-/* Modal Form Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.modal-overlay.hidden {
-  display: none;
 }
 
 .modal-card {
