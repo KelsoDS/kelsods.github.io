@@ -1,39 +1,28 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Street Observations - Typography Log</title>
+  <title>Street Observations - Typography</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Overlay for drawer menu -->
-  <div class="drawer-overlay" id="drawer-overlay"></div>
-
   <!-- Navigation Drawer (Hamburger Menu) -->
-  <nav class="nav-drawer" id="nav-drawer" aria-label="Hoofdnavigatie">
-    <button class="drawer-close" id="close-drawer" aria-label="Sluit menu">&times;</button>
-    <div class="drawer-header">
-      <div class="drawer-title">STREET LOGS</div>
-      <div class="drawer-subtitle">URBAN OBSERVATION ARCHIVE</div>
-    </div>
-
+  <nav class="nav-drawer" id="nav-drawer">
+    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
+    <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="#" class="active" id="nav-typo"><span>01</span> TYPOGRAPHY LOG</a></li>
-      <li><a href="#" id="nav-photos"><span>02</span> PHOTO GALLERY</a></li>
-      <li><a href="#" id="nav-archive"><span>03</span> ARCHIVE</a></li>
+      <li><a href="#" class="active">Typography Log</a></li>
+      <li><a href="#">Photo Gallery</a></li>
+      <li><a href="#">Archive</a></li>
     </ul>
-
-    <div class="drawer-footer">
-      <span class="log-counter">LOGS ACTIEF: <strong id="drawer-log-count">0</strong></span>
-    </div>
   </nav>
 
   <!-- Top Control Bar -->
   <header class="control-panel">
     <div class="panel-left">
-      <button class="btn btn-icon" id="menu-toggle" aria-label="Open menu">
+      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
@@ -50,38 +39,37 @@
   <!-- Main Typography Display -->
   <main class="typography-container" id="log-display"></main>
 
-  <!-- Modal: Observation Toevoegen -->
+  <!-- Modal: Add Observation -->
   <div class="modal-overlay hidden" id="observation-modal">
     <div class="modal-card">
-      <h2>NIEUWE OBSERVATIE TOEVOEGEN</h2>
+      <h2>ADD NEW OBSERVATION</h2>
       <form id="add-log-form">
-        <label for="input-day">DAG (BIJV. MON 5 OCT)</label>
-        <input type="text" id="input-day" required placeholder="MON 5 OCT" autocomplete="off">
+        <label for="input-day">DAY (E.G. FRI 9 OCT)</label>
+        <input type="text" id="input-day" required placeholder="FRI 9 OCT">
 
-        <label for="input-time">TIJD (BIJV. 2AM)</label>
-        <input type="text" id="input-time" required placeholder="2AM" autocomplete="off">
+        <label for="input-time">TIME (E.G. 11PM)</label>
+        <input type="text" id="input-time" required placeholder="11PM">
 
-        <label for="input-text">OBSERVATIE TEKST</label>
-        <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..."></textarea>
+        <label for="input-text">OBSERVATION TEXT</label>
+        <textarea id="input-text" rows="3" required placeholder="DESCRIBE THE SITUATION..."></textarea>
 
         <div class="form-actions">
-          <button type="button" class="btn" id="close-modal">ANNULEREN</button>
-          <button type="submit" class="btn btn-primary">TOEVOEGEN</button>
+          <button type="button" class="btn" id="close-modal">CANCEL</button>
+          <button type="submit" class="btn btn-primary">ADD</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Observation Info & Verwijderen -->
+  <!-- Modal: Observation Details (Includes Direct Delete Button) -->
   <div class="modal-overlay hidden" id="info-modal">
     <div class="modal-card">
-      <div class="info-tag">OBSERVATIE DETAILS</div>
       <h2 id="info-time">--</h2>
-      <p id="info-text" class="info-content"></p>
+      <p id="info-text" style="font-family: monospace; color: #ccc; margin-top: 15px;"></p>
       
-      <div class="form-actions info-actions">
-        <button type="button" class="btn btn-danger" id="delete-current-info">VERWIJDER OBSERVATIE</button>
-        <button type="button" class="btn" id="close-info-modal">SLUITEN</button>
+      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px;">
+        <button type="button" class="btn btn-danger" id="delete-current-info">DELETE OBSERVATION</button>
+        <button type="button" class="btn" id="close-info-modal">CLOSE</button>
       </div>
     </div>
   </div>
