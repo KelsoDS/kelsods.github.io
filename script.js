@@ -63,17 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const totalItems = observations.length;
       
       if (totalItems === 0) {
-        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS".</div>`;
+        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS".</div>`;
         return;
       }
 
-      // Create log rows for each observation entry
+      // Render words across a single continuous flex container so wrapping and edge collision occur fluidly
       observations.forEach((item, index) => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
-
-        const row = document.createElement("div");
-        row.className = "log-row";
 
         words.forEach(word => {
           const span = document.createElement("span");
@@ -90,29 +87,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
 
-          row.appendChild(span);
+          container.appendChild(span);
         });
-
-        container.appendChild(row);
       });
 
       adjustTypographyScale();
     }
 
-    // Dynamic auto-scaling to keep everything contained inside the screen boundaries
+    // Binary search auto-scaling algorithm to ensure words fill the full screen height without scrollbars
     function adjustTypographyScale() {
-      const rows = container.querySelectorAll(".log-row");
-      if (!rows.length) return;
+      const words = container.querySelectorAll(".log-word");
+      if (!words.length) return;
 
       const availHeight = container.clientHeight;
-      let minFontPx = 12;
-      let maxFontPx = 120;
+      let minFontPx = 10;
+      let maxFontPx = 150;
       let optimalPx = minFontPx;
 
       while (minFontPx <= maxFontPx) {
         const midPx = Math.floor((minFontPx + maxFontPx) / 2);
         
-        container.querySelectorAll(".log-word").forEach(word => {
+        words.forEach(word => {
           word.style.fontSize = `${midPx}px`;
         });
 
@@ -126,8 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Apply optimal calculated pixel font-size
-      container.querySelectorAll(".log-word").forEach(word => {
+      words.forEach(word => {
         word.style.fontSize = `${optimalPx}px`;
       });
     }
