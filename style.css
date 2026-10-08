@@ -76,7 +76,7 @@ body {
   border-color: #ffffff;
 }
 
-/* Hamburger Button Icon */
+/* Hamburger Icon */
 .btn-icon {
   padding: 8px 10px;
   flex-direction: column;
@@ -94,7 +94,7 @@ body {
   background-color: #000000;
 }
 
-/* Hamburger Navigation Drawer */
+/* Navigation Drawer */
 .nav-drawer {
   position: fixed;
   top: 0;
@@ -107,12 +107,12 @@ body {
   padding: 40px 25px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
 }
 
-.nav-drawer.hidden {
-  transform: translateX(-100%);
-  display: flex !important; /* Preserves smooth sliding */
+.nav-drawer.open {
+  transform: translateX(0) !important;
 }
 
 .drawer-close {
@@ -167,7 +167,6 @@ body {
   width: 100%;
 }
 
-/* Log Rows & Words */
 .log-row {
   display: flex;
   flex-wrap: wrap;
@@ -198,21 +197,22 @@ body.solid-style .log-word {
   -webkit-text-stroke: 0px transparent;
 }
 
+/* Projection Drift Animation */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-12px); }
   100% { transform: translateY(0px); }
 }
 
 body.drift-mode .log-row:nth-child(even) {
-  animation: ambientDrift 6s ease-in-out infinite;
+  animation: ambientDrift 5s ease-in-out infinite;
 }
 
 body.drift-mode .log-row:nth-child(odd) {
-  animation: ambientDrift 8s ease-in-out infinite reverse;
+  animation: ambientDrift 7s ease-in-out infinite reverse;
 }
 
-/* Photo Page & Lightbox */
+/* Photo Page Stijlen */
 .photo-grid-container {
   margin-top: 80px;
   padding: 30px;
@@ -275,6 +275,7 @@ body.drift-mode .log-row:nth-child(odd) {
   color: #ffffff;
 }
 
+/* Lightbox Modal */
 .lightbox {
   position: fixed;
   top: 0;
@@ -316,7 +317,7 @@ body.drift-mode .log-row:nth-child(odd) {
   cursor: pointer;
 }
 
-/* Modal Overlay */
+/* Modal Form Overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
