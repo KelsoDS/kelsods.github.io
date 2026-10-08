@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY RENDER MET AUTOMATISCHE SCHALING
+  // 2. TYPOGRAPHY RENDER & MODAL CONTROLS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -48,6 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("observation-modal");
   const form = document.getElementById("add-log-form");
 
+  // Delete Modal Elementen
+  const toggleDeleteModalBtn = document.getElementById("toggle-delete-modal");
+  const closeDeleteModalBtn = document.getElementById("close-delete-modal");
+  const deleteModal = document.getElementById("delete-modal");
+  const deleteList = document.getElementById("delete-list");
+
+  // Info Modal Elementen
   const infoModal = document.getElementById("info-modal");
   const infoTime = document.getElementById("info-time");
   const infoText = document.getElementById("info-text");
@@ -59,8 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const totalRows = observations.length;
       
-      // Bepaal de lettergrootte op basis van het aantal rijen én de schermhoogte
-      // Hoe meer items erbij komen, hoe kleiner de 'vh' schaal wordt
+      if (totalRows === 0) {
+        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; margin-top: 20vh;">GEEN OBSERVATIES MEER BESCHIKBAAR. VOEG NIEUWE OBSERVATIES TOE VIA "+ ADD OBS".</div>`;
+        return;
+      }
+
+      // Dynamische schaling op basis van aantal rijen
       const baseFontSize = Math.max(1, Math.min(6, (70 / totalRows) / 2));
 
       observations.forEach(item => {
@@ -91,6 +102,44 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Functie voor het vullen van de Delete Lijst in de Modal
+    function renderDeleteList() {
+      if (!deleteList) return;
+      deleteList.innerHTML = "";
+
+      if (observations.length === 0) {
+        deleteList.innerHTML = `<div style="font-family: monospace; color: #666;">Geen items om te verwijderen.</div>`;
+        return;
+      }
+
+      observations.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "delete-item";
+
+        div.innerHTML = `
+          <div class="delete-item-info">
+            <strong>${item.day} ${item.time}:</strong> ${item.text}
+          </div>
+          <button class="btn-delete-action" data-index="${index}">VERWIJDER</button>
+        `;
+
+        deleteList.appendChild(div);
+      });
+
+      // Event Listeners koppelen aan de individuele verwijderknoppen
+      document.querySelectorAll(".btn-delete-action").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = parseInt(e.target.getAttribute("data-index"));
+          observations.splice(idx, 1);
+          localStorage.setItem("street_observations", JSON.stringify(observations));
+          
+          renderLogs();
+          renderDeleteList();
+        });
+      });
+    }
+
+    // Toggle Modus Knoppen
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
@@ -105,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Add Modal Controls
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
@@ -117,12 +167,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Delete Modal Controls
+    if (toggleDeleteModalBtn && deleteModal) {
+      toggleDeleteModalBtn.addEventListener("click", () => {
+        renderDeleteList();
+        deleteModal.classList.remove("hidden");
+      });
+    }
+
+    if (closeDeleteModalBtn && deleteModal) {
+      closeDeleteModalBtn.addEventListener("click", () => {
+        deleteModal.classList.add("hidden");
+      });
+    }
+
+    // Info Modal Controls
     if (closeInfoModalBtn && infoModal) {
       closeInfoModalBtn.addEventListener("click", () => {
         infoModal.classList.add("hidden");
       });
     }
 
+    // Formulier Indienen (Add Observation)
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
