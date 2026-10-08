@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
           span.className = "log-word";
           span.textContent = word;
 
-          // Als pixel mode al actief was toen we opnieuw renderen
-          if (document.body.classList.contains("pixel-mode") && Math.random() < 0.3) {
+          // Ongeveer 25% kans dat een woord een pixel-font krijgt
+          if (Math.random() < 0.25) {
             span.classList.add("pixelated");
           }
 
@@ -158,25 +158,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (togglePixelBtn) {
       togglePixelBtn.addEventListener("click", () => {
-        const isPixelActive = document.body.classList.toggle("pixel-mode");
+        document.body.classList.toggle("pixel-mode");
         togglePixelBtn.classList.toggle("active-mode");
 
+        // Herverdeelt de pixel-woorden willekeurig bij het aanklikken
         const allWords = container.querySelectorAll(".log-word");
-        
-        if (isPixelActive) {
-          // Kies willekeurig nieuwe woorden voor het pixel effect
-          allWords.forEach(word => {
-            if (Math.random() < 0.3) {
-              word.classList.add("pixelated");
-            } else {
-              word.classList.remove("pixelated");
-            }
-          });
-        } else {
-          // Schakel alle pixelated stijlen uit wanneer de knop uit staat
-          allWords.forEach(word => word.classList.remove("pixelated"));
-        }
-
+        allWords.forEach(word => {
+          if (Math.random() < 0.3) {
+            word.classList.add("pixelated");
+          } else {
+            word.classList.remove("pixelated");
+          }
+        });
         adjustTypographyScale();
       });
     }
