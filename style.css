@@ -238,7 +238,7 @@ body.drift-mode .log-word:nth-child(odd) {
   animation: ambientDrift 6s ease-in-out infinite reverse;
 }
 
-/* PIXELATED FONT EFFECT & GLITCH ANIMATIE */
+/* PIXELATED FONT EFFECT & AUTOMATISCHE GLITCH */
 @keyframes pixelGlitch {
   0% { transform: translate(0, 0); }
   25% { transform: translate(-2px, 1px); }
@@ -253,9 +253,6 @@ body.drift-mode .log-word:nth-child(odd) {
   image-rendering: pixelated;
   text-rendering: geometricPrecision;
   display: inline-block;
-}
-
-body.pixel-mode .log-word.pixelated {
   animation: pixelGlitch 0.3s steps(2, start) infinite;
 }
 
