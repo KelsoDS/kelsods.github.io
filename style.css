@@ -4,7 +4,6 @@
   padding: 0;
 }
 
-/* Completely prevent scrolling */
 html, body {
   width: 100vw;
   height: 100vh;
@@ -16,7 +15,7 @@ html, body {
   flex-direction: column;
 }
 
-/* Control Panel / Topbar */
+/* Header Bar */
 .control-panel {
   position: fixed;
   top: 0;
@@ -85,7 +84,6 @@ html, body {
   border-color: #ffffff;
 }
 
-/* Danger / Delete Button Styling */
 .btn-danger {
   border-color: #ff3333;
   color: #ff3333;
@@ -96,7 +94,6 @@ html, body {
   color: #ffffff;
 }
 
-/* Hamburger Button */
 .btn-icon {
   padding: 8px 10px;
   flex-direction: column;
@@ -115,7 +112,7 @@ html, body {
   background-color: #000000;
 }
 
-/* Navigation Drawer */
+/* Drawer Menu */
 .nav-drawer {
   position: fixed;
   top: 0;
@@ -177,12 +174,12 @@ html, body {
   font-weight: bold;
 }
 
-/* TYPOGRAPHY CONTAINER (Full screen layout with wrapping) */
+/* TYPOGRAPHY CONTAINER (Vult exact 100% van het scherm) */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
   width: 100vw;
-  padding: 15px 25px;
+  padding: 10px 15px;
   display: flex;
   flex-wrap: wrap;
   align-content: space-between;
@@ -199,20 +196,17 @@ html, body {
   user-select: none;
   cursor: pointer;
   white-space: nowrap;
-  line-height: 0.9;
-  margin-right: 0.4em;
-  margin-bottom: 0.15em;
+  line-height: 0.85;
+  margin-right: 0.3em;
   display: inline-block;
 }
 
-/* Hover Effect -> Red glow */
 .log-word:hover {
   color: #ff3333 !important;
   -webkit-text-stroke: 1.5px #ff3333 !important;
   text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
 }
 
-/* SOLID style mode */
 body.solid-style .log-word {
   color: #ffffff !important;
   -webkit-text-stroke: 0px transparent !important;
@@ -224,7 +218,6 @@ body.solid-style .log-word:hover {
   text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
 }
 
-/* Drift Animation */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-6px); }
