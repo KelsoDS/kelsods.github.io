@@ -1,1 +1,51 @@
-. We'll do once. Let's proceed. use `functions.push_files`. Here body is JSON object. Let's do. Let's be careful. Another issue: need correct `files` values as array of objects with path and content. We can't include 
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Straat Observaties - Typografisch Logboek</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- defer zorgt dat het script pas start zodra de HTML geladen is -->
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <!-- Zwevende Besturing (Werkt op mobiel & touch) -->
+  <header class="control-panel">
+    <div class="panel-brand">OBSERVATIE LOG v1.0</div>
+    <div class="panel-actions">
+      <button id="toggle-style" class="btn">Contour / Gevuld</button>
+      <button id="toggle-drift" class="btn">Projectie Beweging</button>
+      <button id="toggle-modal" class="btn btn-primary">+ Nieuwe Observatie</button>
+    </div>
+  </header>
+
+  <!-- Typografische Canvas -->
+  <main class="typography-container" id="log-display">
+    <!-- Wordt dynamisch opgebouwd via script.js -->
+  </main>
+
+  <!-- Modal / Invoerscherm voor nieuwe observaties -->
+  <div id="observation-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Nieuwe Observatie Toevoegen</h2>
+      <form id="add-log-form">
+        <label for="input-day">Dag & Datum (bijv. MON 5 OCT):</label>
+        <input type="text" id="input-day" required placeholder="MON 5 OCT">
+
+        <label for="input-time">Tijd (bijv. 2AM / 14:30):</label>
+        <input type="text" id="input-time" required placeholder="2AM">
+
+        <label for="input-text">Beschrijving van voorbijgangers:</label>
+        <textarea id="input-text" rows="4" required placeholder="5 PEOPLE WALKING NORTH TO SOUTH YELLING AND SINGING LOUD"></textarea>
+
+        <div class="form-actions">
+          <button type="button" id="close-modal" class="btn">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Toevoegen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
