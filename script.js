@@ -1,4 +1,3 @@
-// Standaard data als er niks in LocalStorage staat
 const defaultObservations = [
   { day: "MON 5 OCT", time: "2AM", text: "5 PEOPLE WALKING NORTH TO SOUTH YELLING AND SINGING LOUD" },
   { day: "TUE 6 OCT", time: "10PM", text: "1 PERSON WALKING SOUTH TO NORTH STOPPED TO TIE SHOES" },
@@ -6,7 +5,6 @@ const defaultObservations = [
   { day: "THU 8 OCT", time: "1AM", text: "2 PEOPLE IN A HEATED ARGUMENT DRUNK WALKING IN THE MIDDLE OF THE ROAD" }
 ];
 
-// Ophalen uit LocalStorage of standaard instellen
 let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -16,6 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
 
+  // Zorg dat het menu bij het laden altijd gesloten is
+  if (navDrawer) {
+    navDrawer.classList.remove("open");
+  }
+
+  // Open / sluit bij klikken op de hamburgerknop
   if (menuToggle && navDrawer) {
     menuToggle.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -23,12 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Sluiten bij klikken op het kruisje
   if (closeDrawer && navDrawer) {
     closeDrawer.addEventListener("click", () => {
       navDrawer.classList.remove("open");
     });
   }
 
+  // Sluiten bij klikken buiten het menu
   document.addEventListener("click", (e) => {
     if (navDrawer && navDrawer.classList.contains("open")) {
       if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -37,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY CANVAS & DYNAMISCHE SCHALING
+  // 2. TYPOGRAPHY CANVAS & CONTROLS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -46,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("observation-modal");
   const form = document.getElementById("add-log-form");
 
-  // Info Modal Elements
   const infoModal = document.getElementById("info-modal");
   const infoTime = document.getElementById("info-time");
   const infoText = document.getElementById("info-text");
@@ -56,9 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderLogs() {
       container.innerHTML = "";
 
-      // Bereken dynamische lettergrootte op basis van het aantal regels
       const totalRows = observations.length;
-      // Schaal lettergrootte tussen 1.2rem en 5.5rem op basis van de hoeveelheid regels
       const calculatedFontSize = Math.max(1.2, Math.min(5.5, 45 / totalRows));
 
       observations.forEach(item => {
@@ -74,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
           span.style.setProperty("--dynamic-font-size", `${calculatedFontSize}rem`);
           span.textContent = word;
 
-          // Klik op tekst voor extra informatie
           span.addEventListener("click", () => {
             if (infoModal) {
               infoTime.textContent = `${item.day} — ${item.time}`;
@@ -90,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Toggle Outline vs Solid
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
@@ -98,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Toggle Animation (Drift)
     if (toggleDriftBtn) {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
@@ -106,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Modal Add Observation
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
@@ -119,14 +118,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Close Info Modal
     if (closeInfoModalBtn && infoModal) {
       closeInfoModalBtn.addEventListener("click", () => {
         infoModal.classList.add("hidden");
       });
     }
 
-    // Form submission & opslaan in LocalStorage
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -134,15 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const time = document.getElementById("input-time").value;
         const text = document.getElementById("input-text").value;
 
-        // Toevoegen aan lijst
         observations.push({ day, time, text });
-
-        // Opslaan in browsergeheugen
         localStorage.setItem("street_observations", JSON.stringify(observations));
 
-        // Opnieuw renderen met verkleinde tekst
         renderLogs();
-
         form.reset();
         modal.classList.add("hidden");
       });
