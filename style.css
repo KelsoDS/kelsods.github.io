@@ -76,6 +76,13 @@ body {
   border-color: #ffffff;
 }
 
+/* Active State Knop Indicatie */
+.btn.active-mode {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
 /* Hamburger Icon */
 .btn-icon {
   padding: 8px 10px;
@@ -88,13 +95,14 @@ body {
   width: 18px;
   height: 2px;
   background-color: #ffffff;
+  pointer-events: none;
 }
 
 .btn-icon:hover .hamburger-bar {
   background-color: #000000;
 }
 
-/* Navigation Drawer */
+/* Navigation Drawer (Hamburger Menu) */
 .nav-drawer {
   position: fixed;
   top: 0;
@@ -108,7 +116,7 @@ body {
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nav-drawer.open {
@@ -152,7 +160,7 @@ body {
 
 .drawer-links a:hover,
 .drawer-links a.active {
-  color: #ffffff;
+  color: #ff3333;
   font-weight: bold;
 }
 
@@ -177,39 +185,51 @@ body {
   line-height: 0.9;
 }
 
+/* Basisschrift: Outline */
 .log-word {
   font-size: clamp(2rem, 5.5vw, 7.5rem);
   text-transform: uppercase;
   letter-spacing: 2px;
   color: transparent;
   -webkit-text-stroke: 1.5px #ffffff;
-  transition: color 0.2s, -webkit-text-stroke 0.2s;
+  transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
   user-select: none;
 }
 
+/* Hover Effect in Outline Modus -> Rood met gloed */
 .log-word:hover {
-  color: #ffffff;
+  color: #ff3333 !important;
+  -webkit-text-stroke: 1.5px #ff3333 !important;
+  text-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
   cursor: pointer;
 }
 
+/* Solid Modus Stijl */
 body.solid-style .log-word {
   color: #ffffff;
   -webkit-text-stroke: 0px transparent;
 }
 
-/* Projection Drift Animation */
+/* Hover Effect in Solid Modus -> Ook Rood met gloed */
+body.solid-style .log-word:hover {
+  color: #ff3333 !important;
+  -webkit-text-stroke: 0px transparent !important;
+  text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
+}
+
+/* Projection Drift Animatie */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
+  50% { transform: translateY(-15px); }
   100% { transform: translateY(0px); }
 }
 
 body.drift-mode .log-row:nth-child(even) {
-  animation: ambientDrift 5s ease-in-out infinite;
+  animation: ambientDrift 4s ease-in-out infinite;
 }
 
 body.drift-mode .log-row:nth-child(odd) {
-  animation: ambientDrift 7s ease-in-out infinite reverse;
+  animation: ambientDrift 6s ease-in-out infinite reverse;
 }
 
 /* Photo Page Stijlen */
@@ -236,7 +256,7 @@ body.drift-mode .log-row:nth-child(odd) {
 
 .photo-card:hover {
   transform: translateY(-4px);
-  border-color: #ffffff;
+  border-color: #ff3333;
 }
 
 .photo-card img {
