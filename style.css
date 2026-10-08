@@ -85,6 +85,17 @@ html, body {
   border-color: #ffffff;
 }
 
+/* Delete Knop Styling */
+.btn-danger {
+  border-color: #ff3333;
+  color: #ff3333;
+}
+
+.btn-danger:hover {
+  background: #ff3333;
+  color: #ffffff;
+}
+
 /* Hamburger Icon */
 .btn-icon {
   padding: 8px 10px;
@@ -166,7 +177,7 @@ html, body {
   font-weight: bold;
 }
 
-/* TYPOGRAPHY CONTAINER (Vult exact het overgebleven scherm) */
+/* TYPOGRAPHY CONTAINER */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
@@ -179,7 +190,6 @@ html, body {
   overflow: hidden !important;
 }
 
-/* Elk rijtje strekt uit over de volle breedte */
 .log-row {
   display: flex;
   flex-wrap: nowrap;
@@ -189,7 +199,6 @@ html, body {
   line-height: 0.85;
 }
 
-/* Basisschrift: Gecontroleerde dynamische lettergrootte */
 .log-word {
   font-size: var(--dynamic-font-size, 3rem);
   text-transform: uppercase;
@@ -291,4 +300,47 @@ body.drift-mode .log-row:nth-child(odd) {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 25px;
+}
+
+/* Delete Lijst Styling */
+.delete-list-container {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.delete-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a1a1a;
+  padding: 10px 15px;
+  border: 1px solid #333;
+}
+
+.delete-item-info {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75%;
+}
+
+.btn-delete-action {
+  background: #ff3333;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-delete-action:hover {
+  background: #cc0000;
 }
