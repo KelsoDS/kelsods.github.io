@@ -20,11 +20,17 @@
     <script src="script.js" defer></script>
   </head>
   <body>
-    <header class="control-panel glass-panel">
-      <div class="panel-brand-wrap">
-        <span class="panel-dot" aria-hidden="true"></span>
-        <h1 class="panel-brand">Street Observation Log</h1>
-      </div>
+    <!-- Zwevende Besturing met Navigatie -->
+  <header class="control-panel">
+    <div class="panel-brand">OBSERVATIE LOG v1.0</div>
+    <div class="panel-actions">
+      <a href="index.html" class="btn btn-primary"> Typografie</a>
+      <a href="photos.html" class="btn"> Foto's</a>
+      <button id="toggle-style" class="btn">Contour / Gevuld</button>
+      <button id="toggle-drift" class="btn">Projectie</button>
+      <button id="toggle-modal" class="btn">+ Nieuw</button>
+    </div>
+  </header>
 
       <div class="panel-actions" aria-label="Page controls">
         <button id="toggle-style" type="button" class="btn">
