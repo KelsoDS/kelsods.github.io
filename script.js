@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Sluit menu als je buiten de nav-drawer klikt
+  // Close navigation menu when clicking outside
   document.addEventListener("click", (e) => {
     if (navDrawer && navDrawer.classList.contains("open")) {
       if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY CANVAS & BUTTONS
+  // 2. TYPOGRAPHY CANVAS CONTROLS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -63,35 +63,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Toggle Outline vs Solid Text
+    // Toggle Outline vs Solid
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
       });
     }
 
-    // Toggle Projection Motion (Animatie)
+    // Toggle Projection Motion
     if (toggleDriftBtn) {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
       });
     }
 
-    // Open Modal
+    // Modal controls
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
       });
     }
 
-    // Close Modal
     if (closeModalBtn && modal) {
       closeModalBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
       });
     }
 
-    // Submit Form
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -110,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderLogs();
   }
 
-  // 3. LIGHTBOX VOOR FOTO'S (Op photo page)
+  // 3. LIGHTBOX FOR PHOTOS (Photo page)
   const photoCards = document.querySelectorAll(".photo-card");
   const lightbox = document.getElementById("lightbox");
   const lightboxImg = document.getElementById("lightbox-img");
