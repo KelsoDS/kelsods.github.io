@@ -14,12 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
 
-  // Zorg dat het menu bij het laden altijd gesloten is
   if (navDrawer) {
     navDrawer.classList.remove("open");
   }
 
-  // Open / sluit bij klikken op de hamburgerknop
   if (menuToggle && navDrawer) {
     menuToggle.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -27,14 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Sluiten bij klikken op het kruisje
   if (closeDrawer && navDrawer) {
     closeDrawer.addEventListener("click", () => {
       navDrawer.classList.remove("open");
     });
   }
 
-  // Sluiten bij klikken buiten het menu
   document.addEventListener("click", (e) => {
     if (navDrawer && navDrawer.classList.contains("open")) {
       if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -43,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY CANVAS & CONTROLS
+  // 2. TYPOGRAPHY CANVAS & NATIVE DYNAMIC SCALING
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -61,8 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderLogs() {
       container.innerHTML = "";
 
-      const totalRows = observations.length;
-      const calculatedFontSize = Math.max(1.2, Math.min(5.5, 45 / totalRows));
+      // Bereken totale hoeveelheid karakters/woorden om tekstgrootte optimaal over het scherm te verdelen
+      let totalWords = 0;
+      observations.forEach(item => {
+        totalWords += `${item.day} ${item.time} ${item.text}`.split(" ").length;
+      });
+
+      // Bepaal de lettergrootte op basis van het aantal woorden zodat alles op het scherm past
+      const calculatedFontSize = Math.max(0.9, Math.min(4.2, 110 / Math.sqrt(totalWords)));
 
       observations.forEach(item => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
@@ -74,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
         words.forEach(word => {
           const span = document.createElement("span");
           span.className = "log-word";
-          span.style.setProperty("--dynamic-font-size", `${calculatedFontSize}rem`);
+          span.style.setProperty("--dynamic-font-size", `${calculatedFontSize}vh`);
           span.textContent = word;
 
           span.addEventListener("click", () => {
@@ -139,6 +141,9 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.classList.add("hidden");
       });
     }
+
+    // Pas formaat aan bij veranderen van schermgrootte
+    window.addEventListener("resize", renderLogs);
 
     renderLogs();
   }
