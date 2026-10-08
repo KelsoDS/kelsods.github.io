@@ -33,7 +33,6 @@
       <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
       <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
       <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
-      <button class="btn btn-danger" id="toggle-delete-modal">DELETE LOG</button>
     </div>
   </header>
 
@@ -62,6 +61,19 @@
     </div>
   </div>
 
-  <!-- Modal: Observation Verwijderen (Overzicht) -->
-  <div class="modal-overlay hidden" id="delete-modal">
-    <div class="
+  <!-- Modal: Observation Info (Inclusief Verwijderknop) -->
+  <div class="modal-overlay hidden" id="info-modal">
+    <div class="modal-card">
+      <h2 id="info-time">--</h2>
+      <p id="info-text" style="font-family: monospace; color: #ccc; margin-top: 15px;"></p>
+      
+      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px;">
+        <button type="button" class="btn btn-danger" id="delete-current-info">VERWIJDER OBSERVATIE</button>
+        <button type="button" class="btn" id="close-info-modal">SLUITEN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
