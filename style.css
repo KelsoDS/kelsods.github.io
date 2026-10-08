@@ -1,312 +1,86 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Anti-cache headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-html, body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden !important;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: Impact, 'Arial Black', sans-serif;
-  display: flex;
-  flex-direction: column;
-}
+  <title>Street Observations - Typography</title>
+  
+  <!-- Google Pixel Font Import -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-/* Header Bar */
-.control-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  padding: 10px 25px;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #222222;
-}
+  <link rel="stylesheet" href="style.css?v=10">
+</head>
+<body>
 
-.panel-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
+  <!-- Navigation Drawer (Hamburger Menu) -->
+  <nav class="nav-drawer" id="nav-drawer">
+    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
+    <div class="drawer-title">NAVIGATION</div>
+    <ul class="drawer-links">
+      <li><a href="index.html" class="active">Typography Log</a></li>
+      <li><a href="photos.html">Photo Gallery</a></li>
+      <li><a href="#">Archive</a></li>
+    </ul>
+  </nav>
 
-.panel-brand {
-  font-family: monospace;
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  color: #888888;
-}
+  <!-- Top Control Bar -->
+  <header class="control-panel">
+    <div class="panel-left">
+      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      <span class="panel-brand">STREET OBSERVATIONS</span>
+    </div>
+    <div class="panel-actions">
+      <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
+      <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
+      <button class="btn" id="toggle-pixel">PIXEL EFFECT</button>
+      <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
+    </div>
+  </header>
 
-.panel-actions {
-  display: flex;
-  gap: 10px;
-}
+  <!-- Main Typography Display -->
+  <main class="typography-container" id="log-display"></main>
 
-/* Buttons */
-.btn {
-  background: #111111;
-  color: #ffffff;
-  border: 1px solid #444444;
-  padding: 8px 16px;
-  font-family: sans-serif;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 2px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+  <!-- Modal: Add Observation -->
+  <div class="modal-overlay hidden" id="observation-modal">
+    <div class="modal-card">
+      <h2>ADD NEW OBSERVATION</h2>
+      <form id="add-log-form">
+        <label for="input-day">DAY (E.G. FRI 9 OCT)</label>
+        <input type="text" id="input-day" required placeholder="FRI 9 OCT">
 
-.btn:hover {
-  background: #ffffff;
-  color: #000000;
-}
+        <label for="input-time">TIME (E.G. 11PM)</label>
+        <input type="text" id="input-time" required placeholder="11PM">
 
-.btn.active-mode {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-}
+        <label for="input-text">OBSERVATION TEXT</label>
+        <textarea id="input-text" rows="3" required placeholder="DESCRIBE THE SITUATION..."></textarea>
 
-.btn-primary {
-  border-color: #ffffff;
-}
+        <div class="form-actions">
+          <button type="button" class="btn" id="close-modal">CANCEL</button>
+          <button type="submit" class="btn btn-primary">ADD</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-.btn-danger {
-  border-color: #ff3333;
-  color: #ff3333;
-}
-
-.btn-danger:hover {
-  background: #ff3333;
-  color: #ffffff;
-}
-
-.btn-icon {
-  padding: 8px 10px;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.hamburger-bar {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background-color: #ffffff;
-  pointer-events: none;
-}
-
-.btn-icon:hover .hamburger-bar {
-  background-color: #000000;
-}
-
-/* Drawer Menu */
-.nav-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 300px;
-  height: 100vh;
-  background: #0a0a0a;
-  border-right: 1px solid #222222;
-  z-index: 2500;
-  padding: 40px 25px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
-}
-
-.nav-drawer.open {
-  transform: translateX(0);
-}
-
-.drawer-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 2rem;
-  cursor: pointer;
-}
-
-.drawer-title {
-  font-family: monospace;
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  color: #666666;
-  margin-bottom: 25px;
-}
-
-.drawer-links {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.drawer-links a {
-  color: #888888;
-  text-decoration: none;
-  font-family: monospace;
-  font-size: 0.95rem;
-  letter-spacing: 1px;
-  transition: color 0.2s;
-}
-
-.drawer-links a:hover,
-.drawer-links a.active {
-  color: #ff3333;
-  font-weight: bold;
-}
-
-/* TYPOGRAPHY CONTAINER (Vult exact 100% van het scherm) */
-.typography-container {
-  margin-top: 60px;
-  height: calc(100vh - 60px);
-  width: 100vw;
-  padding: 10px 15px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: space-between;
-  justify-content: space-between;
-  overflow: hidden !important;
-}
-
-.log-word {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #ffffff;
-  transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
-  user-select: none;
-  cursor: pointer;
-  white-space: nowrap;
-  line-height: 0.85;
-  margin-right: 0.3em;
-  display: inline-block;
-}
-
-.log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 1.5px #ff3333 !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
-}
-
-body.solid-style .log-word {
-  color: #ffffff !important;
-  -webkit-text-stroke: 0px transparent !important;
-}
-
-body.solid-style .log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 0px transparent !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
-}
-
-/* DRIFT ANIMATIE */
-@keyframes ambientDrift {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
-}
-
-body.drift-mode .log-word:nth-child(even) {
-  animation: ambientDrift 4s ease-in-out infinite;
-}
-
-body.drift-mode .log-word:nth-child(odd) {
-  animation: ambientDrift 6s ease-in-out infinite reverse;
-}
-
-/* PIXELATED FONT EFFECT & GLITCH ANIMATIE */
-@keyframes pixelGlitch {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2px, 1px); }
-  50% { transform: translate(1px, -1px); }
-  75% { transform: translate(-1px, 2px); }
-  100% { transform: translate(0, 0); }
-}
-
-.log-word.pixelated {
-  font-family: 'Press Start 2P', monospace, courier !important;
-  letter-spacing: 0px;
-  image-rendering: pixelated;
-  text-rendering: geometricPrecision;
-  display: inline-block;
-}
-
-body.pixel-mode .log-word.pixelated {
-  animation: pixelGlitch 0.3s steps(2, start) infinite;
-}
-
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-
-.modal-overlay.hidden {
-  display: none !important;
-}
-
-.modal-card {
-  background: #111111;
-  padding: 30px;
-  border: 1px solid #333333;
-  width: 90%;
-  max-width: 500px;
-}
-
-.modal-card h2 {
-  font-family: monospace;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-}
-
-.modal-card label {
-  display: block;
-  margin-top: 15px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: #aaaaaa;
-}
-
-.modal-card input, .modal-card textarea {
-  width: 100%;
-  background: #000000;
-  border: 1px solid #444444;
-  color: #ffffff;
-  padding: 10px;
-  margin-top: 5px;
-  font-family: monospace;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 25px;
-}
+  <!-- Modal: Observation Details -->
+  <div class="modal-overlay hidden" id="info-modal">
+    <div class="modal-card">
+      <h2 id="info-time">--</h2>
+      <p id="info-text" style="font-family: monospace; color: #ccc; margin-top: 15px;"></p>
+      
+      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px;">
+        <button type="button" class="btn btn-danger" id="delete-current-info">DELETE OBSERVATION</button>
+        <button type="button" class="btn" id="close-info-modal">CLOSE</button>
+      </div>
