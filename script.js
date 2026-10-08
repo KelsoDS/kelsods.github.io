@@ -10,7 +10,6 @@ let selectedObservationIndex = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1. HAMBURGER MENU CONTROLS
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
@@ -40,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY RENDER & AUTO-SCALING CONTROLS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -49,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("observation-modal");
   const form = document.getElementById("add-log-form");
 
-  // Info Modal Elements
   const infoModal = document.getElementById("info-modal");
   const infoTime = document.getElementById("info-time");
   const infoText = document.getElementById("info-text");
@@ -60,14 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderLogs() {
       container.innerHTML = "";
 
-      const totalItems = observations.length;
-      
-      if (totalItems === 0) {
+      if (observations.length === 0) {
         container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS".</div>`;
         return;
       }
 
-      // Render words across a single continuous flex container so wrapping and edge collision occur fluidly
       observations.forEach((item, index) => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
@@ -77,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
           span.className = "log-word";
           span.textContent = word;
 
-          // Clicking a word opens the item details modal
           span.addEventListener("click", () => {
             if (infoModal) {
               selectedObservationIndex = index;
@@ -91,17 +84,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
-      adjustTypographyScale();
+      // Voer het schaalalgoritme uit zodra alle elementen op de pagina staan
+      setTimeout(adjustTypographyScale, 50);
     }
 
-    // Binary search auto-scaling algorithm to ensure words fill the full screen height without scrollbars
+    // Binary search auto-scaling algoritme
     function adjustTypographyScale() {
       const words = container.querySelectorAll(".log-word");
       if (!words.length) return;
 
       const availHeight = container.clientHeight;
       let minFontPx = 10;
-      let maxFontPx = 150;
+      let maxFontPx = 250;
       let optimalPx = minFontPx;
 
       while (minFontPx <= maxFontPx) {
@@ -126,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Delete selected observation entry
     function deleteObservation(index) {
       if (index !== null && index >= 0 && index < observations.length) {
         observations.splice(index, 1);
@@ -135,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Delete button inside Info Modal
     if (deleteCurrentInfoBtn) {
       deleteCurrentInfoBtn.addEventListener("click", () => {
         if (selectedObservationIndex !== null) {
@@ -146,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Style toggle controls
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
@@ -161,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Add modal controls
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
@@ -174,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Details modal controls
     if (closeInfoModalBtn && infoModal) {
       closeInfoModalBtn.addEventListener("click", () => {
         infoModal.classList.add("hidden");
@@ -182,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Submit new observation form
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
