@@ -23,7 +23,7 @@
 
     <div class="panel-actions">
       <button id="toggle-style" class="btn" type="button">OUTLINE / SOLID</button>
-      <button id="toggle-drift" class="btn" type="button">PROJECTION</button>
+      <button id="toggle-drift" class="btn" type="button">ANIMATION</button>
       <button id="toggle-modal" class="btn btn-primary" type="button">+ ADD LOG</button>
     </div>
   </header>
@@ -70,6 +70,18 @@
           <button type="submit" class="btn btn-primary">SUBMIT</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Detail Information Modal -->
+  <div id="info-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 id="info-title">OBSERVATION DETAILS</h2>
+      <p id="info-time" style="font-family: monospace; color: #ff3333; margin-bottom: 10px;"></p>
+      <p id="info-text" style="font-family: monospace; line-height: 1.5; color: #ffffff;"></p>
+      <div class="form-actions">
+        <button type="button" id="close-info-modal" class="btn btn-primary">CLOSE</button>
+      </div>
     </div>
   </div>
 
