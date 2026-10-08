@@ -6,6 +6,7 @@ const observations = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
+
   // 1. HAMBURGER MENU CONTROLS
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Close navigation menu when clicking outside
+  // Sluit menu bij klik buiten het menu
   document.addEventListener("click", (e) => {
     if (navDrawer && navDrawer.classList.contains("open")) {
       if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY CANVAS CONTROLS
+  // 2. TYPOGRAPHY CANVAS & BUTTON CONTROLS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -63,17 +64,19 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Toggle Outline vs Solid
+    // Toggle Outline vs Solid Text
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
+        toggleStyleBtn.classList.toggle("active-mode");
       });
     }
 
-    // Toggle Projection Motion
+    // Toggle Projection Motion (Animatie)
     if (toggleDriftBtn) {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
+        toggleDriftBtn.classList.toggle("active-mode");
       });
     }
 
