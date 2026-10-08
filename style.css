@@ -1,189 +1,136 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap');
+
+{
+box-sizing: border-box;
+margin: 0;
+padding: 0;
 }
 
-/* Scrollen volledig uitschakelen */
 html, body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden !important;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: Impact, 'Arial Black', sans-serif;
-  display: flex;
-  flex-direction: column;
+width: 100vw;
+height: 100vh;
+overflow: hidden !important;
+background-color: #000000;
+color: #ffffff;
+font-family: 'Anton', Impact, sans-serif;
+user-select: none;
 }
 
-/* Control Panel */
-.control-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  padding: 10px 25px;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #222222;
-}
-
-.panel-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.panel-brand {
-  font-family: monospace;
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  color: #888888;
-}
-
-.panel-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* Buttons */
-.btn {
-  background: #111111;
-  color: #ffffff;
-  border: 1px solid #444444;
-  padding: 8px 16px;
-  font-family: sans-serif;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 2px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn:hover {
-  background: #ffffff;
-  color: #000000;
-}
-
-.btn-primary {
-  border-color: #ffffff;
-}
-
-.btn.active-mode {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-}
-
-/* Hamburger Icon */
-.btn-icon {
-  padding: 8px 10px;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.hamburger-bar {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background-color: #ffffff;
-  pointer-events: none;
-}
-
-.btn-icon:hover .hamburger-bar {
-  background-color: #000000;
-}
-
-/* Navigation Drawer - STANDAARD GESLOTEN */
+/* Navigation Drawer (Guaranteed closed by default) */
 .nav-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 300px;
-  height: 100vh;
-  background: #0a0a0a;
-  border-right: 1px solid #222222;
-  z-index: 2500;
-  padding: 40px 25px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%) !important;
-  transition: transform 0.3s ease-in-out;
+position: fixed;
+top: 0;
+left: 0;
+width: 320px;
+height: 100vh;
+background: #0a0a0a;
+border-right: 1px solid #222222;
+z-index: 2500;
+padding: 30px 25px;
+display: flex;
+flex-direction: column;
+transform: translateX(-100%);
+transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
 }
 
 .nav-drawer.open {
-  transform: translateX(0) !important;
+transform: translateX(0) !important;
 }
 
-.drawer-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 2rem;
-  cursor: pointer;
+.drawer-overlay {
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.75);
+backdrop-filter: blur(4px);
+z-index: 2400;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.3s ease;
 }
 
-.drawer-title {
-  font-family: monospace;
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  color: #666666;
-  margin-bottom: 25px;
+.drawer-overlay.active {
+opacity: 1;
+pointer-events: auto;
 }
 
-.drawer-links {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* Typography Container — Continuous wrapping over full screen */
+.typography-canvas {
+width: 100vw;
+height: calc(100vh - 60px);
+margin-top: 60px;
+padding: 12px 20px;
+display: flex;
+flex-wrap: wrap;
+align-content: space-between;
+justify-content: space-between;
+overflow: hidden;
 }
 
-.drawer-links a {
-  color: #888888;
-  text-decoration: none;
-  font-family: monospace;
-  font-size: 0.95rem;
-  letter-spacing: 1px;
-  transition: color 0.2s;
+/* Word styling with outline & wrapping logic */
+.log-word {
+font-size: var(--word-font-size, 3.5vw);
+text-transform: uppercase;
+letter-spacing: -0.01em;
+line-height: 0.88;
+color: transparent;
+-webkit-text-stroke: 1.5px #ffffff;
+transition: color 0.15s ease, -webkit-text-stroke 0.15s ease, text-shadow 0.15s ease, transform 0.15s ease;
+cursor: pointer;
+display: inline-block;
+margin-right: 0.28em;
+margin-bottom: 0.12em;
+word-break: break-word;
 }
 
-.drawer-links a:hover,
-.drawer-links a.active {
-  color: #ff3333;
-  font-weight: bold;
+/* Hover effect in OUTLINE mode */
+.log-word:hover {
+color: #ff3333 !important;
+-webkit-text-stroke: 1.5px #ff3333 !important;
+text-shadow: 0 0 20px rgba(255, 51, 51, 0.9);
+transform: scale(1.04);
+z-index: 10;
 }
 
-/* Typography Container — Verdeelt de tekst over het scherm */
-.typography-container {
-  margin-top: 60px;
-  height: calc(100vh - 60px);
-  width: 100vw;
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: stretch;
-  overflow: hidden;
+/* SOLID Mode Styles */
+body.solid-style .log-word {
+color: #ffffff !important;
+-webkit-text-stroke: 0px transparent !important;
 }
 
-/* Tekstregels die niet buiten het scherm vallen */
-.log-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  line-height
+body.solid-style .log-word:hover {
+color: #ff3333 !important;
+-webkit-text-stroke: 0px transparent !important;
+text-shadow: 0 0 25px rgba(255, 51, 51, 1);
+transform: scale(1.04);
+}
+
+/* Animation Drift Mode */
+@keyframes ambientDriftWord {
+0% { transform: translateY(0px); }
+50% { transform: translateY(-6px); }
+100% { transform: translateY(0px); }
+}
+
+body.drift-mode .log-word:nth-child(2n) {
+animation: ambientDriftWord 4s ease-in-out infinite;
+}
+
+body.drift-mode .log-word:nth-child(3n) {
+animation: ambientDriftWord 6s ease-in-out infinite reverse;
+}
+
+/* Scrollbar for Photo View */
+.custom-scroll::-webkit-scrollbar {
+width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+background: #000;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+background: #333;
+border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+background: #ff3333;
+}
