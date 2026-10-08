@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
-  const togglePixelBtn = document.getElementById("toggle-pixel");
   const toggleModalBtn = document.getElementById("toggle-modal");
   const closeModalBtn = document.getElementById("close-modal");
   const modal = document.getElementById("observation-modal");
@@ -72,7 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
           span.className = "log-word";
           span.textContent = word;
 
-          if (document.body.classList.contains("pixel-mode") && Math.random() < 0.3) {
+          // Af en toe start een willekeurig woord direct als pixelated
+          if (Math.random() < 0.15) {
             span.classList.add("pixelated");
           }
 
@@ -123,6 +123,21 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Automatische timer die elke 2.5 seconde willekeurige woorden verandert naar pixel of normaal
+    setInterval(() => {
+      const allWords = container.querySelectorAll(".log-word");
+      if (allWords.length === 0) return;
+
+      // Pak 1 tot 3 willekeurige woorden die van stijl wisselen
+      const countToChange = Math.floor(Math.random() * 3) + 1;
+      for (let i = 0; i < countToChange; i++) {
+        const randomIndex = Math.floor(Math.random() * allWords.length);
+        const targetWord = allWords[randomIndex];
+        
+        targetWord.classList.toggle("pixelated");
+      }
+    }, 2500);
+
     function deleteObservation(index) {
       if (index !== null && index >= 0 && index < observations.length) {
         observations.splice(index, 1);
@@ -152,29 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
         toggleDriftBtn.classList.toggle("active-mode");
-      });
-    }
-
-    if (togglePixelBtn) {
-      togglePixelBtn.addEventListener("click", () => {
-        const isPixelActive = document.body.classList.toggle("pixel-mode");
-        togglePixelBtn.classList.toggle("active-mode");
-
-        const allWords = container.querySelectorAll(".log-word");
-        
-        if (isPixelActive) {
-          allWords.forEach(word => {
-            if (Math.random() < 0.3) {
-              word.classList.add("pixelated");
-            } else {
-              word.classList.remove("pixelated");
-            }
-          });
-        } else {
-          allWords.forEach(word => word.classList.remove("pixelated"));
-        }
-
-        adjustTypographyScale();
       });
     }
 
