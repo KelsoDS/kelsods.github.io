@@ -380,4 +380,36 @@ document.addEventListener('DOMContentLoaded', () => {
   color: #ffffff;
   cursor: pointer;
 }
+// Lightbox functionaliteit voor foto's
+document.addEventListener("DOMContentLoaded", () => {
+  const photoCards = document.querySelectorAll(".photo-card");
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const lightboxCaption = document.getElementById("lightbox-caption");
+  const closeLightbox = document.getElementById("close-lightbox");
+
+  if (lightbox) {
+    photoCards.forEach(card => {
+      card.addEventListener("click", () => {
+        const img = card.querySelector("img");
+        const date = card.getAttribute("data-date");
+        const desc = card.getAttribute("data-desc");
+
+        lightboxImg.src = img.src;
+        lightboxCaption.textContent = `${date} — ${desc}`;
+        lightbox.classList.remove("hidden");
+      });
+    });
+
+    closeLightbox.addEventListener("click", () => {
+      lightbox.classList.add("hidden");
+    });
+
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.classList.add("hidden");
+      }
+    });
+  }
+});
 });
