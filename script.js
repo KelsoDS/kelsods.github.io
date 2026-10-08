@@ -49,12 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("observation-modal");
   const form = document.getElementById("add-log-form");
 
-  // Delete Modal Elementen
-  const toggleDeleteModalBtn = document.getElementById("toggle-delete-modal");
-  const closeDeleteModalBtn = document.getElementById("close-delete-modal");
-  const deleteModal = document.getElementById("delete-modal");
-  const deleteList = document.getElementById("delete-list");
-
   // Info Modal Elementen
   const infoModal = document.getElementById("info-modal");
   const infoTime = document.getElementById("info-time");
@@ -106,41 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Functie voor het vullen van de Delete Lijst in de Modal
-    function renderDeleteList() {
-      if (!deleteList) return;
-      deleteList.innerHTML = "";
-
-      if (observations.length === 0) {
-        deleteList.innerHTML = `<div style="font-family: monospace; color: #666;">Geen items om te verwijderen.</div>`;
-        return;
-      }
-
-      observations.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "delete-item";
-
-        div.innerHTML = `
-          <div class="delete-item-info">
-            <strong>${item.day} ${item.time}:</strong> ${item.text}
-          </div>
-          <button class="btn-delete-action" data-index="${index}">VERWIJDER</button>
-        `;
-
-        deleteList.appendChild(div);
-      });
-
-      // Event Listeners voor knoppen in de delete-modal lijst
-      document.querySelectorAll(".btn-delete-action").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const idx = parseInt(e.target.getAttribute("data-index"));
-          deleteObservation(idx);
-          renderDeleteList();
-        });
-      });
-    }
-
-    // Centrale functie om een observatie te verwijderen
+    // Verwijder specifieke observatie
     function deleteObservation(index) {
       if (index !== null && index >= 0 && index < observations.length) {
         observations.splice(index, 1);
@@ -185,20 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closeModalBtn && modal) {
       closeModalBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
-      });
-    }
-
-    // Delete Modal Controls
-    if (toggleDeleteModalBtn && deleteModal) {
-      toggleDeleteModalBtn.addEventListener("click", () => {
-        renderDeleteList();
-        deleteModal.classList.remove("hidden");
-      });
-    }
-
-    if (closeDeleteModalBtn && deleteModal) {
-      closeDeleteModalBtn.addEventListener("click", () => {
-        deleteModal.classList.add("hidden");
       });
     }
 
