@@ -72,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
           span.className = "log-word";
           span.textContent = word;
 
-          // Behoudt pixel-status als pixel-mode actief is bij re-renderen
           if (document.body.classList.contains("pixel-mode") && Math.random() < 0.3) {
             span.classList.add("pixelated");
           }
