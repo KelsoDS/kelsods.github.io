@@ -1,180 +1,178 @@
 const defaultObservations = [
   { day: "MON 5 OCT", time: "2AM", text: "5 PEOPLE WALKING NORTH TO SOUTH YELLING AND SINGING LOUD" },
   { day: "TUE 6 OCT", time: "10PM", text: "1 PERSON WALKING SOUTH TO NORTH STOPPED TO TIE SHOES" },
-  { day: "WED 7 OCT", time: "8PM", text: "WALKING WITH LOUD MUSIC WEARING A RED HOODIE A SHORT AND SLIPPERS" },
-  { day: "THU 8 OCT", time: "1AM", text: "2 PEOPLE IN A HEATED ARGUMENT DRUNK WALKING IN THE MIDDLE OF THE ROAD" }
+  { day: "WED 7 OCT", time: "8PM", text: "WALKING WITH LOUD MUSIC WEARING A RED HOODIE AND SLIPPERS" },
+  { day: "THU 8 OCT", time: "1AM", text: "2 PEOPLE IN A HEATED ARGUMENT DRUNK WALKING IN THE MIDDLE OF ROAD" }
 ];
 
-let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
+// Load dataset
+let observations = JSON.parse(localStorage.getItem("street_observations_v4")) || defaultObservations;
 let selectedObservationIndex = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  // 1. HAMBURGER MENU CONTROLS
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
+  const drawerOverlay = document.getElementById("drawer-overlay");
 
-  if (navDrawer) {
-    navDrawer.classList.remove("open");
+  function openMenu() {
+    if (navDrawer) navDrawer.classList.add("open");
+    if (drawerOverlay) drawerOverlay.classList.add("active");
   }
 
-  if (menuToggle && navDrawer) {
+  function closeMenu() {
+    if (navDrawer) navDrawer.classList.remove("open");
+    if (drawerOverlay) drawerOverlay.classList.remove("active");
+  }
+
+  if (menuToggle) {
     menuToggle.addEventListener("click", (e) => {
       e.stopPropagation();
-      navDrawer.classList.toggle("open");
+      openMenu();
     });
   }
 
-  if (closeDrawer && navDrawer) {
-    closeDrawer.addEventListener("click", () => {
-      navDrawer.classList.remove("open");
-    });
-  }
+  if (closeDrawer) closeDrawer.addEventListener("click", closeMenu);
+  if (drawerOverlay) drawerOverlay.addEventListener("click", closeMenu);
 
-  document.addEventListener("click", (e) => {
-    if (navDrawer && navDrawer.classList.contains("open")) {
-      if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
-        navDrawer.classList.remove("open");
-      }
-    }
-  });
-
-  // 2. TYPOGRAPHY RENDER & MODAL CONTROLS
   const container = document.getElementById("log-display");
+  const drawerLogCount = document.getElementById("drawer-log-count");
+
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
-  const toggleModalBtn = document.getElementById("toggle-modal");
-  const closeModalBtn = document.getElementById("close-modal");
-  const modal = document.getElementById("observation-modal");
-  const form = document.getElementById("add-log-form");
 
-  // Info Modal Elementen
+  const toggleAddModalBtn = document.getElementById("toggle-modal");
+  const closeAddModalBtn = document.getElementById("close-modal");
+  const addModal = document.getElementById("observation-modal");
+  const addForm = document.getElementById("add-log-form");
+
   const infoModal = document.getElementById("info-modal");
   const infoTime = document.getElementById("info-time");
   const infoText = document.getElementById("info-text");
   const closeInfoModalBtn = document.getElementById("close-info-modal");
   const deleteCurrentInfoBtn = document.getElementById("delete-current-info");
 
-  if (container) {
-    function renderLogs() {
-      container.innerHTML = "";
+  function renderLogs() {
+    if (!container) return;
+    container.innerHTML = "";
 
-      const totalRows = observations.length;
-      
-      if (totalRows === 0) {
-        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; margin-top: 20vh;">GEEN OBSERVATIES MEER BESCHIKBAAR. VOEG NIEUWE OBSERVATIES TOE VIA "+ ADD OBS".</div>`;
-        return;
-      }
+    if (drawerLogCount) {
+      drawerLogCount.textContent = observations.length;
+    }
 
-      // Dynamische schaling op basis van aantal rijen
-      const baseFontSize = Math.max(1, Math.min(6, (70 / totalRows) / 2));
+    const totalRows = observations.length;
 
-      observations.forEach((item, index) => {
-        const fullText = `${item.day} ${item.time} ${item.text}`;
-        const words = fullText.split(" ");
+    if (totalRows === 0) {
+      container.innerHTML = `
+        <div style="font-family: monospace; color: #555; text-align: center; margin: auto; font-size: 0.9rem; letter-spacing: 1px;">
+          GEEN OBSERVATIES BESCHIKBAAR.<br>KLIK OP "+ ADD OBS" OM EEN NIEUWE OBSERVATIE TOE TE VOEGEN.
+        </div>`;
+      return;
+    }
 
-        const row = document.createElement("div");
-        row.className = "log-row";
+    // Calculate dynamic base font-size based on screen height and number of entries
+    const baseFontSize = Math.max(1.2, Math.min(6.5, (70 / totalRows) / 2));
 
-        words.forEach(word => {
-          const span = document.createElement("span");
-          span.className = "log-word";
-          span.style.setProperty("--dynamic-font-size", `${baseFontSize}vh`);
-          span.textContent = word;
+    observations.forEach((item, index) => {
+      const fullText = `${item.day} ${item.time} ${item.text}`;
+      const words = fullText.split(" ");
 
-          // Bij klikken op een woord: sla de index op en toon de info modal
-          span.addEventListener("click", () => {
-            if (infoModal) {
-              selectedObservationIndex = index;
-              infoTime.textContent = `${item.day} — ${item.time}`;
-              infoText.textContent = item.text;
-              infoModal.classList.remove("hidden");
-            }
-          });
+      const row = document.createElement("div");
+      row.className = "log-row";
 
-          row.appendChild(span);
+      words.forEach(word => {
+        const span = document.createElement("span");
+        span.className = "log-word";
+        span.style.setProperty("--dynamic-font-size", `${baseFontSize}vh`);
+        span.textContent = word;
+
+        // Clicking any word shows the info modal with delete button
+        span.addEventListener("click", () => {
+          selectedObservationIndex = index;
+          if (infoTime) infoTime.textContent = `${item.day} — ${item.time}`;
+          if (infoText) infoText.textContent = item.text;
+          if (infoModal) infoModal.classList.remove("hidden");
         });
 
-        container.appendChild(row);
+        row.appendChild(span);
       });
-    }
 
-    // Verwijder specifieke observatie
-    function deleteObservation(index) {
-      if (index !== null && index >= 0 && index < observations.length) {
-        observations.splice(index, 1);
-        localStorage.setItem("street_observations", JSON.stringify(observations));
-        renderLogs();
-      }
-    }
-
-    // Verwijderknop IN de Info Modal
-    if (deleteCurrentInfoBtn) {
-      deleteCurrentInfoBtn.addEventListener("click", () => {
-        if (selectedObservationIndex !== null) {
-          deleteObservation(selectedObservationIndex);
-          selectedObservationIndex = null;
-          if (infoModal) infoModal.classList.add("hidden");
-        }
-      });
-    }
-
-    // Toggle Modus Knoppen
-    if (toggleStyleBtn) {
-      toggleStyleBtn.addEventListener("click", () => {
-        document.body.classList.toggle("solid-style");
-        toggleStyleBtn.classList.toggle("active-mode");
-      });
-    }
-
-    if (toggleDriftBtn) {
-      toggleDriftBtn.addEventListener("click", () => {
-        document.body.classList.toggle("drift-mode");
-        toggleDriftBtn.classList.toggle("active-mode");
-      });
-    }
-
-    // Add Modal Controls
-    if (toggleModalBtn && modal) {
-      toggleModalBtn.addEventListener("click", () => {
-        modal.classList.remove("hidden");
-      });
-    }
-
-    if (closeModalBtn && modal) {
-      closeModalBtn.addEventListener("click", () => {
-        modal.classList.add("hidden");
-      });
-    }
-
-    // Info Modal Controls
-    if (closeInfoModalBtn && infoModal) {
-      closeInfoModalBtn.addEventListener("click", () => {
-        infoModal.classList.add("hidden");
-        selectedObservationIndex = null;
-      });
-    }
-
-    // Formulier Indienen (Add Observation)
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const day = document.getElementById("input-day").value;
-        const time = document.getElementById("input-time").value;
-        const text = document.getElementById("input-text").value;
-
-        observations.push({ day, time, text });
-        localStorage.setItem("street_observations", JSON.stringify(observations));
-
-        renderLogs();
-        form.reset();
-        modal.classList.add("hidden");
-      });
-    }
-
-    window.addEventListener("resize", renderLogs);
-
-    renderLogs();
+      container.appendChild(row);
+    });
   }
+
+  function deleteObservation(index) {
+    if (index !== null && index >= 0 && index < observations.length) {
+      observations.splice(index, 1);
+      localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+      renderLogs();
+    }
+  }
+
+  if (deleteCurrentInfoBtn) {
+    deleteCurrentInfoBtn.addEventListener("click", () => {
+      if (selectedObservationIndex !== null) {
+        deleteObservation(selectedObservationIndex);
+        selectedObservationIndex = null;
+        if (infoModal) infoModal.classList.add("hidden");
+      }
+    });
+  }
+
+  if (toggleStyleBtn) {
+    toggleStyleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("solid-style");
+      toggleStyleBtn.classList.toggle("active-mode");
+    });
+  }
+
+  if (toggleDriftBtn) {
+    toggleDriftBtn.addEventListener("click", () => {
+      document.body.classList.toggle("drift-mode");
+      toggleDriftBtn.classList.toggle("active-mode");
+    });
+  }
+
+  if (toggleAddModalBtn && addModal) {
+    toggleAddModalBtn.addEventListener("click", () => {
+      addModal.classList.remove("hidden");
+    });
+  }
+
+  if (closeAddModalBtn && addModal) {
+    closeAddModalBtn.addEventListener("click", () => {
+      addModal.classList.add("hidden");
+    });
+  }
+
+  if (closeInfoModalBtn && infoModal) {
+    closeInfoModalBtn.addEventListener("click", () => {
+      infoModal.classList.add("hidden");
+      selectedObservationIndex = null;
+    });
+  }
+
+  if (addForm) {
+    addForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const day = document.getElementById("input-day").value.trim().toUpperCase();
+      const time = document.getElementById("input-time").value.trim().toUpperCase();
+      const text = document.getElementById("input-text").value.trim().toUpperCase();
+
+      if (day && time && text) {
+        observations.push({ day, time, text });
+        localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+
+        renderLogs();
+        addForm.reset();
+        if (addModal) addModal.classList.add("hidden");
+      }
+    });
+  }
+
+  // Auto recalculate layout on window resize
+  window.addEventListener("resize", renderLogs);
+
+  // Initial draw
+  renderLogs();
 });
