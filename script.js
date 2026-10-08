@@ -6,22 +6,34 @@ const observations = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Navigation Drawer Toggle
+  // 1. HAMBURGER MENU CONTROLS
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
 
   if (menuToggle && navDrawer) {
-    menuToggle.addEventListener("click", () => {
-      navDrawer.classList.remove("hidden");
-    });
-
-    closeDrawer.addEventListener("click", () => {
-      navDrawer.classList.add("hidden");
+    menuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navDrawer.classList.toggle("open");
     });
   }
 
-  // Typography Canvas Rendering & Actions (if on page 01)
+  if (closeDrawer && navDrawer) {
+    closeDrawer.addEventListener("click", () => {
+      navDrawer.classList.remove("open");
+    });
+  }
+
+  // Sluit menu als je buiten de nav-drawer klikt
+  document.addEventListener("click", (e) => {
+    if (navDrawer && navDrawer.classList.contains("open")) {
+      if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
+        navDrawer.classList.remove("open");
+      }
+    }
+  });
+
+  // 2. TYPOGRAPHY CANVAS & BUTTONS
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -51,30 +63,35 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Toggle Outline vs Solid Text
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
       });
     }
 
+    // Toggle Projection Motion (Animatie)
     if (toggleDriftBtn) {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
       });
     }
 
-    if (toggleModalBtn) {
+    // Open Modal
+    if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
       });
     }
 
-    if (closeModalBtn) {
+    // Close Modal
+    if (closeModalBtn && modal) {
       closeModalBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
       });
     }
 
+    // Submit Form
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -93,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderLogs();
   }
 
-  // Photo Page Lightbox (if on page 02)
+  // 3. LIGHTBOX VOOR FOTO'S (Op photo page)
   const photoCards = document.querySelectorAll(".photo-card");
   const lightbox = document.getElementById("lightbox");
   const lightboxImg = document.getElementById("lightbox-img");
