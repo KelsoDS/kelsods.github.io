@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY RENDER (DOORLOPENDE WOORDEN)
+  // 2. TYPOGRAPHY CANVAS WITH AUTO-SCALING TO FIT SCREEN EXACTLY
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -54,10 +54,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeInfoModalBtn = document.getElementById("close-info-modal");
 
   if (container) {
+    function fitTextToScreen() {
+      // Start met een grote lettergrootte (px)
+      let fontSize = 90; 
+      container.style.fontSize = `${fontSize}px`;
+
+      const maxHeight = container.clientHeight;
+      const maxWidth = container.clientWidth;
+
+      // Verklein de lettergrootte stapsgewijs zolang de tekst de hoogte of breedte overschrijdt
+      while ((container.scrollHeight > maxHeight || container.scrollWidth > maxWidth) && fontSize > 8) {
+        fontSize -= 1;
+        container.style.fontSize = `${fontSize}px`;
+      }
+    }
+
     function renderLogs() {
       container.innerHTML = "";
 
-      // Plaats alle woorden rechtstreeks in de container voor een continue flow
       observations.forEach(item => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
@@ -78,6 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
           container.appendChild(span);
         });
       });
+
+      // Schaal de tekst direct na het renderen zodat het op het scherm past
+      fitTextToScreen();
     }
 
     if (toggleStyleBtn) {
@@ -108,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (closeInfoModalBtn && infoModal) {
       closeInfoModalBtn.addEventListener("click", () => {
-        infoInfoModal.classList.add("hidden");
+        infoModal.classList.add("hidden");
       });
     }
 
@@ -127,6 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.classList.add("hidden");
       });
     }
+
+    // Herbereken de schaal bij schermformaat-wijzigingen
+    window.addEventListener("resize", fitTextToScreen);
 
     renderLogs();
   }
