@@ -6,6 +6,7 @@ const defaultObservations = [
 ];
 
 let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
+let selectedObservationIndex = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -59,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const infoTime = document.getElementById("info-time");
   const infoText = document.getElementById("info-text");
   const closeInfoModalBtn = document.getElementById("close-info-modal");
+  const deleteCurrentInfoBtn = document.getElementById("delete-current-info");
 
   if (container) {
     function renderLogs() {
@@ -74,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Dynamische schaling op basis van aantal rijen
       const baseFontSize = Math.max(1, Math.min(6, (70 / totalRows) / 2));
 
-      observations.forEach(item => {
+      observations.forEach((item, index) => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
 
@@ -87,8 +89,10 @@ document.addEventListener("DOMContentLoaded", () => {
           span.style.setProperty("--dynamic-font-size", `${baseFontSize}vh`);
           span.textContent = word;
 
+          // Bij klikken op een woord: sla de index op en toon de info modal
           span.addEventListener("click", () => {
             if (infoModal) {
+              selectedObservationIndex = index;
               infoTime.textContent = `${item.day} — ${item.time}`;
               infoText.textContent = item.text;
               infoModal.classList.remove("hidden");
@@ -126,16 +130,33 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteList.appendChild(div);
       });
 
-      // Event Listeners koppelen aan de individuele verwijderknoppen
+      // Event Listeners voor knoppen in de delete-modal lijst
       document.querySelectorAll(".btn-delete-action").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const idx = parseInt(e.target.getAttribute("data-index"));
-          observations.splice(idx, 1);
-          localStorage.setItem("street_observations", JSON.stringify(observations));
-          
-          renderLogs();
+          deleteObservation(idx);
           renderDeleteList();
         });
+      });
+    }
+
+    // Centrale functie om een observatie te verwijderen
+    function deleteObservation(index) {
+      if (index !== null && index >= 0 && index < observations.length) {
+        observations.splice(index, 1);
+        localStorage.setItem("street_observations", JSON.stringify(observations));
+        renderLogs();
+      }
+    }
+
+    // Verwijderknop IN de Info Modal
+    if (deleteCurrentInfoBtn) {
+      deleteCurrentInfoBtn.addEventListener("click", () => {
+        if (selectedObservationIndex !== null) {
+          deleteObservation(selectedObservationIndex);
+          selectedObservationIndex = null;
+          if (infoModal) infoModal.classList.add("hidden");
+        }
       });
     }
 
@@ -185,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closeInfoModalBtn && infoModal) {
       closeInfoModalBtn.addEventListener("click", () => {
         infoModal.classList.add("hidden");
+        selectedObservationIndex = null;
       });
     }
 
