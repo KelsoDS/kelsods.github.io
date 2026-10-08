@@ -3,87 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Street Observations — Typographic Log</title>
+  <title>Street Observations — Continuous Screen Fill</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
 </head>
-<body>
+<body class="bg-black text-white antialiased">
 
-  <!-- Floating Control Panel -->
-  <header class="control-panel">
-    <div class="panel-left">
-      <!-- Hamburger Menu Button -->
-      <button id="menu-toggle" class="btn btn-icon" type="button" aria-label="Toggle Menu">
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
+  <!-- Header Control Panel -->
+  <header class="fixed top-0 left-0 w-full h-[60px] bg-black/90 backdrop-blur-md border-b border-neutral-800 px-6 flex items-center justify-between z-50">
+    <div class="flex items-center gap-4">
+      <button id="menu-toggle" class="p-2 border border-neutral-700 hover:border-white hover:bg-white hover:text-black transition-colors rounded flex flex-col gap-1 w-9 h-9 items-center justify-center">
+        <span class="w-5 h-[2px] bg-current"></span>
+        <span class="w-5 h-[2px] bg-current"></span>
+        <span class="w-5 h-[2px] bg-current"></span>
       </button>
-      <div class="panel-brand">OBSERVATION LOG v1.0</div>
+      <div class="font-mono text-xs tracking-widest text-neutral-400 font-bold hidden sm:block">
+        STREET OBSERVATION LOG v2.5
+      </div>
     </div>
 
-    <div class="panel-actions">
-      <button id="toggle-style" class="btn" type="button">OUTLINE / SOLID</button>
-      <button id="toggle-drift" class="btn" type="button">ANIMATION</button>
-      <button id="toggle-modal" class="btn btn-primary" type="button">+ ADD LOG</button>
+    <!-- View Switcher Tabs -->
+    <div class="flex items-center gap-2 bg-neutral-900 p-1 rounded border border-neutral-800">
+      <button id="view-typo-btn" class="px-3 py-1 font-mono text-xs font-bold rounded bg-white text-black transition-all">TYPOGRAPHY</button>
+      <button id="view-photos-btn" class="px-3 py-1 font-mono text-xs font-bold text-neutral-400 hover:text-white transition-all">GALLERY</button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2">
+      <button id="toggle-style" class="px-3 py-1.5 border border-neutral-700 font-mono text-xs font-bold rounded hover:bg-white hover:text-black transition-all hidden md:block">
+        OUTLINE / SOLID
+      </button>
+      <button id="toggle-drift" class="px-3 py-1.5 border border-neutral-700 font-mono text-xs font-bold rounded hover:bg-white hover:text-black transition-all hidden sm:block">
+        ANIMATION
+      </button>
+      <button id="open-add-modal" class="px-3 py-1.5 border border-white bg-white text-black font-mono text-xs font-bold rounded hover:bg-red-600 hover:border-red-600 hover:text-white transition-all">
+        + ADD LOG
+      </button>
     </div>
   </header>
 
-  <!-- Navigation Drawer (Hamburger Menu) -->
+  <!-- Navigation Drawer & Overlay -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
   <nav id="nav-drawer" class="nav-drawer">
-    <button id="close-drawer" class="drawer-close" type="button">&times;</button>
-    <div class="drawer-title">PAGES</div>
-    <ul class="drawer-links">
-      <li><a href="index.html" class="active">01. TYPOGRAPHY</a></li>
-      <li><a href="photos.html">02. PHOTOGRAPHS</a></li>
-      <li><a href="#">03. PAGE THREE</a></li>
-      <li><a href="#">04. PAGE FOUR</a></li>
-      <li><a href="#">05. PAGE FIVE</a></li>
-      <li><a href="#">06. PAGE SIX</a></li>
-      <li><a href="#">07. PAGE SEVEN</a></li>
-      <li><a href="#">08. PAGE EIGHT</a></li>
-      <li><a href="#">09. PAGE NINE</a></li>
-      <li><a href="#">10. PAGE TEN</a></li>
+    <div class="flex items-center justify-between pb-6 border-b border-neutral-800">
+      <span class="font-mono text-xs tracking-widest text-neutral-500 font-bold">NAVIGATION</span>
+      <button id="close-drawer" class="text-neutral-400 hover:text-red-500 text-2xl font-bold transition-colors">&times;</button>
+    </div>
+
+    <ul class="flex flex-col gap-4 mt-6 font-mono text-sm">
+      <li>
+        <button id="nav-typo" class="text-red-500 font-bold hover:text-red-400 transition-colors flex items-center gap-2">
+          <span>01.</span> TYPOGRAPHY LOG (AUTO-WRAP)
+        </button>
+      </li>
+      <li>
+        <button id="nav-photos" class="text-neutral-400 hover:text-white transition-colors flex items-center gap-2">
+          <span>02.</span> PHOTO GALLERY
+        </button>
+      </li>
     </ul>
+
+    <div class="mt-auto border-t border-neutral-800 pt-6 font-mono text-xs text-neutral-500 space-y-2">
+      <div>TOTAL LOGS: <span id="drawer-log-count" class="text-white font-bold">0</span></div>
+      <div>SCREEN COVERAGE: <span class="text-green-400 font-bold">100% INLINE FLOW</span></div>
+      <p class="text-[10px] text-neutral-600 mt-4">Tekst volgt op elkaar en springt automatisch naar de volgende regel bij de schermrand.</p>
+    </div>
   </nav>
 
-  <!-- Typography Canvas -->
-  <main class="typography-container" id="log-display">
-    <!-- Rendered dynamically via script.js -->
+  <!-- VIEW 1: Fullscreen Dynamic Typography Canvas -->
+  <main id="view-typography" class="typography-canvas">
+    <!-- Dynamic words populated by JS -->
   </main>
 
-  <!-- Modal for adding new observations -->
-  <div id="observation-modal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h2>ADD NEW OBSERVATION</h2>
-      <form id="add-log-form">
-        <label for="input-day">DAY & DATE (E.G. MON 5 OCT):</label>
-        <input type="text" id="input-day" required placeholder="MON 5 OCT">
+  <!-- VIEW 2: Photo Gallery (Hidden by default) -->
+  <main id="view-photos" class="hidden w-vw h-[calc(100vh-60px)] mt-[60px] p-6 overflow-y-auto custom-scroll">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="photo-grid">
+      <!-- Photos populated by JS -->
+    </div>
+  </main>
 
-        <label for="input-time">TIME (E.G. 2AM / 14:30):</label>
-        <input type="text" id="input-time" required placeholder="2AM">
-
-        <label for="input-text">OBSERVATION DETAILS:</label>
-        <textarea id="input-text" rows="4" required placeholder="5 PEOPLE WALKING NORTH TO SOUTH YELLING AND SINGING LOUD"></textarea>
-
-        <div class="form-actions">
-          <button type="button" id="close-modal" class="btn">CANCEL</button>
-          <button type="submit" class="btn btn-primary">SUBMIT</button>
+  <!-- Modal 1: Add New Log Modal -->
+  <div id="add-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[3000] flex items-center justify-center p-4 hidden">
+    <div class="bg-neutral-900 border border-neutral-700 w-full max-w-md p-6 rounded-lg shadow-2xl">
+      <h2 class="font-mono text-lg font-bold text-white mb-4 border-b border-neutral-800 pb-2 flex items-center justify-between">
+        <span>+ NEW STREET OBSERVATION</span>
+        <span class="text-xs text-red-500 font-normal">AUTO FIT</span>
+      </h2>
+      <form id="add-log-form" class="space-y-4 font-mono text-xs">
+        <div>
+          <label class="block text-neutral-400 mb-1">DAY & DATE (E.G. FRI 9 OCT)</label>
+          <input type="text" id="input-day" required placeholder="FRI 9 OCT" class="w-full bg-black border border-neutral-700 text-white p-2.5 rounded focus:outline-none focus:border-red-500 uppercase">
+        </div>
+        <div>
+          <label class="block text-neutral-400 mb-1">TIME (E.G. 03:15 AM)</label>
+          <input type="text" id="input-time" required placeholder="03:15 AM" class="w-full bg-black border border-neutral-700 text-white p-2.5 rounded focus:outline-none focus:border-red-500 uppercase">
+        </div>
+        <div>
+          <label class="block text-neutral-400 mb-1">OBSERVATION DETAILS</label>
+          <textarea id="input-text" rows="3" required placeholder="GROUP WALKING WITH LOUD MUSIC AND FLASH LIGHTS" class="w-full bg-black border border-neutral-700 text-white p-2.5 rounded focus:outline-none focus:border-red-500 uppercase"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="close-add-modal" class="px-4 py-2 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 rounded transition-colors">CANCEL</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded transition-colors">ADD ENTRY</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Detail Information Modal -->
-  <div id="info-modal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h2 id="info-title">OBSERVATION DETAILS</h2>
-      <p id="info-time" style="font-family: monospace; color: #ff3333; margin-bottom: 10px;"></p>
-      <p id="info-text" style="font-family: monospace; line-height: 1.5; color: #ffffff;"></p>
-      <div class="form-actions">
-        <button type="button" id="close-info-modal" class="btn btn-primary">CLOSE</button>
+  <!-- Modal 2: Observation Detail View Modal -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[3000] flex items-center justify-center p-4 hidden">
+    <div class="bg-neutral-950 border border-neutral-800 w-full max-w-lg p-8 rounded-lg shadow-2xl relative">
+      <button id="close-detail-modal" class="absolute top-4 right-4 text-neutral-500 hover:text-white text-2xl font-mono">&times;</button>
+      <div class="font-mono text-xs text-red-500 font-bold mb-2 uppercase tracking-widest" id="detail-timestamp">MON 5 OCT — 2AM</div>
+      <h3 class="font-sans text-2xl sm:text-3xl font-bold uppercase leading-tight text-white mb-6" id="detail-text">
+        5 PEOPLE WALKING NORTH TO SOUTH YELLING AND SINGING LOUD
+      </h3>
+      <div class="border-t border-neutral-800 pt-4 flex justify-between items-center font-mono text-xs text-neutral-500">
+        <span>STATUS: LOGGED</span>
+        <span class="text-neutral-400">CLICK ANYWHERE TO CLOSE</span>
       </div>
     </div>
   </div>
 
+  <script src="script.js"></script>
 </body>
 </html>
