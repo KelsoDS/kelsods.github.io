@@ -1,53 +1,75 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Straat Observaties - Foto's</title>
+  <title>Street Observations — Photographs</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body class="photos-page">
 
-  <!-- Navigatie & Besturing -->
+  <!-- Floating Control Panel -->
   <header class="control-panel">
-    <div class="panel-brand">OBSERVATIE LOG v1.0 / FOTO'S</div>
-    <nav class="nav-links">
-      <a href="index.html" class="btn"> Typografie</a>
-      <a href="photos.html" class="btn btn-primary"> Foto's</a>
-    </nav>
+    <div class="panel-left">
+      <!-- Hamburger Menu Button -->
+      <button id="menu-toggle" class="btn btn-icon" aria-label="Toggle Menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      <div class="panel-brand">OBSERVATION LOG v1.0</div>
+    </div>
   </header>
 
-  <!-- Fotogrid -->
+  <!-- Navigation Drawer (Hamburger Menu) -->
+  <nav id="nav-drawer" class="nav-drawer hidden">
+    <button id="close-drawer" class="drawer-close">&times;</button>
+    <div class="drawer-title">PAGES</div>
+    <ul class="drawer-links">
+      <li><a href="index.html">01. TYPOGRAPHY</a></li>
+      <li><a href="photos.html" class="active">02. PHOTOGRAPHS</a></li>
+      <li><a href="#">03. PAGE THREE</a></li>
+      <li><a href="#">04. PAGE FOUR</a></li>
+      <li><a href="#">05. PAGE FIVE</a></li>
+      <li><a href="#">06. PAGE SIX</a></li>
+      <li><a href="#">07. PAGE SEVEN</a></li>
+      <li><a href="#">08. PAGE EIGHT</a></li>
+      <li><a href="#">09. PAGE NINE</a></li>
+      <li><a href="#">10. PAGE TEN</a></li>
+    </ul>
+  </nav>
+
+  <!-- Photo Grid -->
   <main class="photo-grid-container">
     <div class="photo-grid">
 
-      <div class="photo-card" data-date="MON 5 OCT 2AM" data-desc="5 mensen wandelend naar het zuiden">
-        <img src="https://picsum.photos/800/1000?random=1" alt="Voorbijgangers MON 5 OCT">
+      <div class="photo-card" data-date="MON 5 OCT 2AM" data-desc="5 PEOPLE WALKING SOUTH">
+        <img src="https://picsum.photos/800/1000?random=1" alt="Passersby MON 5 OCT">
         <div class="photo-overlay">
           <span class="photo-tag">MON 5 OCT — 2AM</span>
           <p>5 PEOPLE WALKING SOUTH</p>
         </div>
       </div>
 
-      <div class="photo-card" data-date="TUE 6 OCT 10PM" data-desc="1 persoon stopt om schoen te strikken">
-        <img src="https://picsum.photos/800/1000?random=2" alt="Voorbijganger TUE 6 OCT">
+      <div class="photo-card" data-date="TUE 6 OCT 10PM" data-desc="STOPPED TO TIE SHOES">
+        <img src="https://picsum.photos/800/1000?random=2" alt="Passersby TUE 6 OCT">
         <div class="photo-overlay">
           <span class="photo-tag">TUE 6 OCT — 10PM</span>
           <p>STOPPED TO TIE SHOES</p>
         </div>
       </div>
 
-      <div class="photo-card" data-date="WED 7 OCT 8PM" data-desc="Rode hoodie en slippers">
-        <img src="https://picsum.photos/800/1000?random=3" alt="Voorbijganger WED 7 OCT">
+      <div class="photo-card" data-date="WED 7 OCT 8PM" data-desc="RED HOODIE & SLIPPERS">
+        <img src="https://picsum.photos/800/1000?random=3" alt="Passersby WED 7 OCT">
         <div class="photo-overlay">
           <span class="photo-tag">WED 7 OCT — 8PM</span>
           <p>RED HOODIE & SLIPPERS</p>
         </div>
       </div>
 
-      <div class="photo-card" data-date="THU 8 OCT 1AM" data-desc="2 dronken mensen in discussie">
-        <img src="https://picsum.photos/800/1000?random=4" alt="Voorbijgangers THU 8 OCT">
+      <div class="photo-card" data-date="THU 8 OCT 1AM" data-desc="HEATED ARGUMENT">
+        <img src="https://picsum.photos/800/1000?random=4" alt="Passersby THU 8 OCT">
         <div class="photo-overlay">
           <span class="photo-tag">THU 8 OCT — 1AM</span>
           <p>HEATED ARGUMENT</p>
@@ -57,10 +79,10 @@
     </div>
   </main>
 
-  <!-- Lightbox (Grote weergave bij klik) -->
+  <!-- Lightbox -->
   <div id="lightbox" class="lightbox hidden">
     <span id="close-lightbox" class="lightbox-close">&times;</span>
-    <img id="lightbox-img" src="" alt="Vergrote foto">
+    <img id="lightbox-img" src="" alt="Enlarged photo">
     <div id="lightbox-caption" class="lightbox-caption"></div>
   </div>
 
