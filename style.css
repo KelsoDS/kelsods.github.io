@@ -4,7 +4,7 @@
   padding: 0;
 }
 
-/* Scrollen volledig uitschakelen */
+/* Scrollen volledig uitschakelen op de hoofd-pagina */
 html, body {
   width: 100%;
   height: 100%;
@@ -104,7 +104,7 @@ html, body {
   background-color: #000000;
 }
 
-/* Navigation Drawer (Sluiting gegarandeerd met translateX(-100%)) */
+/* Navigation Drawer - STANDAARD GESLOTEN */
 .nav-drawer {
   position: fixed;
   top: 0;
@@ -117,10 +117,11 @@ html, body {
   padding: 40px 25px;
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-100%) !important;
+  transition: transform 0.3s ease-in-out;
 }
 
+/* ALLEEN OPEN WANNEER DE KLASSE .open ACTIEF IS */
 .nav-drawer.open {
   transform: translateX(0) !important;
 }
@@ -166,7 +167,7 @@ html, body {
   font-weight: bold;
 }
 
-/* Typography Container (Geen Scroll, dynamische hoogte) */
+/* Typography Container */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
@@ -212,7 +213,7 @@ body.solid-style .log-word {
   -webkit-text-stroke: 0px transparent !important;
 }
 
-/* Hover Effect in SOLID modus -> ZEKER Rood met gloed */
+/* Hover Effect in SOLID modus -> Rood met gloed */
 body.solid-style .log-word:hover {
   color: #ff3333 !important;
   -webkit-text-stroke: 0px transparent !important;
@@ -278,103 +279,3 @@ body.drift-mode .log-row:nth-child(odd) {
 .photo-overlay {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 20px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.9));
-  font-family: monospace;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.photo-tag {
-  font-size: 0.75rem;
-  color: #888888;
-}
-
-.photo-overlay p {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-/* Lightbox & Modals */
-.lightbox, .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-
-.lightbox.hidden, .modal-overlay.hidden {
-  display: none !important;
-}
-
-.lightbox img {
-  max-width: 90vw;
-  max-height: 80vh;
-  border: 1px solid #333;
-  object-fit: contain;
-}
-
-.lightbox-caption {
-  margin-top: 15px;
-  font-family: monospace;
-  color: #cccccc;
-  font-size: 1rem;
-}
-
-.lightbox-close {
-  position: absolute;
-  top: 20px;
-  right: 35px;
-  font-size: 2.5rem;
-  color: #ffffff;
-  cursor: pointer;
-}
-
-.modal-card {
-  background: #111111;
-  padding: 30px;
-  border: 1px solid #333333;
-  width: 90%;
-  max-width: 500px;
-}
-
-.modal-card h2 {
-  font-family: monospace;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-}
-
-.modal-card label {
-  display: block;
-  margin-top: 15px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: #aaaaaa;
-}
-
-.modal-card input, .modal-card textarea {
-  width: 100%;
-  background: #000000;
-  border: 1px solid #444444;
-  color: #ffffff;
-  padding: 10px;
-  margin-top: 5px;
-  font-family: monospace;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 25px;
-}
