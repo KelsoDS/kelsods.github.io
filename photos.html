@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Straat Observaties - Foto's</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body class="photos-page">
+
+  <!-- Navigatie & Besturing -->
+  <header class="control-panel">
+    <div class="panel-brand">OBSERVATIE LOG v1.0 / FOTO'S</div>
+    <nav class="nav-links">
+      <a href="index.html" class="btn"> Typografie</a>
+      <a href="photos.html" class="btn btn-primary"> Foto's</a>
+    </nav>
+  </header>
+
+  <!-- Fotogrid -->
+  <main class="photo-grid-container">
+    <div class="photo-grid">
+
+      <div class="photo-card" data-date="MON 5 OCT 2AM" data-desc="5 mensen wandelend naar het zuiden">
+        <img src="https://picsum.photos/800/1000?random=1" alt="Voorbijgangers MON 5 OCT">
+        <div class="photo-overlay">
+          <span class="photo-tag">MON 5 OCT — 2AM</span>
+          <p>5 PEOPLE WALKING SOUTH</p>
+        </div>
+      </div>
+
+      <div class="photo-card" data-date="TUE 6 OCT 10PM" data-desc="1 persoon stopt om schoen te strikken">
+        <img src="https://picsum.photos/800/1000?random=2" alt="Voorbijganger TUE 6 OCT">
+        <div class="photo-overlay">
+          <span class="photo-tag">TUE 6 OCT — 10PM</span>
+          <p>STOPPED TO TIE SHOES</p>
+        </div>
+      </div>
+
+      <div class="photo-card" data-date="WED 7 OCT 8PM" data-desc="Rode hoodie en slippers">
+        <img src="https://picsum.photos/800/1000?random=3" alt="Voorbijganger WED 7 OCT">
+        <div class="photo-overlay">
+          <span class="photo-tag">WED 7 OCT — 8PM</span>
+          <p>RED HOODIE & SLIPPERS</p>
+        </div>
+      </div>
+
+      <div class="photo-card" data-date="THU 8 OCT 1AM" data-desc="2 dronken mensen in discussie">
+        <img src="https://picsum.photos/800/1000?random=4" alt="Voorbijgangers THU 8 OCT">
+        <div class="photo-overlay">
+          <span class="photo-tag">THU 8 OCT — 1AM</span>
+          <p>HEATED ARGUMENT</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Lightbox (Grote weergave bij klik) -->
+  <div id="lightbox" class="lightbox hidden">
+    <span id="close-lightbox" class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="Vergrote foto">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+</body>
+</html>
