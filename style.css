@@ -4,7 +4,7 @@
   padding: 0;
 }
 
-/* Scrollen uitschakelen */
+/* Scrollbars overal uitschakelen op de hoofdpagina */
 html, body {
   width: 100vw;
   height: 100vh;
@@ -160,44 +160,38 @@ html, body {
   font-weight: bold;
 }
 
-/* ------------------------------------------------------------- */
-/* TYPOGRAPHY CONTAINER — VOLLEDIGE BREEDTE & UITGEVULD (JUSTIFIED) */
-/* ------------------------------------------------------------- */
+/* TYPOGRAPHY CONTAINER (MET AUTO-SCALING) */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
   width: 100vw;
   padding: 10px 15px;
-  overflow: hidden;
-  
-  /* Uitvullen over gehele breedte */
+  overflow: hidden !important;
   text-align: justify;
   text-justify: inter-word;
   line-height: 0.95;
 }
 
-/* Zorg dat ook de laatste regel van de tekst uitgevuld kan worden als dat gewenst is */
 .typography-container::after {
   content: "";
   display: inline-block;
   width: 100%;
 }
 
-/* Woorden als doorlopende elementen */
 .log-word {
   display: inline-block;
-  font-size: clamp(2rem, 5vw, 4.5rem); /* Past zich aan op schermgrootte */
+  font-size: 1em; /* Maakt gebruik van de dynamische font-size van de container */
   text-transform: uppercase;
   color: transparent;
   -webkit-text-stroke: 1.5px #ffffff;
-  margin-right: 0.25em; /* Afstand tussen woorden */
+  margin-right: 0.2em;
   transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
   user-select: none;
   cursor: pointer;
   word-break: break-word;
 }
 
-/* Hover Effect -> Rood met gloed */
+/* Hover Effect */
 .log-word:hover {
   color: #ff3333 !important;
   -webkit-text-stroke: 1.5px #ff3333 !important;
@@ -219,7 +213,7 @@ body.solid-style .log-word:hover {
 /* Drift Animatie */
 @keyframes ambientDrift {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-5px); }
   100% { transform: translateY(0px); }
 }
 
@@ -231,7 +225,7 @@ body.drift-mode .log-word:nth-child(odd) {
   animation: ambientDrift 5s ease-in-out infinite reverse;
 }
 
-/* Modals & Lightbox */
+/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
