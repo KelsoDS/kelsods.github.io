@@ -3,88 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Street Observations — Photographs</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
-</head>
-<body class="photos-page">
+  
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-  <!-- Floating Control Panel -->
+  <title>Street Observations - Photo Gallery</title>
+  <link rel="stylesheet" href="style.css?v=5">
+</head>
+<body>
+
+  <!-- Navigation Drawer (Hamburger Menu) -->
+  <nav class="nav-drawer" id="nav-drawer">
+    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
+    <div class="drawer-title">NAVIGATION</div>
+    <ul class="drawer-links">
+      <li><a href="index.html">Typography Log</a></li>
+      <li><a href="photos.html" class="active">Photo Gallery</a></li>
+      <li><a href="#">Archive</a></li>
+    </ul>
+  </nav>
+
+  <!-- Top Control Bar -->
   <header class="control-panel">
     <div class="panel-left">
-      <!-- Hamburger Menu Button -->
-      <button id="menu-toggle" class="btn btn-icon" type="button" aria-label="Toggle Menu">
+      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
-      <div class="panel-brand">OBSERVATION LOG v1.0</div>
+      <span class="panel-brand">STREET OBSERVATIONS — PHOTO GALLERY</span>
     </div>
   </header>
 
-  <!-- Navigation Drawer (Hamburger Menu) -->
-  <nav id="nav-drawer" class="nav-drawer">
-    <button id="close-drawer" class="drawer-close" type="button">&times;</button>
-    <div class="drawer-title">PAGES</div>
-    <ul class="drawer-links">
-      <li><a href="index.html">01. TYPOGRAPHY</a></li>
-      <li><a href="photos.html" class="active">02. PHOTOGRAPHS</a></li>
-      <li><a href="#">03. PAGE THREE</a></li>
-      <li><a href="#">04. PAGE FOUR</a></li>
-      <li><a href="#">05. PAGE FIVE</a></li>
-      <li><a href="#">06. PAGE SIX</a></li>
-      <li><a href="#">07. PAGE SEVEN</a></li>
-      <li><a href="#">08. PAGE EIGHT</a></li>
-      <li><a href="#">09. PAGE NINE</a></li>
-      <li><a href="#">10. PAGE TEN</a></li>
-    </ul>
-  </nav>
-
-  <!-- Photo Grid -->
-  <main class="photo-grid-container">
-    <div class="photo-grid">
-
-      <div class="photo-card" data-date="MON 5 OCT 2AM" data-desc="5 PEOPLE WALKING SOUTH">
-        <img src="https://picsum.photos/800/1000?random=1" alt="Passersby MON 5 OCT">
-        <div class="photo-overlay">
-          <span class="photo-tag">MON 5 OCT — 2AM</span>
-          <p>5 PEOPLE WALKING SOUTH</p>
-        </div>
-      </div>
-
-      <div class="photo-card" data-date="TUE 6 OCT 10PM" data-desc="STOPPED TO TIE SHOES">
-        <img src="https://picsum.photos/800/1000?random=2" alt="Passersby TUE 6 OCT">
-        <div class="photo-overlay">
-          <span class="photo-tag">TUE 6 OCT — 10PM</span>
-          <p>STOPPED TO TIE SHOES</p>
-        </div>
-      </div>
-
-      <div class="photo-card" data-date="WED 7 OCT 8PM" data-desc="RED HOODIE & SLIPPERS">
-        <img src="https://picsum.photos/800/1000?random=3" alt="Passersby WED 7 OCT">
-        <div class="photo-overlay">
-          <span class="photo-tag">WED 7 OCT — 8PM</span>
-          <p>RED HOODIE & SLIPPERS</p>
-        </div>
-      </div>
-
-      <div class="photo-card" data-date="THU 8 OCT 1AM" data-desc="HEATED ARGUMENT">
-        <img src="https://picsum.photos/800/1000?random=4" alt="Passersby THU 8 OCT">
-        <div class="photo-overlay">
-          <span class="photo-tag">THU 8 OCT — 1AM</span>
-          <p>HEATED ARGUMENT</p>
-        </div>
-      </div>
-
-    </div>
+  <!-- Gallery Main Container -->
+  <main style="margin-top: 80px; padding: 25px; font-family: monospace;">
+    <h2>PHOTO GALLERY</h2>
+    <p style="color: #888; margin-top: 10px;">Gallery page loaded successfully.</p>
   </main>
 
-  <!-- Lightbox for enlarged photos -->
-  <div id="lightbox" class="lightbox hidden">
-    <span id="close-lightbox" class="lightbox-close">&times;</span>
-    <img id="lightbox-img" src="" alt="Enlarged photo">
-    <div id="lightbox-caption" class="lightbox-caption"></div>
-  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const menuToggle = document.getElementById("menu-toggle");
+      const navDrawer = document.getElementById("nav-drawer");
+      const closeDrawer = document.getElementById("close-drawer");
 
+      if (menuToggle && navDrawer) {
+        menuToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navDrawer.classList.toggle("open");
+        });
+      }
+
+      if (closeDrawer && navDrawer) {
+        closeDrawer.addEventListener("click", () => {
+          navDrawer.classList.remove("open");
+        });
+      }
+
+      document.addEventListener("click", (e) => {
+        if (navDrawer && navDrawer.classList.contains("open")) {
+          if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
+            navDrawer.classList.remove("open");
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>
