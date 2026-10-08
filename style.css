@@ -4,10 +4,10 @@
   padding: 0;
 }
 
-/* Scrollen volledig uitschakelen op de hoofd-pagina */
+/* Scrollen volledig uitschakelen */
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden !important;
   background-color: #000000;
   color: #ffffff;
@@ -121,7 +121,6 @@ html, body {
   transition: transform 0.3s ease-in-out;
 }
 
-/* ALLEEN OPEN WANNEER DE KLASSE .open ACTIEF IS */
 .nav-drawer.open {
   transform: translateX(0) !important;
 }
@@ -167,115 +166,24 @@ html, body {
   font-weight: bold;
 }
 
-/* Typography Container */
+/* Typography Container — Verdeelt de tekst over het scherm */
 .typography-container {
   margin-top: 60px;
   height: calc(100vh - 60px);
-  width: 100%;
-  padding: 15px 25px;
+  width: 100vw;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  align-items: stretch;
   overflow: hidden;
 }
 
+/* Tekstregels die niet buiten het scherm vallen */
 .log-row {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  line-height: 0.85;
-}
-
-/* Basisschrift: Outline */
-.log-word {
-  font-size: var(--dynamic-font-size, 3.5rem);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #ffffff;
-  transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
-  user-select: none;
-  cursor: pointer;
-}
-
-/* Hover Effect in OUTLINE modus -> Rood met gloed */
-.log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 1.5px #ff3333 !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
-}
-
-/* SOLID modus stijl */
-body.solid-style .log-word {
-  color: #ffffff !important;
-  -webkit-text-stroke: 0px transparent !important;
-}
-
-/* Hover Effect in SOLID modus -> Rood met gloed */
-body.solid-style .log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 0px transparent !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
-}
-
-/* Animation Drift Animatie */
-@keyframes ambientDrift {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-body.drift-mode .log-row:nth-child(even) {
-  animation: ambientDrift 4s ease-in-out infinite;
-}
-
-body.drift-mode .log-row:nth-child(odd) {
-  animation: ambientDrift 6s ease-in-out infinite reverse;
-}
-
-/* Photo Page Stijlen */
-.photo-grid-container {
-  margin-top: 60px;
-  padding: 30px;
-  height: calc(100vh - 60px);
-  overflow-y: auto !important;
-}
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-}
-
-.photo-card {
-  position: relative;
-  overflow: hidden;
-  background: #111;
-  border: 1px solid #222;
-  aspect-ratio: 4 / 5;
-  cursor: pointer;
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.photo-card:hover {
-  transform: translateY(-4px);
-  border-color: #ff3333;
-}
-
-.photo-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(100%) contrast(120%);
-  transition: filter 0.4s ease;
-}
-
-.photo-card:hover img {
-  filter: grayscale(0%) contrast(100%);
-}
-
-.photo-overlay {
-  position: absolute;
-  bottom: 0;
+  line-height
