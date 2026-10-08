@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
+  const togglePixelBtn = document.getElementById("toggle-pixel");
   const toggleModalBtn = document.getElementById("toggle-modal");
   const closeModalBtn = document.getElementById("close-modal");
   const modal = document.getElementById("observation-modal");
@@ -66,10 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
 
-        words.forEach(word => {
+        words.forEach((word) => {
           const span = document.createElement("span");
           span.className = "log-word";
           span.textContent = word;
+
+          // Ongeveer 25% kans dat een woord een pixel-font krijgt
+          if (Math.random() < 0.25) {
+            span.classList.add("pixelated");
+          }
 
           span.addEventListener("click", () => {
             if (infoModal) {
@@ -147,6 +153,24 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleDriftBtn.addEventListener("click", () => {
         document.body.classList.toggle("drift-mode");
         toggleDriftBtn.classList.toggle("active-mode");
+      });
+    }
+
+    if (togglePixelBtn) {
+      togglePixelBtn.addEventListener("click", () => {
+        document.body.classList.toggle("pixel-mode");
+        togglePixelBtn.classList.toggle("active-mode");
+
+        // Herverdeelt de pixel-woorden willekeurig bij het aanklikken
+        const allWords = container.querySelectorAll(".log-word");
+        allWords.forEach(word => {
+          if (Math.random() < 0.3) {
+            word.classList.add("pixelated");
+          } else {
+            word.classList.remove("pixelated");
+          }
+        });
+        adjustTypographyScale();
       });
     }
 
