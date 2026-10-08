@@ -84,11 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
-      // Voer het schaalalgoritme uit zodra alle elementen op de pagina staan
       setTimeout(adjustTypographyScale, 50);
     }
 
-    // Binary search auto-scaling algoritme
     function adjustTypographyScale() {
       const words = container.querySelectorAll(".log-word");
       if (!words.length) return;
