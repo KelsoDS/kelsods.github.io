@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. TYPOGRAPHY CANVAS WITH AUTO-SCALING TO FIT SCREEN EXACTLY
+  // 2. TYPOGRAPHY RENDER MET AUTOMATISCHE SCHALING
   const container = document.getElementById("log-display");
   const toggleStyleBtn = document.getElementById("toggle-style");
   const toggleDriftBtn = document.getElementById("toggle-drift");
@@ -54,31 +54,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeInfoModalBtn = document.getElementById("close-info-modal");
 
   if (container) {
-    function fitTextToScreen() {
-      // Start met een grote lettergrootte (px)
-      let fontSize = 90; 
-      container.style.fontSize = `${fontSize}px`;
-
-      const maxHeight = container.clientHeight;
-      const maxWidth = container.clientWidth;
-
-      // Verklein de lettergrootte stapsgewijs zolang de tekst de hoogte of breedte overschrijdt
-      while ((container.scrollHeight > maxHeight || container.scrollWidth > maxWidth) && fontSize > 8) {
-        fontSize -= 1;
-        container.style.fontSize = `${fontSize}px`;
-      }
-    }
-
     function renderLogs() {
       container.innerHTML = "";
+
+      const totalRows = observations.length;
+      
+      // Bepaal de lettergrootte op basis van het aantal rijen én de schermhoogte
+      // Hoe meer items erbij komen, hoe kleiner de 'vh' schaal wordt
+      const baseFontSize = Math.max(1, Math.min(6, (70 / totalRows) / 2));
 
       observations.forEach(item => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
 
+        const row = document.createElement("div");
+        row.className = "log-row";
+
         words.forEach(word => {
           const span = document.createElement("span");
           span.className = "log-word";
+          span.style.setProperty("--dynamic-font-size", `${baseFontSize}vh`);
           span.textContent = word;
 
           span.addEventListener("click", () => {
@@ -89,12 +84,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
 
-          container.appendChild(span);
+          row.appendChild(span);
         });
-      });
 
-      // Schaal de tekst direct na het renderen zodat het op het scherm past
-      fitTextToScreen();
+        container.appendChild(row);
+      });
     }
 
     if (toggleStyleBtn) {
@@ -145,8 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Herbereken de schaal bij schermformaat-wijzigingen
-    window.addEventListener("resize", fitTextToScreen);
+    window.addEventListener("resize", renderLogs);
 
     renderLogs();
   }
