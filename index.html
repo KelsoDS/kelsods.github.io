@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
@@ -55,10 +55,10 @@
   <!-- Mobile Swipe Indicator -->
   <div class="swipe-hint" id="swipe-hint">SWIPE LEFT/RIGHT ➔</div>
 
-  <!-- Modal: Add Observation -->
+  <!-- Modal: Add / Edit Observation -->
   <div class="modal-overlay hidden" id="observation-modal">
     <div class="modal-card">
-      <h2>ADD NEW OBSERVATION</h2>
+      <h2 id="modal-title">ADD NEW OBSERVATION</h2>
       <form id="add-log-form">
         <label for="input-day">DAY (E.G. FRI 9 OCT)</label>
         <input type="text" id="input-day" required placeholder="FRI 9 OCT">
@@ -71,7 +71,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn" id="close-modal">CANCEL</button>
-          <button type="submit" class="btn btn-primary">ADD</button>
+          <button type="submit" class="btn btn-primary" id="form-submit-btn">ADD</button>
         </div>
       </form>
     </div>
@@ -83,13 +83,16 @@
       <h2 id="info-time">--</h2>
       <p id="info-text" style="font-family: monospace; color: #ccc; margin-top: 15px;"></p>
       
-      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px;">
-        <button type="button" class="btn btn-danger" id="delete-current-info">DELETE OBSERVATION</button>
+      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-danger" id="delete-current-info">DELETE</button>
+          <button type="button" class="btn" id="edit-current-info">EDIT</button>
+        </div>
         <button type="button" class="btn" id="close-info-modal">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <script src="script.js?v=24"></script>
+  <script src="script.js?v=25"></script>
 </body>
 </html>
