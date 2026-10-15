@@ -256,13 +256,13 @@ body.drift-mode .log-word:nth-child(odd) {
   animation: pixelGlitch 0.2s steps(2, start) infinite;
 }
 
-/* Swipe Indicator voor mobiel */
+/* Swipe Indicator */
 .swipe-hint {
   display: none;
 }
 
-/* MOBIELE WEERGAVE (< 768px): 1 observatie per scherm, vullend, swipebaar */
-@media (max-width: 768px) {
+/* MOBIELE WEERGAVE (< 701px): 1 observatie per scherm, vullend, swipebaar */
+@media (max-width: 700px) {
   .typography-container {
     display: block;
     position: relative;
