@@ -62,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      let wordCounter = 0;
+
       observations.forEach((item, index) => {
         const fullText = `${item.day} ${item.time} ${item.text}`;
         const words = fullText.split(" ");
@@ -70,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const span = document.createElement("span");
           span.className = "log-word";
           span.textContent = word;
+          span.setAttribute("data-word-id", `w-${wordCounter++}`);
 
           span.addEventListener("click", () => {
             if (infoModal) {
@@ -118,12 +121,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Glitch loop die feilloos aan- en uitschakelt zonder de schaling te verstoren
+    // Feilloze Glitch Loop: zet pixelated aan en haalt het na exact 2 seconden gegarandeerd weer weg
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
 
-      // Kies 1 of 2 willekeurige woorden die nog niet glitchen
       const normalWords = Array.from(allWords).filter(w => !w.classList.contains("pixelated"));
       if (normalWords.length === 0) return;
 
@@ -133,15 +135,17 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; i < count; i++) {
         const randomIndex = Math.floor(Math.random() * normalWords.length);
         targetWords.push(normalWords[randomIndex]);
-        normalWords.splice(randomIndex, 1); // Zorg dat we niet dezelfde kiezen
+        normalWords.splice(randomIndex, 1);
       }
 
-      // Zet pixelated aan (glitch begint)
+      // Start pixel glitch
       targetWords.forEach(word => word.classList.add("pixelated"));
 
-      // Na exact 2 seconden direct weer netjes uitzetten
+      // Herstel na precies 2 seconden naar normaal
       setTimeout(() => {
-        targetWords.forEach(word => word.classList.remove("pixelated"));
+        targetWords.forEach(word => {
+          if (word) word.classList.remove("pixelated");
+        });
       }, 2000);
 
     }, 3500);
