@@ -7,6 +7,7 @@ const defaultObservations = [
 
 let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
 let selectedObservationIndex = null;
+let currentMobileSlide = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -62,66 +63,152 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      let wordCounter = 0;
+      const isMobile = window.innerWidth <= 768;
 
-      observations.forEach((item, index) => {
-        const fullText = `${item.day} ${item.time} ${item.text}`;
-        const words = fullText.split(" ");
+      if (isMobile) {
+        // Mobiele modus: per observatie een aparte vullende slide container
+        observations.forEach((item, index) => {
+          const card = document.createElement("div");
+          card.className = `observation-card ${index === currentMobileSlide ? "active-slide" : ""}`;
+          card.setAttribute("data-slide-index", index);
 
-        words.forEach((word) => {
-          const span = document.createElement("span");
-          span.className = "log-word";
-          span.textContent = word;
-          span.setAttribute("data-word-id", `w-${wordCounter++}`);
+          const fullText = `${item.day} ${item.time} ${item.text}`;
+          const words = fullText.split(" ");
 
-          span.addEventListener("click", () => {
-            if (infoModal) {
-              selectedObservationIndex = index;
-              infoTime.textContent = `${item.day} — ${item.time}`;
-              infoText.textContent = item.text;
-              infoModal.classList.remove("hidden");
-            }
+          words.forEach((word) => {
+            const span = document.createElement("span");
+            span.className = "log-word";
+            span.textContent = word;
+
+            span.addEventListener("click", () => {
+              if (infoModal) {
+                selectedObservationIndex = index;
+                infoTime.textContent = `${item.day} — ${item.time}`;
+                infoText.textContent = item.text;
+                infoModal.classList.remove("hidden");
+              }
+            });
+
+            card.appendChild(span);
           });
 
-          container.appendChild(span);
+          container.appendChild(card);
         });
-      });
+
+      } else {
+        // Desktop modus: alle woorden vullen het scherm
+        observations.forEach((item, index) => {
+          const fullText = `${item.day} ${item.time} ${item.text}`;
+          const words = fullText.split(" ");
+
+          words.forEach((word) => {
+            const span = document.createElement("span");
+            span.className = "log-word";
+            span.textContent = word;
+
+            span.addEventListener("click", () => {
+              if (infoModal) {
+                selectedObservationIndex = index;
+                infoTime.textContent = `${item.day} — ${item.time}`;
+                infoText.textContent = item.text;
+                infoModal.classList.remove("hidden");
+              }
+            });
+
+            container.appendChild(span);
+          });
+        });
+      }
 
       setTimeout(adjustTypographyScale, 50);
     }
 
     function adjustTypographyScale() {
-      const words = container.querySelectorAll(".log-word");
-      if (!words.length) return;
+      const isMobile = window.innerWidth <= 768;
 
-      const availHeight = container.clientHeight;
-      let minFontPx = 10;
-      let maxFontPx = 250;
-      let optimalPx = minFontPx;
+      if (isMobile) {
+        const activeCard = container.querySelector(".observation-card.active-slide");
+        if (!activeCard) return;
+        const words = activeCard.querySelectorAll(".log-word");
+        if (!words.length) return;
 
-      while (minFontPx <= maxFontPx) {
-        const midPx = Math.floor((minFontPx + maxFontPx) / 2);
-        
-        words.forEach(word => {
-          word.style.fontSize = `${midPx}px`;
-        });
+        const availHeight = container.clientHeight - 40;
+        let minFontPx = 12;
+        let maxFontPx = 150;
+        let optimalPx = minFontPx;
 
-        const totalScrollHeight = container.scrollHeight;
+        while (minFontPx <= maxFontPx) {
+          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
+          words.forEach(word => word.style.fontSize = `${midPx}px`);
 
-        if (totalScrollHeight <= availHeight) {
-          optimalPx = midPx;
-          minFontPx = midPx + 1;
-        } else {
-          maxFontPx = midPx - 1;
+          if (activeCard.scrollHeight <= availHeight) {
+            optimalPx = midPx;
+            minFontPx = midPx + 1;
+          } else {
+            maxFontPx = midPx - 1;
+          }
         }
-      }
 
-      words.forEach(word => {
-        word.style.fontSize = `${optimalPx}px`;
-      });
+        words.forEach(word => word.style.fontSize = `${optimalPx}px`);
+
+      } else {
+        const words = container.querySelectorAll(".log-word");
+        if (!words.length) return;
+
+        const availHeight = container.clientHeight;
+        let minFontPx = 10;
+        let maxFontPx = 250;
+        let optimalPx = minFontPx;
+
+        while (minFontPx <= maxFontPx) {
+          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
+          words.forEach(word => word.style.fontSize = `${midPx}px`);
+
+          if (container.scrollHeight <= availHeight) {
+            optimalPx = midPx;
+            minFontPx = midPx + 1;
+          } else {
+            maxFontPx = midPx - 1;
+          }
+        }
+
+        words.forEach(word => word.style.fontSize = `${optimalPx}px`);
+      }
     }
 
-    // Feilloze Glitch Loop: zet pixelated aan en haalt het na exact 2 seconden gegarandeerd weer weg
+    // Swipe / Touch detectie voor mobiel (rechts naar links vegen en vice versa)
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    container.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    container.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      if (window.innerWidth > 768) return;
+      const swipeThreshold = 50;
+
+      if (touchEndX < touchStartX - swipeThreshold) {
+        // Vegen naar links -> Volgende observatie
+        if (currentMobileSlide < observations.length - 1) {
+          currentMobileSlide++;
+          renderLogs();
+        }
+      } else if (touchEndX > touchStartX + swipeThreshold) {
+        // Vegen naar rechts -> Vorige observatie
+        if (currentMobileSlide > 0) {
+          currentMobileSlide--;
+          renderLogs();
+        }
+      }
+    }
+
+    // Glitch loop voor willekeurige pixelated woorden
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
@@ -138,10 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
         normalWords.splice(randomIndex, 1);
       }
 
-      // Start pixel glitch
       targetWords.forEach(word => word.classList.add("pixelated"));
 
-      // Herstel na precies 2 seconden naar normaal
       setTimeout(() => {
         targetWords.forEach(word => {
           if (word) word.classList.remove("pixelated");
@@ -153,6 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function deleteObservation(index) {
       if (index !== null && index >= 0 && index < observations.length) {
         observations.splice(index, 1);
+        if (currentMobileSlide >= observations.length) {
+          currentMobileSlide = Math.max(0, observations.length - 1);
+        }
         localStorage.setItem("street_observations", JSON.stringify(observations));
         renderLogs();
       }
@@ -209,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = document.getElementById("input-text").value;
 
         observations.push({ day, time, text });
+        currentMobileSlide = observations.length - 1; // Spring direct naar de nieuwe observatie
         localStorage.setItem("street_observations", JSON.stringify(observations));
 
         renderLogs();
@@ -217,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    window.addEventListener("resize", adjustTypographyScale);
+    window.addEventListener("resize", renderLogs);
 
     renderLogs();
   }
