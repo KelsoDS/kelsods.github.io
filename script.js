@@ -63,14 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 700;
 
       if (isMobile) {
-        // Mobiele modus: per observatie een aparte vullende slide container
         observations.forEach((item, index) => {
           const card = document.createElement("div");
           card.className = `observation-card ${index === currentMobileSlide ? "active-slide" : ""}`;
-          card.setAttribute("data-slide-index", index);
 
           const fullText = `${item.day} ${item.time} ${item.text}`;
           const words = fullText.split(" ");
@@ -96,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
       } else {
-        // Desktop modus: alle woorden vullen het scherm
         observations.forEach((item, index) => {
           const fullText = `${item.day} ${item.time} ${item.text}`;
           const words = fullText.split(" ");
@@ -124,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function adjustTypographyScale() {
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 700;
 
       if (isMobile) {
         const activeCard = container.querySelector(".observation-card.active-slide");
@@ -176,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Swipe / Touch detectie voor mobiel (rechts naar links vegen en vice versa)
+    // Touch / Swipe detectie voor mobiel (< 701px)
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -190,17 +187,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: true });
 
     function handleSwipe() {
-      if (window.innerWidth > 768) return;
+      if (window.innerWidth > 700) return;
       const swipeThreshold = 50;
 
       if (touchEndX < touchStartX - swipeThreshold) {
-        // Vegen naar links -> Volgende observatie
+        // Swipe links -> Volgende observatie
         if (currentMobileSlide < observations.length - 1) {
           currentMobileSlide++;
           renderLogs();
         }
       } else if (touchEndX > touchStartX + swipeThreshold) {
-        // Vegen naar rechts -> Vorige observatie
+        // Swipe rechts -> Vorige observatie
         if (currentMobileSlide > 0) {
           currentMobileSlide--;
           renderLogs();
@@ -208,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Glitch loop voor willekeurige pixelated woorden
+    // Glitch loop voor willekeurige pixelated woorden met 2 seconden herstel
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
@@ -297,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = document.getElementById("input-text").value;
 
         observations.push({ day, time, text });
-        currentMobileSlide = observations.length - 1; // Spring direct naar de nieuwe observatie
+        currentMobileSlide = observations.length - 1;
         localStorage.setItem("street_observations", JSON.stringify(observations));
 
         renderLogs();
