@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const isMobile = window.innerWidth <= 700;
 
       if (isMobile) {
+        // Render per observatie een vullende kaart voor mobiel
         observations.forEach((item, index) => {
           const card = document.createElement("div");
           card.className = `observation-card ${index === currentMobileSlide ? "active-slide" : ""}`;
@@ -94,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
       } else {
+        // Desktop weergave
         observations.forEach((item, index) => {
           const fullText = `${item.day} ${item.time} ${item.text}`;
           const words = fullText.split(" ");
@@ -121,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function adjustTypographyScale() {
-      if (window.innerWidth <= 700) return; // Op mobiel handelt CSS dit nu direct af voor maximale betrouwbaarheid
+      if (window.innerWidth <= 700) return; // Op mobiel handelt CSS dit nu feilloos af via clamp()
 
       const words = container.querySelectorAll(".log-word");
       if (!words.length) return;
