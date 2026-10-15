@@ -66,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isMobile = window.innerWidth <= 700;
 
       if (isMobile) {
-        // Render per observatie een vullende kaart voor mobiel
         observations.forEach((item, index) => {
           const card = document.createElement("div");
           card.className = `observation-card ${index === currentMobileSlide ? "active-slide" : ""}`;
@@ -95,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
       } else {
-        // Desktop weergave
         observations.forEach((item, index) => {
           const fullText = `${item.day} ${item.time} ${item.text}`;
           const words = fullText.split(" ");
@@ -117,42 +115,73 @@ document.addEventListener("DOMContentLoaded", () => {
             container.appendChild(span);
           });
         });
-
-        setTimeout(adjustTypographyScale, 50);
       }
+
+      setTimeout(adjustTypographyScale, 50);
     }
 
     function adjustTypographyScale() {
-      if (window.innerWidth <= 700) return; // Op mobiel handelt CSS dit nu feilloos af via clamp()
+      const isMobile = window.innerWidth <= 700;
 
-      const words = container.querySelectorAll(".log-word");
-      if (!words.length) return;
+      if (isMobile) {
+        const activeCard = container.querySelector(".observation-card.active-slide");
+        if (!activeCard) return;
+        const words = activeCard.querySelectorAll(".log-word");
+        if (!words.length) return;
 
-      const availHeight = container.clientHeight;
-      let minFontPx = 10;
-      let maxFontPx = 250;
-      let optimalPx = minFontPx;
+        const availHeight = activeCard.clientHeight;
+        let minFontPx = 10;
+        let maxFontPx = 300;
+        let optimalPx = minFontPx;
 
-      while (minFontPx <= maxFontPx) {
-        const midPx = Math.floor((minFontPx + maxFontPx) / 2);
-        
+        while (minFontPx <= maxFontPx) {
+          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
+          words.forEach(word => {
+            word.style.fontSize = `${midPx}px`;
+          });
+
+          if (activeCard.scrollHeight <= availHeight) {
+            optimalPx = midPx;
+            minFontPx = midPx + 1;
+          } else {
+            maxFontPx = midPx - 1;
+          }
+        }
+
         words.forEach(word => {
-          word.style.fontSize = `${midPx}px`;
+          word.style.fontSize = `${optimalPx}px`;
         });
 
-        const totalScrollHeight = container.scrollHeight;
+      } else {
+        const words = container.querySelectorAll(".log-word");
+        if (!words.length) return;
 
-        if (totalScrollHeight <= availHeight) {
-          optimalPx = midPx;
-          minFontPx = midPx + 1;
-        } else {
-          maxFontPx = midPx - 1;
+        const availHeight = container.clientHeight;
+        let minFontPx = 10;
+        let maxFontPx = 250;
+        let optimalPx = minFontPx;
+
+        while (minFontPx <= maxFontPx) {
+          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
+          
+          words.forEach(word => {
+            word.style.fontSize = `${midPx}px`;
+          });
+
+          const totalScrollHeight = container.scrollHeight;
+
+          if (totalScrollHeight <= availHeight) {
+            optimalPx = midPx;
+            minFontPx = midPx + 1;
+          } else {
+            maxFontPx = midPx - 1;
+          }
         }
-      }
 
-      words.forEach(word => {
-        word.style.fontSize = `${optimalPx}px`;
-      });
+        words.forEach(word => {
+          word.style.fontSize = `${optimalPx}px`;
+        });
+      }
     }
 
     // Touch / Swipe detectie voor mobiel (< 701px)
