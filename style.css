@@ -30,8 +30,6 @@ html, body {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #222222;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .panel-left {
@@ -47,19 +45,12 @@ html, body {
   color: #888888;
 }
 
-.panel-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
 /* Buttons */
 .btn {
   background: #111111;
   color: #ffffff;
   border: 1px solid #444444;
-  padding: 6px 12px;
+  padding: 8px 14px;
   font-family: sans-serif;
   font-size: 0.75rem;
   font-weight: bold;
@@ -132,6 +123,7 @@ html, body {
   flex-direction: column;
   transform: translateX(-100%);
   transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
 }
 
 .nav-drawer.open {
@@ -154,7 +146,7 @@ html, body {
   font-size: 0.8rem;
   letter-spacing: 2px;
   color: #666666;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .drawer-links {
@@ -177,6 +169,18 @@ html, body {
 .drawer-links a.active {
   color: #ff3333;
   font-weight: bold;
+}
+
+.drawer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
 }
 
 /* TYPOGRAPHY CONTAINER (Desktop basis) */
