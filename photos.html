@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
 
@@ -47,7 +47,7 @@
     <div class="gallery-header-actions">
       <!-- Hidden file input for uploading -->
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
-      <button class="btn btn-primary" id="trigger-upload-btn">+ UPLOAD PHOTO</button>
+      <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
     </div>
 
     <!-- Gallery Grid -->
@@ -115,7 +115,7 @@
         galleryGrid.innerHTML = "";
 
         if (photos.length === 0) {
-          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS UPLOADED YET. CLICK "+ UPLOAD PHOTO" ABOVE TO ADD OBSERVATION IMAGES.</div>`;
+          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #777; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS UPLOADED YET. CLICK "+ UPLOAD PHOTO" ABOVE TO ADD OBSERVATION IMAGES.</div>`;
           return;
         }
 
@@ -123,7 +123,6 @@
           const itemDiv = document.createElement("div");
           itemDiv.className = "gallery-item";
           itemDiv.style.backgroundImage = `url(${photoSrc})`;
-          itemDiv.setAttribute("aria-label", `Observation photo ${index + 1}`);
 
           itemDiv.addEventListener("click", () => {
             selectedPhotoIndex = index;
