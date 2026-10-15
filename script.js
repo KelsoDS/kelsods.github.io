@@ -115,66 +115,42 @@ document.addEventListener("DOMContentLoaded", () => {
             container.appendChild(span);
           });
         });
-      }
 
-      setTimeout(adjustTypographyScale, 50);
+        setTimeout(adjustTypographyScale, 50);
+      }
     }
 
     function adjustTypographyScale() {
-      const isMobile = window.innerWidth <= 700;
+      if (window.innerWidth <= 700) return; // Op mobiel handelt CSS dit nu direct af voor maximale betrouwbaarheid
 
-      if (isMobile) {
-        const activeCard = container.querySelector(".observation-card.active-slide");
-        if (!activeCard) return;
-        const words = activeCard.querySelectorAll(".log-word");
-        if (!words.length) return;
+      const words = container.querySelectorAll(".log-word");
+      if (!words.length) return;
 
-        const availHeight = container.clientHeight - 10;
-        const availWidth = container.clientWidth - 16;
+      const availHeight = container.clientHeight;
+      let minFontPx = 10;
+      let maxFontPx = 250;
+      let optimalPx = minFontPx;
+
+      while (minFontPx <= maxFontPx) {
+        const midPx = Math.floor((minFontPx + maxFontPx) / 2);
         
-        let minFontPx = 10;
-        let maxFontPx = 400;
-        let optimalPx = minFontPx;
+        words.forEach(word => {
+          word.style.fontSize = `${midPx}px`;
+        });
 
-        // Geoptimaliseerde binaire zoekfunctie die zowel op hoogte als op breedte vult
-        while (minFontPx <= maxFontPx) {
-          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
-          words.forEach(word => word.style.fontSize = `${midPx}px`);
+        const totalScrollHeight = container.scrollHeight;
 
-          // Check of de tekst zowel binnen de hoogte valt als niet onnodig overlapt
-          if (activeCard.scrollHeight <= availHeight && activeCard.scrollWidth <= availWidth * 1.05) {
-            optimalPx = midPx;
-            minFontPx = midPx + 1;
-          } else {
-            maxFontPx = midPx - 1;
-          }
+        if (totalScrollHeight <= availHeight) {
+          optimalPx = midPx;
+          minFontPx = midPx + 1;
+        } else {
+          maxFontPx = midPx - 1;
         }
-
-        words.forEach(word => word.style.fontSize = `${optimalPx}px`);
-
-      } else {
-        const words = container.querySelectorAll(".log-word");
-        if (!words.length) return;
-
-        const availHeight = container.clientHeight;
-        let minFontPx = 10;
-        let maxFontPx = 250;
-        let optimalPx = minFontPx;
-
-        while (minFontPx <= maxFontPx) {
-          const midPx = Math.floor((minFontPx + maxFontPx) / 2);
-          words.forEach(word => word.style.fontSize = `${midPx}px`);
-
-          if (container.scrollHeight <= availHeight) {
-            optimalPx = midPx;
-            minFontPx = midPx + 1;
-          } else {
-            maxFontPx = midPx - 1;
-          }
-        }
-
-        words.forEach(word => word.style.fontSize = `${optimalPx}px`);
       }
+
+      words.forEach(word => {
+        word.style.fontSize = `${optimalPx}px`;
+      });
     }
 
     // Touch / Swipe detectie voor mobiel (< 701px)
