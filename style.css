@@ -179,7 +179,7 @@ html, body {
   font-weight: bold;
 }
 
-/* TYPOGRAPHY CONTAINER */
+/* TYPOGRAPHY CONTAINER (Desktop basis) */
 .typography-container {
   margin-top: 65px;
   height: calc(100vh - 65px);
@@ -254,6 +254,73 @@ body.drift-mode .log-word:nth-child(odd) {
   text-rendering: geometricPrecision;
   display: inline-block;
   animation: pixelGlitch 0.2s steps(2, start) infinite;
+}
+
+/* Swipe Indicator voor mobiel */
+.swipe-hint {
+  display: none;
+}
+
+/* MOBIELE WEERGAVE (< 768px): 1 observatie per scherm, vullend, swipebaar */
+@media (max-width: 768px) {
+  .typography-container {
+    display: block;
+    position: relative;
+    padding: 0;
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+    overflow: hidden !important;
+  }
+
+  .observation-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+    text-align: center;
+  }
+
+  .observation-card.active-slide {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .observation-card .log-word {
+    margin: 0.15em;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+  }
+
+  .swipe-hint {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #555555;
+    letter-spacing: 2px;
+    z-index: 999;
+    pointer-events: none;
+    animation: pulseHint 2s infinite;
+  }
+}
+
+@keyframes pulseHint {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
 
 /* Modals */
