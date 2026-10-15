@@ -15,11 +15,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
 
-  <!-- Navigation Drawer -->
+  <!-- Navigation Drawer (Hamburger Menu) -->
   <nav class="nav-drawer" id="nav-drawer">
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
@@ -28,9 +28,16 @@
       <li><a href="photos.html">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
+
+    <div class="drawer-title" style="margin-top: 35px;">CONTROLS & ACTIONS</div>
+    <div class="drawer-actions">
+      <button class="btn drawer-btn" id="toggle-style">SOLID / OUTLINE</button>
+      <button class="btn drawer-btn" id="toggle-drift">DRIFT ANIMATION</button>
+      <button class="btn drawer-btn btn-primary" id="toggle-modal">+ ADD OBSERVATION</button>
+    </div>
   </nav>
 
-  <!-- Top Control Bar -->
+  <!-- Top Control Bar (Minimalist) -->
   <header class="control-panel">
     <div class="panel-left">
       <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
@@ -39,11 +46,6 @@
         <span class="hamburger-bar"></span>
       </button>
       <span class="panel-brand">STREET OBSERVATIONS</span>
-    </div>
-    <div class="panel-actions">
-      <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
-      <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
-      <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
     </div>
   </header>
 
@@ -88,6 +90,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=23"></script>
+  <script src="script.js?v=24"></script>
 </body>
 </html>
