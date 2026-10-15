@@ -8,7 +8,7 @@ const defaultObservations = [
 let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
 let selectedObservationIndex = null;
 let currentMobileSlide = 0;
-let editingIndex = null; // Houdt bij welke observatie momenteel wordt bewerkt
+let editingIndex = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -46,9 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleDriftBtn = document.getElementById("toggle-drift");
   const toggleModalBtn = document.getElementById("toggle-modal");
   const closeModalBtn = document.getElementById("close-modal");
-  const modal = document.getElementById("observation-modal");
   const modalTitle = document.getElementById("modal-title");
   const formSubmitBtn = document.getElementById("form-submit-btn");
+  const modal = document.getElementById("observation-modal");
   const form = document.getElementById("add-log-form");
 
   const infoModal = document.getElementById("info-modal");
@@ -206,13 +206,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const swipeThreshold = 40;
 
       if (touchEndX < touchStartX - swipeThreshold) {
-        // Swipe links -> Volgende observatie
         if (currentMobileSlide < observations.length - 1) {
           currentMobileSlide++;
           renderLogs();
         }
       } else if (touchEndX > touchStartX + swipeThreshold) {
-        // Swipe rechts -> Vorige observatie
         if (currentMobileSlide > 0) {
           currentMobileSlide--;
           renderLogs();
@@ -220,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Glitch loop voor willekeurige pixelated woorden met 2 seconden herstel
+    // Glitch loop
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
@@ -268,7 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Bewerk knop in info modal
     if (editCurrentInfoBtn) {
       editCurrentInfoBtn.addEventListener("click", () => {
         if (selectedObservationIndex !== null) {
@@ -277,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("input-time").value = item.time;
           document.getElementById("input-text").value = item.text;
 
-          editingIndex = selectedObservationIndex; // Sla op dat we aan het bewerken zijn
+          editingIndex = selectedObservationIndex;
           modalTitle.textContent = "EDIT OBSERVATION";
           formSubmitBtn.textContent = "SAVE";
 
@@ -303,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
-        editingIndex = null; // Nieuwe toevoeging
+        editingIndex = null;
         modalTitle.textContent = "ADD NEW OBSERVATION";
         formSubmitBtn.textContent = "ADD";
         form.reset();
@@ -335,10 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = document.getElementById("input-text").value;
 
         if (editingIndex !== null && editingIndex >= 0 && editingIndex < observations.length) {
-          // Bestaande observatie bijwerken
           observations[editingIndex] = { day, time, text };
         } else {
-          // Nieuwe observatie toevoegen
           observations.push({ day, time, text });
           currentMobileSlide = observations.length - 1;
         }
