@@ -261,12 +261,12 @@ body.drift-mode .log-word:nth-child(odd) {
   display: none;
 }
 
-/* MOBIELE WEERGAVE (< 701px): 1 observatie vult feilloos de hele pagina */
+/* MOBIELE WEERGAVE (< 701px): 1 observatie per scherm met volledige schermvullende spreiding */
 @media (max-width: 700px) {
   .typography-container {
     display: block !important;
     position: relative !important;
-    padding: 0 !important;
+    padding: 10px 15px !important;
     margin-top: 60px !important;
     height: calc(100vh - 60px) !important;
     overflow: hidden !important;
@@ -278,15 +278,15 @@ body.drift-mode .log-word:nth-child(odd) {
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    padding: 20px !important;
+    padding: 10px 15px !important;
     display: flex !important;
     flex-wrap: wrap !important;
-    align-content: space-around !important;
+    align-content: space-between !important;
     justify-content: space-between !important;
-    align-items: center !important;
     opacity: 0 !important;
     pointer-events: none !important;
     transition: opacity 0.3s ease-in-out !important;
+    overflow: hidden !important;
   }
 
   .observation-card.active-slide {
@@ -294,12 +294,10 @@ body.drift-mode .log-word:nth-child(odd) {
     pointer-events: auto !important;
   }
 
-  /* Automatische schermvullende schaling op mobiel via clamp */
   .observation-card .log-word {
-    font-size: clamp(1.8rem, 8vw, 4.5rem) !important;
     white-space: nowrap !important;
-    line-height: 1.1 !important;
-    margin: 0.1em 0.15em !important;
+    line-height: 0.85 !important;
+    margin-right: 0.3em !important;
     display: inline-block !important;
   }
 
