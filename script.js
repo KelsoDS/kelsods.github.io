@@ -129,16 +129,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const words = activeCard.querySelectorAll(".log-word");
         if (!words.length) return;
 
-        const availHeight = container.clientHeight - 20;
+        const availHeight = container.clientHeight - 10;
+        const availWidth = container.clientWidth - 16;
+        
         let minFontPx = 10;
-        let maxFontPx = 300;
+        let maxFontPx = 400;
         let optimalPx = minFontPx;
 
+        // Geoptimaliseerde binaire zoekfunctie die zowel op hoogte als op breedte vult
         while (minFontPx <= maxFontPx) {
           const midPx = Math.floor((minFontPx + maxFontPx) / 2);
           words.forEach(word => word.style.fontSize = `${midPx}px`);
 
-          if (activeCard.scrollHeight <= availHeight) {
+          // Check of de tekst zowel binnen de hoogte valt als niet onnodig overlapt
+          if (activeCard.scrollHeight <= availHeight && activeCard.scrollWidth <= availWidth * 1.05) {
             optimalPx = midPx;
             minFontPx = midPx + 1;
           } else {
@@ -188,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleSwipe() {
       if (window.innerWidth > 700) return;
-      const swipeThreshold = 50;
+      const swipeThreshold = 40;
 
       if (touchEndX < touchStartX - swipeThreshold) {
         // Swipe links -> Volgende observatie
