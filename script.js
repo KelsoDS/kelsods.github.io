@@ -129,9 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const words = activeCard.querySelectorAll(".log-word");
         if (!words.length) return;
 
-        const availHeight = container.clientHeight - 40;
-        let minFontPx = 12;
-        let maxFontPx = 150;
+        const availHeight = container.clientHeight - 20;
+        let minFontPx = 10;
+        let maxFontPx = 300;
         let optimalPx = minFontPx;
 
         while (minFontPx <= maxFontPx) {
