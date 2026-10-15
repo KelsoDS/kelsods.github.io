@@ -71,11 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
           span.className = "log-word";
           span.textContent = word;
 
-          // Af en toe start een willekeurig woord direct als pixelated
-          if (Math.random() < 0.15) {
-            span.classList.add("pixelated");
-          }
-
           span.addEventListener("click", () => {
             if (infoModal) {
               selectedObservationIndex = index;
@@ -123,20 +118,29 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Automatische timer die elke 2.5 seconde willekeurige woorden verandert naar pixel of normaal
+    // Automatische glitch-loop: elke 3 seconden glitcht er willekeurig 1 of 2 woorden voor 2 seconden naar pixel
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
 
-      // Pak 1 tot 3 willekeurige woorden die van stijl wisselen
-      const countToChange = Math.floor(Math.random() * 3) + 1;
-      for (let i = 0; i < countToChange; i++) {
+      // Kies 1 of 2 willekeurige woorden
+      const count = Math.floor(Math.random() * 2) + 1;
+      const targetWords = [];
+      
+      for (let i = 0; i < count; i++) {
         const randomIndex = Math.floor(Math.random() * allWords.length);
-        const targetWord = allWords[randomIndex];
-        
-        targetWord.classList.toggle("pixelated");
+        targetWords.push(allWords[randomIndex]);
       }
-    }, 2500);
+
+      // Maak ze pixelated (glitch start)
+      targetWords.forEach(word => word.classList.add("pixelated"));
+
+      // Na precies 2 seconden gaan ze weer terug naar normaal
+      setTimeout(() => {
+        targetWords.forEach(word => word.classList.remove("pixelated"));
+      }, 2000);
+
+    }, 3500);
 
     function deleteObservation(index) {
       if (index !== null && index >= 0 && index < observations.length) {
