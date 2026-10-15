@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = "";
 
       if (observations.length === 0) {
-        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS".</div>`;
+        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS" IN THE MENU.</div>`;
         return;
       }
 
@@ -281,6 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
+        if (navDrawer) navDrawer.classList.remove("open"); // Sluit menu bij openen modal
       });
     }
 
