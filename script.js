@@ -8,6 +8,7 @@ const defaultObservations = [
 let observations = JSON.parse(localStorage.getItem("street_observations")) || defaultObservations;
 let selectedObservationIndex = null;
 let currentMobileSlide = 0;
+let editingIndex = null; // Houdt bij welke observatie momenteel wordt bewerkt
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -46,6 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleModalBtn = document.getElementById("toggle-modal");
   const closeModalBtn = document.getElementById("close-modal");
   const modal = document.getElementById("observation-modal");
+  const modalTitle = document.getElementById("modal-title");
+  const formSubmitBtn = document.getElementById("form-submit-btn");
   const form = document.getElementById("add-log-form");
 
   const infoModal = document.getElementById("info-modal");
@@ -53,13 +56,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const infoText = document.getElementById("info-text");
   const closeInfoModalBtn = document.getElementById("close-info-modal");
   const deleteCurrentInfoBtn = document.getElementById("delete-current-info");
+  const editCurrentInfoBtn = document.getElementById("edit-current-info");
 
   if (container) {
     function renderLogs() {
       container.innerHTML = "";
 
       if (observations.length === 0) {
-        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBS" IN THE MENU.</div>`;
+        container.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; margin-top: 20vh;">NO OBSERVATIONS AVAILABLE. ADD NEW OBSERVATIONS USING "+ ADD OBSERVATION" IN THE MENU.</div>`;
         return;
       }
 
@@ -264,6 +268,25 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Bewerk knop in info modal
+    if (editCurrentInfoBtn) {
+      editCurrentInfoBtn.addEventListener("click", () => {
+        if (selectedObservationIndex !== null) {
+          const item = observations[selectedObservationIndex];
+          document.getElementById("input-day").value = item.day;
+          document.getElementById("input-time").value = item.time;
+          document.getElementById("input-text").value = item.text;
+
+          editingIndex = selectedObservationIndex; // Sla op dat we aan het bewerken zijn
+          modalTitle.textContent = "EDIT OBSERVATION";
+          formSubmitBtn.textContent = "SAVE";
+
+          infoModal.classList.add("hidden");
+          modal.classList.remove("hidden");
+        }
+      });
+    }
+
     if (toggleStyleBtn) {
       toggleStyleBtn.addEventListener("click", () => {
         document.body.classList.toggle("solid-style");
@@ -280,14 +303,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (toggleModalBtn && modal) {
       toggleModalBtn.addEventListener("click", () => {
+        editingIndex = null; // Nieuwe toevoeging
+        modalTitle.textContent = "ADD NEW OBSERVATION";
+        formSubmitBtn.textContent = "ADD";
+        form.reset();
+
         modal.classList.remove("hidden");
-        if (navDrawer) navDrawer.classList.remove("open"); // Sluit menu bij openen modal
+        if (navDrawer) navDrawer.classList.remove("open");
       });
     }
 
     if (closeModalBtn && modal) {
       closeModalBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
+        editingIndex = null;
       });
     }
 
@@ -305,12 +334,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const time = document.getElementById("input-time").value;
         const text = document.getElementById("input-text").value;
 
-        observations.push({ day, time, text });
-        currentMobileSlide = observations.length - 1;
+        if (editingIndex !== null && editingIndex >= 0 && editingIndex < observations.length) {
+          // Bestaande observatie bijwerken
+          observations[editingIndex] = { day, time, text };
+        } else {
+          // Nieuwe observatie toevoegen
+          observations.push({ day, time, text });
+          currentMobileSlide = observations.length - 1;
+        }
+
         localStorage.setItem("street_observations", JSON.stringify(observations));
 
         renderLogs();
         form.reset();
+        editingIndex = null;
         modal.classList.add("hidden");
       });
     }
