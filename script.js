@@ -118,24 +118,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Automatische glitch-loop: elke 3 seconden glitcht er willekeurig 1 of 2 woorden voor 2 seconden naar pixel
+    // Glitch loop die feilloos aan- en uitschakelt zonder de schaling te verstoren
     setInterval(() => {
       const allWords = container.querySelectorAll(".log-word");
       if (allWords.length === 0) return;
 
-      // Kies 1 of 2 willekeurige woorden
-      const count = Math.floor(Math.random() * 2) + 1;
+      // Kies 1 of 2 willekeurige woorden die nog niet glitchen
+      const normalWords = Array.from(allWords).filter(w => !w.classList.contains("pixelated"));
+      if (normalWords.length === 0) return;
+
+      const count = Math.min(Math.floor(Math.random() * 2) + 1, normalWords.length);
       const targetWords = [];
-      
+
       for (let i = 0; i < count; i++) {
-        const randomIndex = Math.floor(Math.random() * allWords.length);
-        targetWords.push(allWords[randomIndex]);
+        const randomIndex = Math.floor(Math.random() * normalWords.length);
+        targetWords.push(normalWords[randomIndex]);
+        normalWords.splice(randomIndex, 1); // Zorg dat we niet dezelfde kiezen
       }
 
-      // Maak ze pixelated (glitch start)
+      // Zet pixelated aan (glitch begint)
       targetWords.forEach(word => word.classList.add("pixelated"));
 
-      // Na precies 2 seconden gaan ze weer terug naar normaal
+      // Na exact 2 seconden direct weer netjes uitzetten
       setTimeout(() => {
         targetWords.forEach(word => word.classList.remove("pixelated"));
       }, 2000);
