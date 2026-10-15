@@ -9,7 +9,13 @@
   <meta http-equiv="Expires" content="0">
 
   <title>Street Observations - Photo Gallery</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  
+  <!-- Google Pixel Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
 
@@ -24,7 +30,7 @@
     </ul>
   </nav>
 
-  <!-- Top Control Bar -->
+  <!-- Top Control Bar (Minimalist) -->
   <header class="control-panel">
     <div class="panel-left">
       <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
@@ -32,21 +38,43 @@
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
-      <span class="panel-brand">STREET OBSERVATIONS — PHOTO GALLERY</span>
+      <span class="panel-brand">STREET OBSERVATIONS — GALLERY</span>
     </div>
   </header>
 
   <!-- Gallery Main Container -->
-  <main style="margin-top: 80px; padding: 25px; font-family: monospace;">
-    <h2>PHOTO GALLERY</h2>
-    <p style="color: #888; margin-top: 10px;">Gallery page loaded successfully.</p>
+  <main class="gallery-container">
+    <div class="gallery-header-actions">
+      <!-- Hidden file input for uploading -->
+      <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
+      <button class="btn btn-primary" id="trigger-upload-btn">+ UPLOAD PHOTO</button>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="gallery-grid" id="gallery-grid">
+      <!-- Dynamic photos will appear here -->
+    </div>
   </main>
+
+  <!-- Modal: Photo Viewer / Details -->
+  <div class="modal-overlay hidden" id="photo-modal">
+    <div class="modal-card photo-modal-card">
+      <img id="modal-img" src="" alt="Enlarged Observation Photo" style="width: 100%; max-height: 60vh; object-fit: contain; margin-bottom: 15px;">
+      <div class="form-actions" style="justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-danger" id="delete-photo-btn">DELETE PHOTO</button>
+        <button type="button" class="btn" id="close-photo-modal">CLOSE</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Menu drawer toggle
       const menuToggle = document.getElementById("menu-toggle");
       const navDrawer = document.getElementById("nav-drawer");
       const closeDrawer = document.getElementById("close-drawer");
+
+      if (navDrawer) navDrawer.classList.remove("open");
 
       if (menuToggle && navDrawer) {
         menuToggle.addEventListener("click", (e) => {
@@ -68,6 +96,85 @@
           }
         }
       });
+
+      // Photo Gallery Upload & Storage Logic
+      const defaultPhotos = [];
+      let photos = JSON.parse(localStorage.getItem("street_observation_photos")) || defaultPhotos;
+      let selectedPhotoIndex = null;
+
+      const galleryGrid = document.getElementById("gallery-grid");
+      const fileInput = document.getElementById("file-input");
+      const triggerUploadBtn = document.getElementById("trigger-upload-btn");
+      
+      const photoModal = document.getElementById("photo-modal");
+      const modalImg = document.getElementById("modal-img");
+      const closePhotoModalBtn = document.getElementById("close-photo-modal");
+      const deletePhotoBtn = document.getElementById("delete-photo-btn");
+
+      function renderGallery() {
+        galleryGrid.innerHTML = "";
+
+        if (photos.length === 0) {
+          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #555; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS UPLOADED YET. CLICK "+ UPLOAD PHOTO" ABOVE TO ADD OBSERVATION IMAGES.</div>`;
+          return;
+        }
+
+        photos.forEach((photoSrc, index) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "gallery-item";
+          itemDiv.style.backgroundImage = `url(${photoSrc})`;
+          itemDiv.setAttribute("aria-label", `Observation photo ${index + 1}`);
+
+          itemDiv.addEventListener("click", () => {
+            selectedPhotoIndex = index;
+            modalImg.src = photoSrc;
+            photoModal.classList.remove("hidden");
+          });
+
+          galleryGrid.appendChild(itemDiv);
+        });
+      }
+
+      // Trigger file selector
+      triggerUploadBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // Handle file uploads
+      fileInput.addEventListener("change", (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (uploadEvent) => {
+            photos.push(uploadEvent.target.result);
+            localStorage.setItem("street_observation_photos", JSON.stringify(photos));
+            renderGallery();
+          };
+          reader.readAsDataURL(file);
+        });
+
+        fileInput.value = ""; // Reset input
+      });
+
+      // Delete photo
+      deletePhotoBtn.addEventListener("click", () => {
+        if (selectedPhotoIndex !== null) {
+          photos.splice(selectedPhotoIndex, 1);
+          localStorage.setItem("street_observation_photos", JSON.stringify(photos));
+          selectedPhotoIndex = null;
+          photoModal.classList.add("hidden");
+          renderGallery();
+        }
+      });
+
+      closePhotoModalBtn.addEventListener("click", () => {
+        photoModal.classList.add("hidden");
+        selectedPhotoIndex = null;
+      });
+
+      renderGallery();
     });
   </script>
 </body>
