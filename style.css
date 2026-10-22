@@ -145,11 +145,7 @@ body {
 }
 
 /* ==========================================
-   STRIKTE FOTOGALERIJ: GEEN WITRUIMTE & GELIJK
-   ========================================== */
-
-/* ==========================================
-   STRIKTE FOTOGALERIJ: ABSOLUTE POSITIONERING
+   STRIKTE FOTOGALERIJ: DUBBEL ZO GROTE TEGELS
    ========================================== */
 
 .gallery-container {
@@ -159,18 +155,17 @@ body {
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Aangepast van 160px naar 320px voor dubbele grootte */
   gap: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   width: 100%;
 }
 
-/* Zet position: relative zodat de afbeelding zich hier exact naar vormt */
 .gallery-item {
   position: relative !important;
   aspect-ratio: 1 / 1 !important;
-  width: 200% !important;
+  width: 100% !important;
   overflow: hidden !important;
   background: #000 !important;
   border: none !important;
@@ -179,13 +174,12 @@ body {
   cursor: pointer;
 }
 
-/* Zet de foto absoluut vast binnen het vierkante kader */
 .gallery-item img {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
-  width: 200% !important;
-  height: 200% !important;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover !important;
   display: block !important;
 }
