@@ -165,7 +165,7 @@ body {
 .gallery-item {
   aspect-ratio: 1 / 1 !important;
   width: 100% !important;
-  /* height: 100% is hier verwijderd zodat de hoogte niet op 0 inklapt */
+  height: 100% !important;
   overflow: hidden !important;
   background: #000 !important;
   border: none !important;
