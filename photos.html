@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Voorkom dat browsers oude versies in de cache bewaren -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -16,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=40">
+  <link rel="stylesheet" href="style.css?v=41">
 
   <style>
     /* Zorg dat de drawer altijd bovenaan ligt en de links direct aanklikbaar zijn */
@@ -30,26 +29,32 @@
       display: block;
     }
 
+    /* GALERIJ: Geen witruimte (gap: 0), strak raster met gelijke tegels */
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 15px;
-      padding: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0px !important;
+      padding: 0px !important;
+      margin: 0px !important;
     }
+    
     .gallery-item {
-      aspect-ratio: 1 / 1;
+      aspect-ratio: 1 / 1 !important; /* Maakt elk kader exact vierkant */
+      width: 100% !important;
+      height: 100% !important;
       overflow: hidden;
-      background: #111;
-      border: 1px solid #333;
+      background: #000;
+      border: none !important;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      margin: 0 !important;
+      padding: 0 !important;
     }
+
     .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important; /* Snijd de foto's netjes bij zodat ze het vak vullen zonder vervorming of witruimte */
       display: block;
     }
   </style>
@@ -61,7 +66,6 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <!-- Directe harde nav-link -->
       <li><a href="index.html" id="btn-to-index">Typography Log</a></li>
       <li><a href="photos.html" class="active">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
@@ -81,8 +85,8 @@
   </header>
 
   <!-- Gallery Main Container -->
-  <main class="gallery-container">
-    <div class="gallery-header-actions" style="padding: 15px 20px 0;">
+  <main class="gallery-container" style="padding: 0; margin: 0;">
+    <div class="gallery-header-actions" style="padding: 15px 20px;">
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
       <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
     </div>
@@ -163,15 +167,13 @@
 
           if (index < defaultPhotos.length) {
             const num = photoItem;
-            // Probeer alle denkbare URL-varianten van GitHub voor 'Artboard X.jpg'
             const attempts = [
               "./beeld/Artboard " + num + ".jpg",
               "./beeld/Artboard%20" + num + ".jpg",
               "beeld/Artboard " + num + ".jpg",
               "beeld/Artboard%20" + num + ".jpg",
               "./beeld/Artboard " + num + ".JPG",
-              "./beeld/artboard " + num + ".jpg",
-              "./beeld/Artboard-" + num + ".jpg"
+              "./beeld/artboard " + num + ".jpg"
             ];
 
             let attemptIndex = 0;
@@ -182,12 +184,10 @@
               if (attemptIndex < attempts.length) {
                 this.src = attempts[attemptIndex];
               } else {
-                // Als het bestand niet op GitHub staat, verberg het vakje om vraagtekens te voorkomen
                 itemDiv.style.display = "none";
               }
             };
           } else {
-            // Lokaal geüploade foto (base64)
             img.src = photoItem;
           }
 
