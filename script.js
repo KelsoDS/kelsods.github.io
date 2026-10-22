@@ -69,7 +69,6 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
   align-items: center;
 }
 
-/* Knoppen & Hamburger Icoon Styling */
 .btn {
   background: #121212;
   color: #ffffff;
@@ -122,7 +121,6 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
   color: #ffffff;
 }
 
-/* Hamburger knop met 3 streepjes (EXACT ZELFDE ACHTERGROND, FORMAAT EN KLEUR) */
 .btn-icon {
   padding: 8px 10px;
   flex-direction: column;
@@ -147,9 +145,6 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
   background-color: #ff3333;
 }
 
-/* ==========================================
-NAVIGATIE DRAWER & OVERLAY (IDENTIEK VISUEEL)
-========================================== */
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -268,9 +263,6 @@ NAVIGATIE DRAWER & OVERLAY (IDENTIEK VISUEEL)
   color: #666666;
 }
 
-/* ==========================================
-TYPOGRAFIE PAGINA STYLES
-========================================== */
 .typography-container {
   font-family: Impact, 'Arial Black', sans-serif;
   margin-top: 60px;
@@ -342,9 +334,6 @@ body.drift-mode .log-row:nth-child(odd) {
   animation: ambientDrift 5.5s ease-in-out infinite reverse;
 }
 
-/* ==========================================
-FOTOGALERIJ PAGINA STYLES
-========================================== */
 .gallery-container {
   margin-top: 60px;
   padding: 0 !important;
@@ -391,9 +380,6 @@ FOTOGALERIJ PAGINA STYLES
   transform: scale(1.04);
 }
 
-/* ==========================================
-MODALS & OVERLAYS
-========================================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -515,7 +501,6 @@ MODALS & OVERLAYS
   line-height: 1.4;
 }
 
-/* Responsive aanpassingen voor mobiel */
 @media (max-width: 600px) {
   .panel-brand {
     display: none;

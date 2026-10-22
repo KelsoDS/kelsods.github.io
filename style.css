@@ -1,8 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-  // ==========================================
-  // 1. HAMBURGER MENU & ALGEMENE NAVIGATIE
-  // ==========================================
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
@@ -36,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Directe navigatie knoppen
   const btnToIndex = document.getElementById("btn-to-index");
   if (btnToIndex) {
     btnToIndex.addEventListener("click", (e) => {
@@ -45,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Notice Modal Helper Function
   function showNotice(message) {
     const noticeModal = document.getElementById("notice-modal");
     const noticeMessage = document.getElementById("notice-message");
@@ -63,10 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-
-  // ==========================================
-  // 2. TYPOGRAFIE LOGICA (index.html)
-  // ==========================================
   const logContainer = document.getElementById("log-display");
 
   if (logContainer) {
@@ -83,12 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const drawerLogCount = document.getElementById("drawer-log-count");
     const toggleStyleBtn = document.getElementById("toggle-style");
     const toggleDriftBtn = document.getElementById("toggle-drift");
-
     const toggleAddModalBtn = document.getElementById("toggle-modal");
     const closeAddModalBtn = document.getElementById("close-modal");
     const addModal = document.getElementById("observation-modal");
     const addForm = document.getElementById("add-log-form");
-
     const infoModal = document.getElementById("info-modal");
     const infoTime = document.getElementById("info-time");
     const infoText = document.getElementById("info-text");
@@ -97,13 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderLogs() {
       logContainer.innerHTML = "";
-
-      if (drawerLogCount) {
-        drawerLogCount.textContent = observations.length;
-      }
+      if (drawerLogCount) drawerLogCount.textContent = observations.length;
 
       const totalRows = observations.length;
-
       if (totalRows === 0) {
         logContainer.innerHTML = `
           <div style="font-family: monospace; color: #555; text-align: center; margin: auto; font-size: 0.9rem; letter-spacing: 1px;">
@@ -203,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (day && time && text) {
           observations.push({ day, time, text });
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
-
           renderLogs();
           addForm.reset();
           if (addModal) addModal.classList.add("hidden");
@@ -215,10 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderLogs();
   }
 
-
-  // ==========================================
-  // 3. FOTOGALERIJ LOGICA (photos.html)
-  // ==========================================
   const galleryGrid = document.getElementById("gallery-grid");
 
   if (galleryGrid) {
@@ -244,10 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderGallery() {
       galleryGrid.innerHTML = "";
-
-      if (drawerPhotoCount) {
-        drawerPhotoCount.textContent = photos.length;
-      }
+      if (drawerPhotoCount) drawerPhotoCount.textContent = photos.length;
 
       photos.forEach((photoItem, index) => {
         const itemDiv = document.createElement("div");
@@ -378,3 +354,212 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"}]},
