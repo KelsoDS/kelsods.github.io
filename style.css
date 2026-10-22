@@ -354,8 +354,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+      .typography-container {
+  font-family: Impact, 'Arial Black', sans-serif;
+  margin-top: 60px;
+  min-height: calc(100vh - 60px);
+  width: 100vw;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow: hidden;
+  gap: 0;
+}
 
+.log-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  line-height: 0.8;
+  row-gap: 0.5vh;
+  column-gap: 0.7vw;
+  padding: 0;
+}
 
+.log-word {
+  font-size: var(--dynamic-font-size, 3.8vh);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #ffffff;
+  transition: color 0.15s ease, -webkit-text-stroke 0.15s ease, text-shadow 0.15s ease;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+  word-break: keep-all;
+  flex: 0 0 auto;
+}
 
 
 
@@ -528,38 +565,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"}]},
