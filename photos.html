@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Street Observations - Photo Gallery</title>
-
+  
   <!-- Google Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
+  
   <!-- Global Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -27,7 +27,7 @@
     </div>
 
     <ul class="drawer-links">
-      <li><a href="index.html" id="btn-to-index"><span>01</span> TYPOGRAPHY LOG</a></li>
+      <li><a href="index.html" id="nav-typo"><span>01</span> TYPOGRAPHY LOG</a></li>
       <li><a href="photos.html" class="active" id="nav-photos"><span>02</span> PHOTO GALLERY</a></li>
       <li><a href="#" id="nav-archive"><span>03</span> ARCHIVE</a></li>
     </ul>
@@ -37,7 +37,7 @@
     </div>
   </nav>
 
-  <!-- Top Control Bar (EXACT GELIJK AAN INDEX.HTML) -->
+  <!-- Top Control Bar (zelfde als op index.html) -->
   <header class="control-panel">
     <div class="panel-left">
       <button class="btn btn-icon" id="menu-toggle" aria-label="Open menu">
@@ -46,6 +46,11 @@
         <span class="hamburger-bar"></span>
       </button>
       <span class="panel-brand">STREET OBSERVATIONS</span>
+    </div>
+    <div class="panel-actions">
+      <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
+      <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
+      <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
     </div>
   </header>
 
