@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Street Observations - Photo Gallery</title>
   
   <!-- Google Pixel Font -->
@@ -11,9 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <!-- HIER PLAATS JE DE VERSIE ACHTER DE BESTANDSNAAM: -->
-  <link rel="stylesheet" href="style.css?v=29">
-
+  <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
 
@@ -43,7 +45,7 @@
   <!-- Gallery Main Container -->
   <main class="gallery-container">
     <div class="gallery-header-actions">
-      <!-- Hidden file input for uploading -->
+      <!-- File input met 'multiple' om meerdere foto's tegelijk te selecteren -->
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
       <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
     </div>
@@ -65,7 +67,7 @@
     </div>
   </div>
 
-<script>
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       // Menu drawer toggle
       const menuToggle = document.getElementById("menu-toggle");
@@ -96,8 +98,7 @@
       });
 
       // Photo Gallery Upload & Storage Logic
-      const defaultPhotos = [];
-      let photos = JSON.parse(localStorage.getItem("street_observation_photos")) || defaultPhotos;
+      let photos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
       let selectedPhotoIndex = null;
 
       const galleryGrid = document.getElementById("gallery-grid");
@@ -137,7 +138,7 @@
         fileInput.click();
       });
 
-      // Handle file uploads (robuust verwerkt zodat meermalig uploaden altijd werkt)
+      // Handle file uploads with safety check for storage limits
       fileInput.addEventListener("change", (e) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
@@ -151,12 +152,15 @@
             newPhotos.push(uploadEvent.target.result);
             filesProcessed++;
 
-            // Zodra alle geselecteerde bestanden zijn gelezen, toevoegen en opslaan
             if (filesProcessed === files.length) {
-              photos = photos.concat(newPhotos);
-              localStorage.setItem("street_observation_photos", JSON.stringify(photos));
-              renderGallery();
-              fileInput.value = ""; // Reset direct zodat dezelfde foto of nieuwe foto's direct opnieuw gekozen kunnen worden
+              try {
+                photos = photos.concat(newPhotos);
+                localStorage.setItem("street_observation_photos", JSON.stringify(photos));
+                renderGallery();
+              } catch (error) {
+                alert("Opslaglimiet bereikt! De foto('s) zijn te groot voor het geheugen van de browser. Probeer kleinere of minder foto's tegelijk te uploaden.");
+              }
+              fileInput.value = ""; // Reset de input zodat je direct weer nieuwe foto's kunt selecteren
             }
           };
           reader.readAsDataURL(file);
