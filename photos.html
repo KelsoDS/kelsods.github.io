@@ -15,7 +15,220 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=45">
+  <style>
+    /* ==========================================
+       STREET OBSERVATIONS - GLOBAL & GALLERY
+       ========================================== */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0b0b0b;
+      color: #f2f2f2;
+      font-family: monospace, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Control Panel & Header */
+    .control-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #111;
+      border-bottom: 1px solid #222;
+    }
+
+    .panel-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .panel-brand {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    /* Buttons */
+    .btn {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: monospace;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      background: #333;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #ddd;
+    }
+
+    .btn-danger {
+      background: #8b0000;
+      color: #fff;
+      border: none;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .hamburger-bar {
+      width: 100%;
+      height: 2px;
+      background-color: #fff;
+    }
+
+    /* Navigation Drawer */
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #111;
+      border-right: 1px solid #222;
+      transition: left 0.3s ease;
+      z-index: 9999999 !important;
+      padding: 20px;
+    }
+
+    .nav-drawer.open {
+      left: 0;
+    }
+
+    .drawer-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      float: right;
+    }
+
+    .drawer-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      color: #777;
+    }
+
+    .drawer-links {
+      list-style: none;
+    }
+
+    .drawer-links li {
+      margin-bottom: 15px;
+    }
+
+    .drawer-links a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: block !important;
+      cursor: pointer !important;
+      position: relative;
+      z-index: 10000000 !important;
+    }
+
+    .drawer-links a.active, .drawer-links a:hover {
+      color: #ffcc00;
+    }
+
+    /* ==========================================
+       DUBBEL ZO GROTE TEGELS & EXACT SQUARE GRID
+       ========================================== */
+
+    .gallery-container {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100%;
+    }
+
+    .gallery-item {
+      position: relative !important;
+      aspect-ratio: 1 / 1 !important;
+      width: 100% !important;
+      overflow: hidden !important;
+      background: #000 !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+    }
+
+    /* Modal View */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999999;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    .modal-card {
+      background: #161616;
+      border: 1px solid #333;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 90vh;
+      width: 500px;
+    }
+  </style>
 </head>
 <body>
 
@@ -64,7 +277,191 @@
     </div>
   </div>
 
-  <!-- Gekoppeld aan het externe script.js bestand -->
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+      // 1. Directe en robuuste navigatie naar Typography Log (index.html)
+      const btnToIndex = document.getElementById("btn-to-index");
+      if (btnToIndex) {
+        btnToIndex.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = "index.html";
+        });
+      }
+
+      // 2. Hamburger Menu Controls
+      const menuToggle = document.getElementById("menu-toggle");
+      const navDrawer = document.getElementById("nav-drawer");
+      const closeDrawer = document.getElementById("close-drawer");
+
+      if (menuToggle && navDrawer) {
+        menuToggle.addEventListener("click", function(e) {
+          e.stopPropagation();
+          navDrawer.classList.toggle("open");
+        });
+      }
+
+      if (closeDrawer && navDrawer) {
+        closeDrawer.addEventListener("click", function(e) {
+          e.stopPropagation();
+          navDrawer.classList.remove("open");
+        });
+      }
+
+      document.addEventListener("click", function(e) {
+        if (navDrawer && navDrawer.classList.contains("open")) {
+          if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
+            navDrawer.classList.remove("open");
+          }
+        }
+      });
+
+      // 3. Fotogalerij Logica met veilige fallback / placeholder URLs
+      const galleryGrid = document.getElementById("gallery-grid");
+      if (!galleryGrid) return;
+
+      const fileInput = document.getElementById("file-input");
+      const triggerUploadBtn = document.getElementById("trigger-upload-btn");
+      const photoModal = document.getElementById("photo-modal");
+      const modalImg = document.getElementById("modal-img");
+      const closePhotoModalBtn = document.getElementById("close-photo-modal");
+      const deletePhotoBtn = document.getElementById("delete-photo-btn");
+
+      const defaultPhotos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+      let localPhotos = [];
+      try {
+        localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
+      } catch (e) {
+        localPhotos = [];
+      }
+
+      let photos = defaultPhotos.concat(localPhotos);
+      let selectedPhotoIndex = null;
+
+      function renderGallery() {
+        galleryGrid.innerHTML = "";
+
+        photos.forEach(function(photoItem, index) {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "gallery-item";
+
+          const img = document.createElement("img");
+          img.alt = "Observation " + (index + 1);
+
+          if (index < defaultPhotos.length) {
+            const num = photoItem;
+            // Safe URL format that works across both local servers and blob environment previews
+            const defaultPath = `beeld/Artboard ${num}.jpg`;
+            const fallbackPlaceholder = `https://placehold.co/600x600/111111/ffffff?text=ARTBOARD+${num}`;
+
+            img.src = defaultPath;
+
+            img.onerror = function() {
+              if (this.src !== fallbackPlaceholder) {
+                this.src = fallbackPlaceholder;
+              }
+            };
+          } else {
+            img.src = photoItem;
+          }
+
+          itemDiv.appendChild(img);
+
+          itemDiv.onclick = function() {
+            selectedPhotoIndex = index;
+            modalImg.src = img.src;
+            photoModal.classList.remove("hidden");
+          };
+
+          galleryGrid.appendChild(itemDiv);
+        });
+      }
+
+      if (triggerUploadBtn && fileInput) {
+        triggerUploadBtn.onclick = function() {
+          fileInput.click();
+        };
+
+        fileInput.onchange = async function(e) {
+          const files = e.target.files;
+          if (!files || files.length === 0) return;
+
+          const newPhotos = [];
+          for (let file of Array.from(files)) {
+            try {
+              const compressed = await compressImage(file);
+              newPhotos.push(compressed);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          try {
+            localPhotos = localPhotos.concat(newPhotos);
+            localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+            photos = defaultPhotos.concat(localPhotos);
+            renderGallery();
+          } catch (error) {
+            alert("Browsergeheugen vol! Verwijder enkele foto's.");
+          }
+          fileInput.value = "";
+        };
+      }
+
+      function compressImage(file, maxWidth = 1200, quality = 0.7) {
+        return new Promise(function(resolve) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement("canvas");
+              let width = img.width;
+              let height = img.height;
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      if (deletePhotoBtn) {
+        deletePhotoBtn.onclick = function() {
+          if (selectedPhotoIndex !== null) {
+            const localIndex = selectedPhotoIndex - defaultPhotos.length;
+            if (localIndex >= 0) {
+              localPhotos.splice(localIndex, 1);
+              localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+              photos = defaultPhotos.concat(localPhotos);
+            } else {
+              alert("Vaste foto's uit de map 'beeld' kunnen niet via de browser worden verwijderd.");
+            }
+            selectedPhotoIndex = null;
+            photoModal.classList.add("hidden");
+            renderGallery();
+          }
+        };
+      }
+
+      if (closePhotoModalBtn) {
+        closePhotoModalBtn.onclick = function() {
+          photoModal.classList.add("hidden");
+          selectedPhotoIndex = null;
+        };
+      }
+
+      renderGallery();
+    });
+  </script>
 </body>
 </html>
