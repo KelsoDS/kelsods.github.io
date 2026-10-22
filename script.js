@@ -1,16 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
 
   // ==========================================
-  // 1. ALGEMENE NAVIGATIE & HAMBURGER MENU
+  // 1. HAMBURGER MENU & NAVIGATIE (Beide pagina's)
   // ==========================================
   
   const btnToIndex = document.getElementById("btn-to-index");
   if (btnToIndex) {
     btnToIndex.onclick = function(e) {
       e.stopPropagation();
-      const currentPath = window.location.pathname;
-      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-      window.location.href = basePath + "index.html";
+      window.location.href = "index.html";
     };
   }
 
@@ -42,34 +40,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   // ==========================================
-  // 2. INDEX PAGINA LOGICA: OUTLINE & DRIFTEN
-  // ==========================================
-  
-  const outlineBtn = document.getElementById("btn-outline") || document.querySelector(".btn-outline");
-  const driftBtn = document.getElementById("btn-drift") || document.querySelector(".btn-drift");
-  const typographyElements = document.querySelectorAll(".typography-text, .type-sample, h1, p");
-
-  if (outlineBtn) {
-    outlineBtn.onclick = function() {
-      document.body.classList.toggle("outline-mode");
-      typographyElements.forEach(el => el.classList.toggle("outline-style"));
-    };
-  }
-
-  if (driftBtn) {
-    driftBtn.onclick = function() {
-      document.body.classList.toggle("drift-mode");
-      typographyElements.forEach(el => el.classList.toggle("drift-style"));
-    };
-  }
-
-
-  // ==========================================
-  // 3. FOTOGALERIJ LOGICA (photos.html)
+  // 2. FOTOGALERIJ LOGICA (Alleen op photos.html)
   // ==========================================
   
   const galleryGrid = document.getElementById("gallery-grid");
-  if (!galleryGrid) return; // Stop als we niet op de galerijpagina zijn
+  
+  // Als er geen fotogalerij op deze pagina staat (zoals op index.html), 
+  // stopt het script hier direct, zodat jouw index-pagina met rust wordt gelaten!
+  if (!galleryGrid) return; 
 
   const fileInput = document.getElementById("file-input");
   const triggerUploadBtn = document.getElementById("trigger-upload-btn");
@@ -106,9 +84,8 @@ document.addEventListener("DOMContentLoaded", function() {
           "./beeld/Artboard " + num + ".jpg",
           "./beeld/Artboard%20" + num + ".jpg",
           "beeld/Artboard " + num + ".jpg",
-          "beeld/Artboard%20" + num + ".jpg",
-          "./beeld/Artboard " + num + ".JPG",
-          "./beeld/artboard " + num + ".jpg"
+          "beeld/artboard " + num + ".jpg",
+          "./beeld/Artboard " + num + ".JPG"
         ];
 
         let attemptIndex = 0;
@@ -138,7 +115,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Upload knop afhandeling
   if (triggerUploadBtn && fileInput) {
     triggerUploadBtn.onclick = function() {
       fileInput.click();
@@ -195,7 +171,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Modal acties
   if (deletePhotoBtn) {
     deletePhotoBtn.onclick = function() {
       if (selectedPhotoIndex !== null) {
