@@ -67,7 +67,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     document.addEventListener("DOMContentLoaded", () => {
       // Menu drawer toggle
       const menuToggle = document.getElementById("menu-toggle");
@@ -139,22 +139,30 @@
         fileInput.click();
       });
 
-      // Handle file uploads
+      // Handle file uploads (robuust verwerkt zodat meermalig uploaden altijd werkt)
       fileInput.addEventListener("change", (e) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
+        let filesProcessed = 0;
+        const newPhotos = [];
+
         Array.from(files).forEach(file => {
           const reader = new FileReader();
           reader.onload = (uploadEvent) => {
-            photos.push(uploadEvent.target.result);
-            localStorage.setItem("street_observation_photos", JSON.stringify(photos));
-            renderGallery();
+            newPhotos.push(uploadEvent.target.result);
+            filesProcessed++;
+
+            // Zodra alle geselecteerde bestanden zijn gelezen, toevoegen en opslaan
+            if (filesProcessed === files.length) {
+              photos = photos.concat(newPhotos);
+              localStorage.setItem("street_observation_photos", JSON.stringify(photos));
+              renderGallery();
+              fileInput.value = ""; // Reset direct zodat dezelfde foto of nieuwe foto's direct opnieuw gekozen kunnen worden
+            }
           };
           reader.readAsDataURL(file);
         });
-
-        fileInput.value = ""; // Reset input
       });
 
       // Delete photo
