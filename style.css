@@ -383,16 +383,26 @@ body.drift-mode .log-word:nth-child(odd) {
   margin-top: 25px;
 }
 
-/* PHOTO GALLERY STYLES */
-/* Strakke fotogalerij zonder witruimte en met gelijke vierkante tegels */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0 !important;
+/* ==========================================
+   STREET OBSERVATIONS - GALLERY & GRID FIXES
+   ========================================== */
+
+.gallery-container {
   padding: 0 !important;
   margin: 0 !important;
 }
 
+/* Strak raster: geen witruimte, geen marges, perfecte aansluiting */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100%;
+}
+
+/* Elke tegel is exact vierkant en pakt alle ruimte strak in */
 .gallery-item {
   aspect-ratio: 1 / 1 !important;
   width: 100% !important;
@@ -403,8 +413,10 @@ body.drift-mode .log-word:nth-child(odd) {
   margin: 0 !important;
   padding: 0 !important;
   cursor: pointer;
+  position: relative;
 }
 
+/* Foto vult de tegel perfect bij zonder vervorming */
 .gallery-item img {
   width: 100% !important;
   height: 100% !important;
@@ -412,7 +424,7 @@ body.drift-mode .log-word:nth-child(odd) {
   display: block !important;
 }
 
-/* Zorg dat de hamburger menu links altijd aanklikbaar zijn */
+/* Hamburger Menu & Navigatie Klikbaarheid */
 .nav-drawer {
   z-index: 9999999 !important;
 }
