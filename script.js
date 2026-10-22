@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalImg = document.getElementById("modal-img");
     const closePhotoModalBtn = document.getElementById("close-photo-modal");
     const deletePhotoBtn = document.getElementById("delete-photo-btn");
-    const drawerPhotoCount = document.getElementById("drawer-photo-count");
+    const drawerPhotoCount = document.getElementById("drawer-log-count");
 
     const defaultPhotos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -378,3 +378,4 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGallery();
   }
 });
+
