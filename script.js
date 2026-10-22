@@ -516,3 +516,5 @@ body.drift-mode .log-row:nth-child(odd) {
   }
 }
 
+const availableHeight = Math.max(window.innerHeight - 120, 300);
+const baseFontSize = Math.max(1.6, Math.min(7.5, (availableHeight / totalRows) / 1.8));
