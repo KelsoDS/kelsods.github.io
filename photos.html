@@ -11,10 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=37">
+  <link rel="stylesheet" href="style.css?v=38">
 
   <style>
-    /* Directe Grid-opmaak voor betrouwbare weergave */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -46,7 +45,8 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="index.html" id="link-index">Typography Log</a></li>
+      <!-- Directe, pure links zonder JavaScript hinder -->
+      <li><a href="index.html">Typography Log</a></li>
       <li><a href="photos.html" class="active">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
@@ -87,34 +87,25 @@
   </div>
 
   <script>
-    // 1. HAMBURGER MENU & NAVIGATIE (Stripprijs-vrij en direct werkend)
+    // 1. HAMBURGER MENU TOGGLE
     const menuToggle = document.getElementById("menu-toggle");
     const navDrawer = document.getElementById("nav-drawer");
     const closeDrawer = document.getElementById("close-drawer");
 
     if (menuToggle && navDrawer) {
-      menuToggle.onclick = function(e) {
-        e.stopPropagation();
+      menuToggle.addEventListener("click", () => {
         navDrawer.classList.toggle("open");
-      };
+      });
     }
 
     if (closeDrawer && navDrawer) {
-      closeDrawer.onclick = function() {
+      closeDrawer.addEventListener("click", () => {
         navDrawer.classList.remove("open");
-      };
+      });
     }
 
-    // Directe klik op de link naar index.html forceert de navigatie
-    const linkIndex = document.getElementById("link-index");
-    if (linkIndex) {
-      linkIndex.onclick = function() {
-        window.location.href = "index.html";
-      };
-    }
-
-    // 2. FOTOGALERIJ LOGICA
-    document.addEventListener("DOMContentLoaded", function() {
+    // 2. FOTOGALERIJ
+    document.addEventListener("DOMContentLoaded", () => {
       const galleryGrid = document.getElementById("gallery-grid");
       const fileInput = document.getElementById("file-input");
       const triggerUploadBtn = document.getElementById("trigger-upload-btn");
@@ -123,10 +114,10 @@
       const closePhotoModalBtn = document.getElementById("close-photo-modal");
       const deletePhotoBtn = document.getElementById("delete-photo-btn");
 
-      // Maak lijst aan van vaste bestanden
+      // Lijst met verwachte bestanden
       const defaultPhotos = [];
       for (let i = 1; i <= 10; i++) {
-        defaultPhotos.push("beeld/Artboard " + i + ".jpg");
+        defaultPhotos.push(`Artboard ${i}`);
       }
 
       let localPhotos = [];
@@ -143,42 +134,48 @@
         if (!galleryGrid) return;
         galleryGrid.innerHTML = "";
 
-        photos.forEach(function(photoSrc, index) {
+        photos.forEach((photoItem, index) => {
           const itemDiv = document.createElement("div");
           itemDiv.className = "gallery-item";
 
           const img = document.createElement("img");
-          img.alt = "Observation " + (index + 1);
+          img.alt = `Observation ${index + 1}`;
 
           if (index < defaultPhotos.length) {
-            // Vaste map foto
-            img.src = encodeURI(photoSrc);
+            // Test automatisch verschillende mogelijke schrijfwijzen/extensies
+            const base = `beeld/${photoItem}`;
+            const attempts = [
+              `${base}.jpg`,
+              `${base}.JPG`,
+              `${base}.jpeg`,
+              `${base}.png`,
+              `beeld/${photoItem.toLowerCase()}.jpg`
+            ];
 
-            // Probeer alternatieve extensies/paden als het bestand niet laadt
+            let attemptIndex = 0;
+            img.src = attempts[attemptIndex];
+
             img.onerror = function() {
-              if (this.src.indexOf("%20") !== -1) {
-                // Probeer met gewone spatie
-                this.src = photoSrc;
-              } else if (this.src.indexOf(".jpg") !== -1) {
-                // Probeer hoofdletters .JPG
-                this.src = photoSrc.replace(".jpg", ".JPG");
+              attemptIndex++;
+              if (attemptIndex < attempts.length) {
+                this.src = attempts[attemptIndex];
               } else {
-                // Bestaat niet, verberg het vakje
+                // Kan bestand helemaal niet vinden op server, verberg leeg blokje
                 itemDiv.style.display = "none";
               }
             };
           } else {
-            // Lokaal geüploade foto
-            img.src = photoSrc;
+            // Lokaal geüploade foto (base64)
+            img.src = photoItem;
           }
 
           itemDiv.appendChild(img);
 
-          itemDiv.onclick = function() {
+          itemDiv.addEventListener("click", () => {
             selectedPhotoIndex = index;
             modalImg.src = img.src;
             photoModal.classList.remove("hidden");
-          };
+          });
 
           galleryGrid.appendChild(itemDiv);
         });
@@ -186,11 +183,9 @@
 
       // Upload knop
       if (triggerUploadBtn && fileInput) {
-        triggerUploadBtn.onclick = function() {
-          fileInput.click();
-        };
+        triggerUploadBtn.addEventListener("click", () => fileInput.click());
 
-        fileInput.onchange = async function(e) {
+        fileInput.addEventListener("change", async (e) => {
           const files = e.target.files;
           if (!files || files.length === 0) return;
 
@@ -210,18 +205,18 @@
             photos = defaultPhotos.concat(localPhotos);
             renderGallery();
           } catch (error) {
-            alert("Geheugen vol! Verwijder enkele lokaal geüploade foto's.");
+            alert("Geheugen vol! Verwijder enkele foto's.");
           }
           fileInput.value = "";
-        };
+        });
       }
 
       function compressImage(file, maxWidth = 1200, quality = 0.7) {
-        return new Promise(function(resolve) {
+        return new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onload = function(e) {
+          reader.onload = (e) => {
             const img = new Image();
-            img.onload = function() {
+            img.onload = () => {
               const canvas = document.createElement("canvas");
               let width = img.width;
               let height = img.height;
@@ -243,7 +238,7 @@
 
       // Modal sluiten & verwijderen
       if (deletePhotoBtn) {
-        deletePhotoBtn.onclick = function() {
+        deletePhotoBtn.addEventListener("click", () => {
           if (selectedPhotoIndex !== null) {
             const localIndex = selectedPhotoIndex - defaultPhotos.length;
             if (localIndex >= 0) {
@@ -257,14 +252,14 @@
             photoModal.classList.add("hidden");
             renderGallery();
           }
-        };
+        });
       }
 
       if (closePhotoModalBtn) {
-        closePhotoModalBtn.onclick = function() {
+        closePhotoModalBtn.addEventListener("click", () => {
           photoModal.classList.add("hidden");
           selectedPhotoIndex = null;
-        };
+        });
       }
 
       renderGallery();
