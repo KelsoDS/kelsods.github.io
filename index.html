@@ -8,14 +8,14 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <title>Street Observations - Photo Gallery</title>
+  <title>Street Observations - Typography</title>
   
   <!-- Google Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=26">
 </head>
 <body>
 
@@ -24,10 +24,17 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="index.html">Typography Log</a></li>
-      <li><a href="photos.html" class="active">Photo Gallery</a></li>
+      <li><a href="index.html" class="active">Typography Log</a></li>
+      <li><a href="photos.html">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
+
+    <div class="drawer-title" style="margin-top: 35px;">CONTROLS & ACTIONS</div>
+    <div class="drawer-actions">
+      <button class="btn drawer-btn" id="toggle-style">SOLID / OUTLINE</button>
+      <button class="btn drawer-btn" id="toggle-drift">DRIFT ANIMATION</button>
+      <button class="btn drawer-btn btn-primary" id="toggle-modal">+ ADD OBSERVATION</button>
+    </div>
   </nav>
 
   <!-- Top Control Bar (Minimalist) -->
@@ -38,199 +45,54 @@
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
-      <span class="panel-brand">STREET OBSERVATIONS — GALLERY</span>
+      <span class="panel-brand">STREET OBSERVATIONS</span>
     </div>
   </header>
 
-  <!-- Gallery Main Container -->
-  <main class="gallery-container">
-    <div class="gallery-header-actions">
-      <!-- File input met 'multiple' om meerdere foto's tegelijk te selecteren -->
-      <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
-      <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
-    </div>
+  <!-- Main Typography Display -->
+  <main class="typography-container" id="log-display"></main>
 
-    <!-- Gallery Grid -->
-    <div class="gallery-grid" id="gallery-grid">
-      <!-- Dynamic photos will appear here -->
-    </div>
-  </main>
+  <!-- Mobile Swipe Indicator -->
+  <div class="swipe-hint" id="swipe-hint">SWIPE LEFT/RIGHT ➔</div>
 
-  <!-- Modal: Photo Viewer / Details -->
-  <div class="modal-overlay hidden" id="photo-modal">
-    <div class="modal-card photo-modal-card">
-      <img id="modal-img" src="" alt="Enlarged Observation Photo" style="width: 100%; max-height: 60vh; object-fit: contain; margin-bottom: 15px;">
-      <div class="form-actions" style="justify-content: space-between; align-items: center;">
-        <button type="button" class="btn btn-danger" id="delete-photo-btn">DELETE PHOTO</button>
-        <button type="button" class="btn" id="close-photo-modal">CLOSE</button>
+  <!-- Modal: Add / Edit Observation -->
+  <div class="modal-overlay hidden" id="observation-modal">
+    <div class="modal-card">
+      <h2 id="modal-title">ADD NEW OBSERVATION</h2>
+      <form id="add-log-form">
+        <label for="input-day">DAY (E.G. FRI 9 OCT)</label>
+        <input type="text" id="input-day" required placeholder="FRI 9 OCT">
+
+        <label for="input-time">TIME (E.G. 11PM)</label>
+        <input type="text" id="input-time" required placeholder="11PM">
+
+        <label for="input-text">OBSERVATION TEXT</label>
+        <textarea id="input-text" rows="3" required placeholder="DESCRIBE THE SITUATION..."></textarea>
+
+        <div class="form-actions">
+          <button type="button" class="btn" id="close-modal">CANCEL</button>
+          <button type="submit" class="btn btn-primary" id="form-submit-btn">ADD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Observation Details -->
+  <div class="modal-overlay hidden" id="info-modal">
+    <div class="modal-card">
+      <h2 id="info-time">--</h2>
+      <p id="info-text" style="font-family: monospace; color: #ccc; margin-top: 15px;"></p>
+      
+      <div class="form-actions" style="justify-content: space-between; align-items: center; margin-top: 25px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-danger" id="delete-current-info">DELETE</button>
+          <button type="button" class="btn btn-primary" id="edit-current-info">EDIT OBSERVATION</button>
+        </div>
+        <button type="button" class="btn" id="close-info-modal">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // Menu drawer toggle
-      const menuToggle = document.getElementById("menu-toggle");
-      const navDrawer = document.getElementById("nav-drawer");
-      const closeDrawer = document.getElementById("close-drawer");
-
-      if (navDrawer) navDrawer.classList.remove("open");
-
-      if (menuToggle && navDrawer) {
-        menuToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          navDrawer.classList.toggle("open");
-        });
-      }
-
-      if (closeDrawer && navDrawer) {
-        closeDrawer.addEventListener("click", () => {
-          navDrawer.classList.remove("open");
-        });
-      }
-
-      document.addEventListener("click", (e) => {
-        if (navDrawer && navDrawer.classList.contains("open")) {
-          if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
-            navDrawer.classList.remove("open");
-          }
-        }
-      });
-
-      // 1. Automatisch genereren van Artboard 1.jpg t/m Artboard 10.jpg uit de map "beeld"
-      const defaultPhotos = [];
-      for (let i = 1; i <= 10; i++) {
-        defaultPhotos.push(`beeld/Artboard ${i}.jpg`);
-      }
-
-      // 2. Extra lokale uploads uit localStorage
-      let localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
-      
-      // 3. Combineer map-foto's en lokale uploads samen
-      let photos = defaultPhotos.concat(localPhotos);
-      let selectedPhotoIndex = null;
-
-      const galleryGrid = document.getElementById("gallery-grid");
-      const fileInput = document.getElementById("file-input");
-      const triggerUploadBtn = document.getElementById("trigger-upload-btn");
-      
-      const photoModal = document.getElementById("photo-modal");
-      const modalImg = document.getElementById("modal-img");
-      const closePhotoModalBtn = document.getElementById("close-photo-modal");
-      const deletePhotoBtn = document.getElementById("delete-photo-btn");
-
-      function renderGallery() {
-        galleryGrid.innerHTML = "";
-
-        if (photos.length === 0) {
-          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #777; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS AVAILABLE.</div>`;
-          return;
-        }
-
-        photos.forEach((photoSrc, index) => {
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "gallery-item";
-          itemDiv.style.backgroundImage = `url("${photoSrc}")`;
-
-          itemDiv.addEventListener("click", () => {
-            selectedPhotoIndex = index;
-            modalImg.src = photoSrc;
-            photoModal.classList.remove("hidden");
-          });
-
-          galleryGrid.appendChild(itemDiv);
-        });
-      }
-
-      // Trigger file selector
-      triggerUploadBtn.addEventListener("click", () => {
-        fileInput.click();
-      });
-
-      // Hulpfunctie om foto's automatisch te verkleinen voor opslag
-      function compressImage(file, maxWidth = 1200, quality = 0.7) {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              let width = img.width;
-              let height = img.height;
-
-              if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-              }
-
-              canvas.width = width;
-              canvas.height = height;
-
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0, width, height);
-
-              resolve(canvas.toDataURL("image/jpeg", quality));
-            };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      // Handle file uploads met automatische compressie
-      fileInput.addEventListener("change", async (e) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        const newPhotos = [];
-
-        for (let file of Array.from(files)) {
-          try {
-            const compressedDataUrl = await compressImage(file);
-            newPhotos.push(compressedDataUrl);
-          } catch (err) {
-            console.error("Fout bij comprimeren van foto:", err);
-          }
-        }
-
-        try {
-          localPhotos = localPhotos.concat(newPhotos);
-          localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
-          photos = defaultPhotos.concat(localPhotos);
-          renderGallery();
-        } catch (error) {
-          alert("Het geheugen van de browser zit vol! Verwijder een paar lokaal geüploade foto's om nieuwe toe te kunnen voegen.");
-        }
-
-        fileInput.value = "";
-      });
-
-      // Delete photo (verwijdert alleen lokaal geüploade foto's, Artboards uit de map blijven netjes staan)
-      deletePhotoBtn.addEventListener("click", () => {
-        if (selectedPhotoIndex !== null) {
-          const localIndex = selectedPhotoIndex - defaultPhotos.length;
-          
-          if (localIndex >= 0) {
-            localPhotos.splice(localIndex, 1);
-            localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
-            photos = defaultPhotos.concat(localPhotos);
-          } else {
-            alert("Dit is een vaste Artboard-foto uit de map 'beeld' en kan niet worden verwijderd.");
-          }
-
-          selectedPhotoIndex = null;
-          photoModal.classList.add("hidden");
-          renderGallery();
-        }
-      });
-
-      closePhotoModalBtn.addEventListener("click", () => {
-        photoModal.classList.add("hidden");
-        selectedPhotoIndex = null;
-      });
-
-      renderGallery();
-    });
-  </script>
+  <script src="script.js?v=26"></script>
 </body>
 </html>
