@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-
   <title>Street Observations - Photo Gallery</title>
   
   <!-- Google Pixel Font -->
@@ -15,10 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=37">
 
   <style>
-    /* Zorgt dat de grid-items foto's direct en scherp tonen */
+    /* Directe Grid-opmaak voor betrouwbare weergave */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -50,8 +46,8 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="./index.html">Typography Log</a></li>
-      <li><a href="./photos.html" class="active">Photo Gallery</a></li>
+      <li><a href="index.html" id="link-index">Typography Log</a></li>
+      <li><a href="photos.html" class="active">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
   </nav>
@@ -91,35 +87,34 @@
   </div>
 
   <script>
-    // 1. HAMBURGER MENU & NAVIGATIE
-    document.addEventListener("DOMContentLoaded", () => {
-      const menuToggle = document.getElementById("menu-toggle");
-      const navDrawer = document.getElementById("nav-drawer");
-      const closeDrawer = document.getElementById("close-drawer");
+    // 1. HAMBURGER MENU & NAVIGATIE (Stripprijs-vrij en direct werkend)
+    const menuToggle = document.getElementById("menu-toggle");
+    const navDrawer = document.getElementById("nav-drawer");
+    const closeDrawer = document.getElementById("close-drawer");
 
-      if (menuToggle && navDrawer) {
-        menuToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          navDrawer.classList.toggle("open");
-        });
-      }
+    if (menuToggle && navDrawer) {
+      menuToggle.onclick = function(e) {
+        e.stopPropagation();
+        navDrawer.classList.toggle("open");
+      };
+    }
 
-      if (closeDrawer && navDrawer) {
-        closeDrawer.addEventListener("click", () => {
-          navDrawer.classList.remove("open");
-        });
-      }
+    if (closeDrawer && navDrawer) {
+      closeDrawer.onclick = function() {
+        navDrawer.classList.remove("open");
+      };
+    }
 
-      // Sluit alleen als er buiten de drawer geklikt wordt (zonder event-interferentie op de links)
-      document.addEventListener("click", (e) => {
-        if (navDrawer && navDrawer.classList.contains("open")) {
-          if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
-            navDrawer.classList.remove("open");
-          }
-        }
-      });
+    // Directe klik op de link naar index.html forceert de navigatie
+    const linkIndex = document.getElementById("link-index");
+    if (linkIndex) {
+      linkIndex.onclick = function() {
+        window.location.href = "index.html";
+      };
+    }
 
-      // 2. GALERIJ LOGICA
+    // 2. FOTOGALERIJ LOGICA
+    document.addEventListener("DOMContentLoaded", function() {
       const galleryGrid = document.getElementById("gallery-grid");
       const fileInput = document.getElementById("file-input");
       const triggerUploadBtn = document.getElementById("trigger-upload-btn");
@@ -128,16 +123,16 @@
       const closePhotoModalBtn = document.getElementById("close-photo-modal");
       const deletePhotoBtn = document.getElementById("delete-photo-btn");
 
-      // Lijst met Artboard-bestanden in de map 'beeld'
+      // Maak lijst aan van vaste bestanden
       const defaultPhotos = [];
       for (let i = 1; i <= 10; i++) {
-        defaultPhotos.push(`beeld/Artboard ${i}.jpg`);
+        defaultPhotos.push("beeld/Artboard " + i + ".jpg");
       }
 
       let localPhotos = [];
       try {
         localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
-      } catch (err) {
+      } catch (e) {
         localPhotos = [];
       }
 
@@ -148,40 +143,42 @@
         if (!galleryGrid) return;
         galleryGrid.innerHTML = "";
 
-        photos.forEach((photoSrc, index) => {
+        photos.forEach(function(photoSrc, index) {
           const itemDiv = document.createElement("div");
           itemDiv.className = "gallery-item";
 
           const img = document.createElement("img");
-          img.alt = `Observation ${index + 1}`;
+          img.alt = "Observation " + (index + 1);
 
-          // Vaste map foto's afhandelen met automatische extensie-Fallback
           if (index < defaultPhotos.length) {
-            img.src = photoSrc;
+            // Vaste map foto
+            img.src = encodeURI(photoSrc);
 
-            // Als .jpg mislukt, probeer .JPG of .png (handig voor GitHub case-sensitivity)
-            img.onerror = () => {
-              if (img.src.endsWith(".jpg")) {
-                img.src = photoSrc.replace(".jpg", ".JPG");
-              } else if (img.src.endsWith(".JPG")) {
-                img.src = photoSrc.replace(".JPG", ".png");
+            // Probeer alternatieve extensies/paden als het bestand niet laadt
+            img.onerror = function() {
+              if (this.src.indexOf("%20") !== -1) {
+                // Probeer met gewone spatie
+                this.src = photoSrc;
+              } else if (this.src.indexOf(".jpg") !== -1) {
+                // Probeer hoofdletters .JPG
+                this.src = photoSrc.replace(".jpg", ".JPG");
               } else {
-                // Bestaat helemaal niet op de server, verberg het vakje
+                // Bestaat niet, verberg het vakje
                 itemDiv.style.display = "none";
               }
             };
           } else {
-            // Lokaal geüploade foto (base64 data URL)
+            // Lokaal geüploade foto
             img.src = photoSrc;
           }
 
           itemDiv.appendChild(img);
 
-          itemDiv.addEventListener("click", () => {
+          itemDiv.onclick = function() {
             selectedPhotoIndex = index;
             modalImg.src = img.src;
             photoModal.classList.remove("hidden");
-          });
+          };
 
           galleryGrid.appendChild(itemDiv);
         });
@@ -189,9 +186,11 @@
 
       // Upload knop
       if (triggerUploadBtn && fileInput) {
-        triggerUploadBtn.addEventListener("click", () => fileInput.click());
+        triggerUploadBtn.onclick = function() {
+          fileInput.click();
+        };
 
-        fileInput.addEventListener("change", async (e) => {
+        fileInput.onchange = async function(e) {
           const files = e.target.files;
           if (!files || files.length === 0) return;
 
@@ -211,19 +210,18 @@
             photos = defaultPhotos.concat(localPhotos);
             renderGallery();
           } catch (error) {
-            alert("Geheugen vol! Verwijder enkele foto's.");
+            alert("Geheugen vol! Verwijder enkele lokaal geüploade foto's.");
           }
           fileInput.value = "";
-        });
+        };
       }
 
-      // Afbeelding comprimeren voor opslag
       function compressImage(file, maxWidth = 1200, quality = 0.7) {
-        return new Promise((resolve) => {
+        return new Promise(function(resolve) {
           const reader = new FileReader();
-          reader.onload = (e) => {
+          reader.onload = function(e) {
             const img = new Image();
-            img.onload = () => {
+            img.onload = function() {
               const canvas = document.createElement("canvas");
               let width = img.width;
               let height = img.height;
@@ -245,7 +243,7 @@
 
       // Modal sluiten & verwijderen
       if (deletePhotoBtn) {
-        deletePhotoBtn.addEventListener("click", () => {
+        deletePhotoBtn.onclick = function() {
           if (selectedPhotoIndex !== null) {
             const localIndex = selectedPhotoIndex - defaultPhotos.length;
             if (localIndex >= 0) {
@@ -259,14 +257,14 @@
             photoModal.classList.add("hidden");
             renderGallery();
           }
-        });
+        };
       }
 
       if (closePhotoModalBtn) {
-        closePhotoModalBtn.addEventListener("click", () => {
+        closePhotoModalBtn.onclick = function() {
           photoModal.classList.add("hidden");
           selectedPhotoIndex = null;
-        });
+        };
       }
 
       renderGallery();
