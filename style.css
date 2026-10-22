@@ -1,35 +1,28 @@
+/* ==========================================
+   STREET OBSERVATIONS - GLOBAL & GALLERY
+   ========================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden !important;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: Impact, 'Arial Black', sans-serif;
-  display: flex;
-  flex-direction: column;
+body {
+  background-color: #0b0b0b;
+  color: #f2f2f2;
+  font-family: monospace, sans-serif;
+  overflow-x: hidden;
 }
 
-/* Header Bar */
+/* Control Panel & Header */
 .control-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 60px;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #222222;
+  padding: 15px 20px;
+  background: #111;
+  border-bottom: 1px solid #222;
 }
 
 .panel-left {
@@ -39,352 +32,120 @@ html, body {
 }
 
 .panel-brand {
-  font-family: monospace;
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  color: #888888;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
 }
 
 /* Buttons */
 .btn {
-  background: #111111;
-  color: #ffffff;
-  border: 1px solid #444444;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
   padding: 8px 14px;
-  font-family: sans-serif;
-  font-size: 0.75rem;
-  font-weight: bold;
-  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 2px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
+  font-family: monospace;
+  text-transform: uppercase;
 }
 
 .btn:hover {
-  background: #ffffff;
-  color: #000000;
-}
-
-.btn.active-mode {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
+  background: #333;
 }
 
 .btn-primary {
-  border-color: #ffffff;
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #ddd;
 }
 
 .btn-danger {
-  border-color: #ff3333;
-  color: #ff3333;
-}
-
-.btn-danger:hover {
-  background: #ff3333;
-  color: #ffffff;
+  background: #8b0000;
+  color: #fff;
+  border: none;
 }
 
 .btn-icon {
-  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  cursor: pointer;
+  padding: 0;
 }
 
 .hamburger-bar {
-  display: block;
-  width: 18px;
+  width: 100%;
   height: 2px;
-  background-color: #ffffff;
-  pointer-events: none;
+  background-color: #fff;
 }
 
-.btn-icon:hover .hamburger-bar {
-  background-color: #000000;
-}
-
-/* Drawer Menu */
+/* Navigation Drawer */
 .nav-drawer {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 300px;
+  left: -280px;
+  width: 280px;
   height: 100vh;
-  background: #0a0a0a;
-  border-right: 1px solid #222222;
-  z-index: 2500;
-  padding: 40px 25px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
-  overflow-y: auto;
+  background: #111;
+  border-right: 1px solid #222;
+  transition: left 0.3s ease;
+  z-index: 9999999 !important;
+  padding: 20px;
 }
 
 .nav-drawer.open {
-  transform: translateX(0);
+  left: 0;
 }
 
 .drawer-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
   background: none;
   border: none;
-  color: #ffffff;
-  font-size: 2rem;
+  color: #fff;
+  font-size: 1.5rem;
   cursor: pointer;
+  float: right;
 }
 
 .drawer-title {
-  font-family: monospace;
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  color: #666666;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  margin-top: 40px;
   margin-bottom: 20px;
+  color: #777;
 }
 
 .drawer-links {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+}
+
+.drawer-links li {
+  margin-bottom: 15px;
 }
 
 .drawer-links a {
-  color: #888888;
+  color: #fff;
   text-decoration: none;
-  font-family: monospace;
-  font-size: 0.95rem;
-  letter-spacing: 1px;
-  transition: color 0.2s;
+  font-size: 0.9rem;
+  display: block !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 10000000 !important;
 }
 
-.drawer-links a:hover,
-.drawer-links a.active {
-  color: #ff3333;
-  font-weight: bold;
-}
-
-.drawer-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.drawer-btn {
-  width: 100%;
-  justify-content: flex-start;
-  padding: 10px 12px;
-}
-
-/* TYPOGRAPHY CONTAINER (Desktop basis) */
-.typography-container {
-  margin-top: 65px;
-  height: calc(100vh - 65px);
-  width: 100vw;
-  padding: 10px 15px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: space-between;
-  justify-content: space-between;
-  overflow: hidden !important;
-}
-
-.log-word {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #ffffff;
-  transition: color 0.2s ease, -webkit-text-stroke 0.2s ease, text-shadow 0.2s ease;
-  user-select: none;
-  cursor: pointer;
-  white-space: nowrap;
-  line-height: 0.85;
-  margin-right: 0.3em;
-  display: inline-block;
-}
-
-.log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 1.5px #ff3333 !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
-}
-
-body.solid-style .log-word {
-  color: #ffffff !important;
-  -webkit-text-stroke: 0px transparent !important;
-}
-
-body.solid-style .log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 0px transparent !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
-}
-
-/* DRIFT ANIMATIE */
-@keyframes ambientDrift {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
-}
-
-body.drift-mode .log-word:nth-child(even) {
-  animation: ambientDrift 4s ease-in-out infinite;
-}
-
-body.drift-mode .log-word:nth-child(odd) {
-  animation: ambientDrift 6s ease-in-out infinite reverse;
-}
-
-/* GLITCH PIXELATED FONT EFFECT */
-@keyframes pixelGlitch {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2px, 1px); }
-  50% { transform: translate(1px, -1px); }
-  75% { transform: translate(-1px, 2px); }
-  100% { transform: translate(0, 0); }
-}
-
-.log-word.pixelated {
-  font-family: 'Press Start 2P', monospace, courier !important;
-  letter-spacing: 0px;
-  image-rendering: pixelated;
-  text-rendering: geometricPrecision;
-  display: inline-block;
-  animation: pixelGlitch 0.2s steps(2, start) infinite;
-}
-
-/* Swipe Indicator */
-.swipe-hint {
-  display: none;
-}
-
-/* MOBIELE WEERGAVE (< 701px): 1 observatie per scherm met volledige schermvullende spreiding */
-@media (max-width: 700px) {
-  .typography-container {
-    display: block !important;
-    position: relative !important;
-    padding: 10px 15px !important;
-    margin-top: 60px !important;
-    height: calc(100vh - 60px) !important;
-    overflow: hidden !important;
-  }
-
-  .observation-card {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    padding: 10px 15px !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-content: space-between !important;
-    justify-content: space-between !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transition: opacity 0.3s ease-in-out !important;
-    overflow: hidden !important;
-  }
-
-  .observation-card.active-slide {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-
-  .observation-card .log-word {
-    white-space: nowrap !important;
-    line-height: 0.85 !important;
-    margin-right: 0.3em !important;
-    display: inline-block !important;
-  }
-
-  .swipe-hint {
-    display: block !important;
-    position: fixed !important;
-    bottom: 12px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    font-family: monospace !important;
-    font-size: 0.75rem !important;
-    color: #555555 !important;
-    letter-spacing: 2px !important;
-    z-index: 999 !important;
-    pointer-events: none !important;
-    animation: pulseHint 2s infinite !important;
-  }
-}
-
-@keyframes pulseHint {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-
-.modal-overlay.hidden {
-  display: none !important;
-}
-
-.modal-card {
-  background: #111111;
-  padding: 30px;
-  border: 1px solid #333333;
-  width: 90%;
-  max-width: 500px;
-}
-
-.modal-card h2 {
-  font-family: monospace;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-}
-
-.modal-card label {
-  display: block;
-  margin-top: 15px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: #aaaaaa;
-}
-
-.modal-card input, .modal-card textarea {
-  width: 100%;
-  background: #000000;
-  border: 1px solid #444444;
-  color: #ffffff;
-  padding: 10px;
-  margin-top: 5px;
-  font-family: monospace;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 25px;
+.drawer-links a.active, .drawer-links a:hover {
+  color: #ffcc00;
 }
 
 /* ==========================================
-   STREET OBSERVATIONS - GALLERY & GRID FIXES
+   STRIKTE FOTOGALERIJ: GEEN WITRUIMTE & GELIJK
    ========================================== */
 
 .gallery-container {
@@ -392,17 +153,15 @@ body.drift-mode .log-word:nth-child(odd) {
   margin: 0 !important;
 }
 
-/* Strak raster: geen witruimte, geen marges, perfecte aansluiting */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   width: 100%;
 }
 
-/* Elke tegel is exact vierkant en pakt alle ruimte strak in */
 .gallery-item {
   aspect-ratio: 1 / 1 !important;
   width: 100% !important;
@@ -416,7 +175,6 @@ body.drift-mode .log-word:nth-child(odd) {
   position: relative;
 }
 
-/* Foto vult de tegel perfect bij zonder vervorming */
 .gallery-item img {
   width: 100% !important;
   height: 100% !important;
@@ -424,13 +182,29 @@ body.drift-mode .log-word:nth-child(odd) {
   display: block !important;
 }
 
-/* Hamburger Menu & Navigatie Klikbaarheid */
-.nav-drawer {
-  z-index: 9999999 !important;
+/* Modal View */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999999;
 }
-.drawer-links a {
-  cursor: pointer !important;
-  position: relative;
-  z-index: 10000000 !important;
-  display: block !important;
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  background: #161616;
+  border: 1px solid #333;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 500px;
 }
