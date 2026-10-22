@@ -1,18 +1,19 @@
-// 1. Veilige en robuuste navigatie naar de Typography Log pagina
+document.addEventListener("DOMContentLoaded", function() {
+
+  // ==========================================
+  // 1. ALGEMENE NAVIGATIE & HAMBURGER MENU
+  // ==========================================
+  
   const btnToIndex = document.getElementById("btn-to-index");
   if (btnToIndex) {
     btnToIndex.onclick = function(e) {
       e.stopPropagation();
-      e.preventDefault();
-      
-      // Bepaal automatisch het juiste pad (werkt zowel lokaal als op GitHub Pages submappen)
       const currentPath = window.location.pathname;
       const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
       window.location.href = basePath + "index.html";
     };
   }
 
-  // 2. Hamburger menu openen en sluiten
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
@@ -31,7 +32,6 @@
     };
   }
 
-  // Sluit menu bij klik buiten de drawer
   document.addEventListener("click", function(e) {
     if (navDrawer && navDrawer.classList.contains("open")) {
       if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -40,8 +40,37 @@
     }
   });
 
-  // 3. Fotogalerij logica & automatische Artboard inladen uit de map 'beeld'
+
+  // ==========================================
+  // 2. INDEX PAGINA LOGICA: OUTLINE & DRIFTEN
+  // ==========================================
+  
+  const outlineBtn = document.getElementById("btn-outline") || document.querySelector(".btn-outline");
+  const driftBtn = document.getElementById("btn-drift") || document.querySelector(".btn-drift");
+  const typographyElements = document.querySelectorAll(".typography-text, .type-sample, h1, p");
+
+  if (outlineBtn) {
+    outlineBtn.onclick = function() {
+      document.body.classList.toggle("outline-mode");
+      typographyElements.forEach(el => el.classList.toggle("outline-style"));
+    };
+  }
+
+  if (driftBtn) {
+    driftBtn.onclick = function() {
+      document.body.classList.toggle("drift-mode");
+      typographyElements.forEach(el => el.classList.toggle("drift-style"));
+    };
+  }
+
+
+  // ==========================================
+  // 3. FOTOGALERIJ LOGICA (photos.html)
+  // ==========================================
+  
   const galleryGrid = document.getElementById("gallery-grid");
+  if (!galleryGrid) return; // Stop als we niet op de galerijpagina zijn
+
   const fileInput = document.getElementById("file-input");
   const triggerUploadBtn = document.getElementById("trigger-upload-btn");
   const photoModal = document.getElementById("photo-modal");
@@ -62,7 +91,6 @@
   let selectedPhotoIndex = null;
 
   function renderGallery() {
-    if (!galleryGrid) return;
     galleryGrid.innerHTML = "";
 
     photos.forEach(function(photoItem, index) {
@@ -74,7 +102,6 @@
 
       if (index < defaultPhotos.length) {
         const num = photoItem;
-        // Robuuste URL-fallback voor GitHub mappen en spaties
         const attempts = [
           "./beeld/Artboard " + num + ".jpg",
           "./beeld/Artboard%20" + num + ".jpg",
@@ -111,7 +138,7 @@
     });
   }
 
-  // Upload knop triggeren
+  // Upload knop afhandeling
   if (triggerUploadBtn && fileInput) {
     triggerUploadBtn.onclick = function() {
       fileInput.click();
@@ -143,7 +170,6 @@
     };
   }
 
-  // Afbeelding comprimeren voor geheugenbesparing
   function compressImage(file, maxWidth = 1200, quality = 0.7) {
     return new Promise(function(resolve) {
       const reader = new FileReader();
@@ -169,7 +195,7 @@
     });
   }
 
-  // Modal functionaliteit: Verwijderen en sluiten
+  // Modal acties
   if (deletePhotoBtn) {
     deletePhotoBtn.onclick = function() {
       if (selectedPhotoIndex !== null) {
