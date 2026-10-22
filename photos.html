@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 <body>
 
@@ -45,7 +45,7 @@
   <!-- Gallery Main Container -->
   <main class="gallery-container">
     <div class="gallery-header-actions">
-      <!-- File input met 'multiple' om meerdere foto's tegelijk te selecteren -->
+      <!-- File input with 'multiple' for batch uploads -->
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
       <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
     </div>
@@ -69,7 +69,9 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Menu drawer toggle
+      // ==========================================
+      // 1. HAMBURGER MENU NAVIGATION DRAWER
+      // ==========================================
       const menuToggle = document.getElementById("menu-toggle");
       const navDrawer = document.getElementById("nav-drawer");
       const closeDrawer = document.getElementById("close-drawer");
@@ -97,24 +99,24 @@
         }
       });
 
-      // 1. Vaste foto's uit de map "beeld" (zichtbaar op elk apparaat)
-      const defaultPhotos = [
-        "beeld/Artboard 1.jpg",
-        "beeld/Artboard 2.jpg"
-        "beeld/Artboard 3.jpg"
-        "beeld/Artboard 4.jpg"
-        "beeld/Artboard 5.jpg"
-        "beeld/Artboard 6.jpg"
-        "beeld/Artboard 7.jpg"
-        "beeld/Artboard 8.jpg"
-        "beeld/Artboard 9.jpg"
-        "beeld/Artboard 10.jpg"
-      ];
+      // ==========================================
+      // 2. PHOTO GALLERY & LOCAL STORAGE LOGIC
+      // ==========================================
 
-      // 2. Extra lokale uploads uit localStorage
-      let localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
-      
-      // 3. Combineer vaste map-foto's en lokale uploads samen
+      // Encode URLs so spaces like "Artboard 1.jpg" don't cause URI errors
+      const defaultPhotos = [];
+      for (let i = 1; i <= 10; i++) {
+        defaultPhotos.push(encodeURI(`beeld/Artboard ${i}.jpg`));
+      }
+
+      let localPhotos = [];
+      try {
+        localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
+      } catch (err) {
+        console.warn("Could not load photos from localStorage:", err);
+        localPhotos = [];
+      }
+
       let photos = defaultPhotos.concat(localPhotos);
       let selectedPhotoIndex = null;
 
@@ -128,6 +130,7 @@
       const deletePhotoBtn = document.getElementById("delete-photo-btn");
 
       function renderGallery() {
+        if (!galleryGrid) return;
         galleryGrid.innerHTML = "";
 
         if (photos.length === 0) {
@@ -138,12 +141,12 @@
         photos.forEach((photoSrc, index) => {
           const itemDiv = document.createElement("div");
           itemDiv.className = "gallery-item";
-          itemDiv.style.backgroundImage = `url(${photoSrc})`;
+          itemDiv.style.backgroundImage = `url("${photoSrc}")`;
 
           itemDiv.addEventListener("click", () => {
             selectedPhotoIndex = index;
-            modalImg.src = photoSrc;
-            photoModal.classList.remove("hidden");
+            if (modalImg) modalImg.src = photoSrc;
+            if (photoModal) photoModal.classList.remove("hidden");
           });
 
           galleryGrid.appendChild(itemDiv);
@@ -151,11 +154,13 @@
       }
 
       // Trigger file selector
-      triggerUploadBtn.addEventListener("click", () => {
-        fileInput.click();
-      });
+      if (triggerUploadBtn && fileInput) {
+        triggerUploadBtn.addEventListener("click", () => {
+          fileInput.click();
+        });
+      }
 
-      // Hulpfunctie om foto's automatisch te verkleinen voor opslag
+      // Compression utility for browser uploads
       function compressImage(file, maxWidth = 1200, quality = 0.7) {
         return new Promise((resolve) => {
           const reader = new FileReader();
@@ -179,65 +184,76 @@
 
               resolve(canvas.toDataURL("image/jpeg", quality));
             };
+            img.onerror = () => resolve(e.target.result); // Fallback to raw if load fails
             img.src = e.target.result;
           };
           reader.readAsDataURL(file);
         });
       }
 
-      // Handle file uploads met automatische compressie
-      fileInput.addEventListener("change", async (e) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
+      // Handle user uploads
+      if (fileInput) {
+        fileInput.addEventListener("change", async (e) => {
+          const files = e.target.files;
+          if (!files || files.length === 0) return;
 
-        const newPhotos = [];
+          const newPhotos = [];
 
-        for (let file of Array.from(files)) {
-          try {
-            const compressedDataUrl = await compressImage(file);
-            newPhotos.push(compressedDataUrl);
-          } catch (err) {
-            console.error("Fout bij comprimeren van foto:", err);
+          for (let file of Array.from(files)) {
+            try {
+              const compressedDataUrl = await compressImage(file);
+              newPhotos.push(compressedDataUrl);
+            } catch (err) {
+              console.error("Error compressing file:", err);
+            }
           }
-        }
 
-        try {
-          localPhotos = localPhotos.concat(newPhotos);
-          localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
-          photos = defaultPhotos.concat(localPhotos);
-          renderGallery();
-        } catch (error) {
-          alert("Het geheugen van de browser zit vol! Verwijder een paar lokaal geüploade foto's om nieuwe toe te kunnen voegen.");
-        }
-
-        fileInput.value = "";
-      });
-
-      // Delete photo (let op: verwijdert alleen lokaal geüploade foto's uit localStorage, vaste map-foto's blijven)
-      deletePhotoBtn.addEventListener("click", () => {
-        if (selectedPhotoIndex !== null) {
-          // Check of het een lokale foto is (index valt buiten defaultPhotos)
-          const localIndex = selectedPhotoIndex - defaultPhotos.length;
-          
-          if (localIndex >= 0) {
-            localPhotos.splice(localIndex, 1);
+          try {
+            localPhotos = localPhotos.concat(newPhotos);
             localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
             photos = defaultPhotos.concat(localPhotos);
-          } else {
-            alert("Dit is een vaste foto uit de map 'beeld' en kan niet worden verwijderd via de browser.");
+            renderGallery();
+          } catch (error) {
+            alert("Storage limit reached! Please remove some uploaded photos before adding more.");
           }
 
+          fileInput.value = "";
+        });
+      }
+
+      // Delete uploaded photos (skips pre-loaded directory photos)
+      if (deletePhotoBtn) {
+        deletePhotoBtn.addEventListener("click", () => {
+          if (selectedPhotoIndex !== null) {
+            const localIndex = selectedPhotoIndex - defaultPhotos.length;
+            
+            if (localIndex >= 0) {
+              localPhotos.splice(localIndex, 1);
+              try {
+                localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+              } catch (e) {
+                console.error("Could not update localStorage:", e);
+              }
+              photos = defaultPhotos.concat(localPhotos);
+            } else {
+              alert("This photo is pre-loaded from the 'beeld' directory and cannot be deleted through the browser.");
+            }
+
+            selectedPhotoIndex = null;
+            if (photoModal) photoModal.classList.add("hidden");
+            renderGallery();
+          }
+        });
+      }
+
+      if (closePhotoModalBtn) {
+        closePhotoModalBtn.addEventListener("click", () => {
+          if (photoModal) photoModal.classList.add("hidden");
           selectedPhotoIndex = null;
-          photoModal.classList.add("hidden");
-          renderGallery();
-        }
-      });
+        });
+      }
 
-      closePhotoModalBtn.addEventListener("click", () => {
-        photoModal.classList.add("hidden");
-        selectedPhotoIndex = null;
-      });
-
+      // Initial Render
       renderGallery();
     });
   </script>
