@@ -11,9 +11,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=38">
+  <link rel="stylesheet" href="style.css?v=39">
 
   <style>
+    /* Zorg dat de drawer ALTIJD overal bovenop ligt zodat links altijd aanklikbaar zijn */
+    .nav-drawer {
+      z-index: 999999 !important;
+    }
+    .drawer-links a {
+      cursor: pointer !important;
+      position: relative;
+      z-index: 1000000 !important;
+      display: block;
+    }
+
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -45,9 +56,9 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <!-- Directe, pure links zonder JavaScript hinder -->
-      <li><a href="index.html">Typography Log</a></li>
-      <li><a href="photos.html" class="active">Photo Gallery</a></li>
+      <!-- Directe harde JS-navigatie zodat er NIETS de klik kan tegenhouden -->
+      <li><a href="index.html" onclick="window.location.href='index.html'; return true;">Typography Log</a></li>
+      <li><a href="photos.html" class="active" onclick="window.location.href='photos.html'; return true;">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
   </nav>
@@ -114,10 +125,9 @@
       const closePhotoModalBtn = document.getElementById("close-photo-modal");
       const deletePhotoBtn = document.getElementById("delete-photo-btn");
 
-      // Lijst met verwachte bestanden
       const defaultPhotos = [];
       for (let i = 1; i <= 10; i++) {
-        defaultPhotos.push(`Artboard ${i}`);
+        defaultPhotos.push(i);
       }
 
       let localPhotos = [];
@@ -142,14 +152,17 @@
           img.alt = `Observation ${index + 1}`;
 
           if (index < defaultPhotos.length) {
-            // Test automatisch verschillende mogelijke schrijfwijzen/extensies
-            const base = `beeld/${photoItem}`;
+            const num = photoItem;
+            // Probeer alle mogelijke pad-combinaties (voor spaties, mappen, hoofdletters en extensies)
             const attempts = [
-              `${base}.jpg`,
-              `${base}.JPG`,
-              `${base}.jpeg`,
-              `${base}.png`,
-              `beeld/${photoItem.toLowerCase()}.jpg`
+              `./beeld/Artboard ${num}.jpg`,
+              `./beeld/Artboard%20${num}.jpg`,
+              `./beeld/Artboard ${num}.JPG`,
+              `./beeld/artboard ${num}.jpg`,
+              `beeld/Artboard ${num}.jpg`,
+              `beeld/Artboard%20${num}.jpg`,
+              `./beeld/Artboard-${num}.jpg`,
+              `./beeld/Artboard_${num}.jpg`
             ];
 
             let attemptIndex = 0;
@@ -160,12 +173,12 @@
               if (attemptIndex < attempts.length) {
                 this.src = attempts[attemptIndex];
               } else {
-                // Kan bestand helemaal niet vinden op server, verberg leeg blokje
+                // Als GEEN ENKELE versie op de server staat, verberg het vakje om vraagtekens te voorkomen
                 itemDiv.style.display = "none";
               }
             };
           } else {
-            // Lokaal geüploade foto (base64)
+            // Lokaal geüploade foto
             img.src = photoItem;
           }
 
