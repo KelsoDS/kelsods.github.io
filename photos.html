@@ -15,7 +15,33 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=35">
+  <link rel="stylesheet" href="style.css?v=36">
+
+  <style>
+    /* Zorgt dat de grid-items foto's direct en scherp tonen */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    .gallery-item {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #111;
+      border: 1px solid #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,8 +50,8 @@
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="index.html">Typography Log</a></li>
-      <li><a href="photos.html" class="active">Photo Gallery</a></li>
+      <li><a href="./index.html">Typography Log</a></li>
+      <li><a href="./photos.html" class="active">Photo Gallery</a></li>
       <li><a href="#">Archive</a></li>
     </ul>
   </nav>
@@ -44,7 +70,7 @@
 
   <!-- Gallery Main Container -->
   <main class="gallery-container">
-    <div class="gallery-header-actions">
+    <div class="gallery-header-actions" style="padding: 15px 20px 0;">
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
       <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
     </div>
@@ -65,8 +91,8 @@
   </div>
 
   <script>
-    // 1. HAMBURGER MENU — Draait direct en onafhankelijk
-    (function initMenu() {
+    // 1. HAMBURGER MENU & NAVIGATIE
+    document.addEventListener("DOMContentLoaded", () => {
       const menuToggle = document.getElementById("menu-toggle");
       const navDrawer = document.getElementById("nav-drawer");
       const closeDrawer = document.getElementById("close-drawer");
@@ -84,6 +110,7 @@
         });
       }
 
+      // Sluit alleen als er buiten de drawer geklikt wordt (zonder event-interferentie op de links)
       document.addEventListener("click", (e) => {
         if (navDrawer && navDrawer.classList.contains("open")) {
           if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -91,10 +118,8 @@
           }
         }
       });
-    })();
 
-    // 2. FOTOGALERIJ & UPLOAD LOGICA
-    document.addEventListener("DOMContentLoaded", () => {
+      // 2. GALERIJ LOGICA
       const galleryGrid = document.getElementById("gallery-grid");
       const fileInput = document.getElementById("file-input");
       const triggerUploadBtn = document.getElementById("trigger-upload-btn");
@@ -103,10 +128,10 @@
       const closePhotoModalBtn = document.getElementById("close-photo-modal");
       const deletePhotoBtn = document.getElementById("delete-photo-btn");
 
-      // Mogelijke paden van foto's uit de map 'beeld'
+      // Lijst met Artboard-bestanden in de map 'beeld'
       const defaultPhotos = [];
       for (let i = 1; i <= 10; i++) {
-        defaultPhotos.push(`./beeld/Artboard ${i}.jpg`);
+        defaultPhotos.push(`beeld/Artboard ${i}.jpg`);
       }
 
       let localPhotos = [];
@@ -123,33 +148,38 @@
         if (!galleryGrid) return;
         galleryGrid.innerHTML = "";
 
-        if (photos.length === 0) {
-          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #777; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS AVAILABLE.</div>`;
-          return;
-        }
-
         photos.forEach((photoSrc, index) => {
           const itemDiv = document.createElement("div");
           itemDiv.className = "gallery-item";
-          
-          // Maak een dummy afbeelding aan om te testen of het bestand bestaat
-          const imgTester = new Image();
-          imgTester.onload = () => {
-            itemDiv.style.backgroundImage = `url("${encodeURI(photoSrc)}")`;
-          };
-          imgTester.onerror = () => {
-            // Als het een default foto is en hij bestaat niet op de server, verberg het vakje
-            if (index < defaultPhotos.length) {
-              itemDiv.style.display = "none";
-            } else {
-              itemDiv.style.backgroundImage = `url("${photoSrc}")`;
-            }
-          };
-          imgTester.src = photoSrc;
+
+          const img = document.createElement("img");
+          img.alt = `Observation ${index + 1}`;
+
+          // Vaste map foto's afhandelen met automatische extensie-Fallback
+          if (index < defaultPhotos.length) {
+            img.src = photoSrc;
+
+            // Als .jpg mislukt, probeer .JPG of .png (handig voor GitHub case-sensitivity)
+            img.onerror = () => {
+              if (img.src.endsWith(".jpg")) {
+                img.src = photoSrc.replace(".jpg", ".JPG");
+              } else if (img.src.endsWith(".JPG")) {
+                img.src = photoSrc.replace(".JPG", ".png");
+              } else {
+                // Bestaat helemaal niet op de server, verberg het vakje
+                itemDiv.style.display = "none";
+              }
+            };
+          } else {
+            // Lokaal geüploade foto (base64 data URL)
+            img.src = photoSrc;
+          }
+
+          itemDiv.appendChild(img);
 
           itemDiv.addEventListener("click", () => {
             selectedPhotoIndex = index;
-            modalImg.src = photoSrc;
+            modalImg.src = img.src;
             photoModal.classList.remove("hidden");
           });
 
@@ -187,7 +217,7 @@
         });
       }
 
-      // Afbeelding comprimeren voor localStorage
+      // Afbeelding comprimeren voor opslag
       function compressImage(file, maxWidth = 1200, quality = 0.7) {
         return new Promise((resolve) => {
           const reader = new FileReader();
@@ -213,7 +243,7 @@
         });
       }
 
-      // Verwijder knop in modal
+      // Modal sluiten & verwijderen
       if (deletePhotoBtn) {
         deletePhotoBtn.addEventListener("click", () => {
           if (selectedPhotoIndex !== null) {
@@ -223,7 +253,7 @@
               localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
               photos = defaultPhotos.concat(localPhotos);
             } else {
-              alert("Foto's uit de map 'beeld' kunnen niet via de browser worden verwijderd.");
+              alert("Vaste foto's uit de map 'beeld' kunnen niet via de browser worden verwijderd.");
             }
             selectedPhotoIndex = null;
             photoModal.classList.add("hidden");
