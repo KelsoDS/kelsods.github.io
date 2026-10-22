@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <!-- Verwezen naar v=42 zodat de browser de nieuwe CSS direct inlaadt -->
-  <link rel="stylesheet" href="style.css?v=42">
+  <!-- Versie v=43 om hardnekkige browsercache te omzeilen -->
+  <link rel="stylesheet" href="style.css?v=43">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
   </header>
 
   <!-- Gallery Main Container -->
-  <main class="gallery-container" style="padding: 0; margin: 0;">
+  <main class="gallery-container">
     <div class="gallery-header-actions" style="padding: 15px 20px;">
       <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
       <button class="btn btn-primary" id="trigger-upload-btn" style="font-size: 0.85rem; padding: 10px 18px;">+ UPLOAD PHOTO</button>
@@ -66,13 +66,13 @@
   </div>
 
   <script>
-    // 1. Directe link naar Typography Log
+    // 1. Directe en harde navigatie naar de Typography Log pagina
     document.getElementById("btn-to-index").onclick = function(e) {
       e.stopPropagation();
       window.location.href = "index.html";
     };
 
-    // 2. Hamburger menu toggle
+    // 2. Hamburger menu openen en sluiten
     const menuToggle = document.getElementById("menu-toggle");
     const navDrawer = document.getElementById("nav-drawer");
     const closeDrawer = document.getElementById("close-drawer");
@@ -91,7 +91,16 @@
       };
     }
 
-    // 3. Fotogalerij logica
+    // Sluit menu bij klik buiten de drawer
+    document.addEventListener("click", function(e) {
+      if (navDrawer && navDrawer.classList.contains("open")) {
+        if (!navDrawer.contains(e.target) && !menuToggle.contains(e.target)) {
+          navDrawer.classList.remove("open");
+        }
+      }
+    });
+
+    // 3. Fotogalerij logica & automatische Artboard inladen
     document.addEventListener("DOMContentLoaded", function() {
       const galleryGrid = document.getElementById("gallery-grid");
       const fileInput = document.getElementById("file-input");
@@ -126,6 +135,7 @@
 
           if (index < defaultPhotos.length) {
             const num = photoItem;
+            // Probeer alle mogelijke schrijfwijzen voor GitHub (spaties en hoofdletters)
             const attempts = [
               "./beeld/Artboard " + num + ".jpg",
               "./beeld/Artboard%20" + num + ".jpg",
@@ -143,10 +153,12 @@
               if (attemptIndex < attempts.length) {
                 this.src = attempts[attemptIndex];
               } else {
+                // Verberg het vakje als de foto echt niet op de server staat
                 itemDiv.style.display = "none";
               }
             };
           } else {
+            // Lokaal geüploade foto uit localStorage
             img.src = photoItem;
           }
 
@@ -162,7 +174,7 @@
         });
       }
 
-      // Upload knop
+      // Upload knop triggeren
       if (triggerUploadBtn && fileInput) {
         triggerUploadBtn.onclick = function() {
           fileInput.click();
@@ -188,12 +200,13 @@
             photos = defaultPhotos.concat(localPhotos);
             renderGallery();
           } catch (error) {
-            alert("Geheugen vol! Verwijder enkele foto's.");
+            alert("Browsergeheugen vol! Verwijder enkele foto's.");
           }
           fileInput.value = "";
         };
       }
 
+      // Afbeelding comprimeren voor geheugenbesparing
       function compressImage(file, maxWidth = 1200, quality = 0.7) {
         return new Promise(function(resolve) {
           const reader = new FileReader();
@@ -219,7 +232,7 @@
         });
       }
 
-      // Modal sluiten & verwijderen
+      // Modal functionaliteit: Verwijderen en sluiten
       if (deletePhotoBtn) {
         deletePhotoBtn.onclick = function() {
           if (selectedPhotoIndex !== null) {
