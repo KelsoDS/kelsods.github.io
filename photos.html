@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
 
@@ -97,8 +97,17 @@
         }
       });
 
-      // Photo Gallery Upload & Storage Logic
-      let photos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
+      // 1. Vaste foto's uit de map "beeld" (zichtbaar op elk apparaat)
+      const defaultPhotos = [
+        "beeld/foto1.jpg",
+        "beeld/foto2.jpg"
+      ];
+
+      // 2. Extra lokale uploads uit localStorage
+      let localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
+      
+      // 3. Combineer vaste map-foto's en lokale uploads samen
+      let photos = defaultPhotos.concat(localPhotos);
       let selectedPhotoIndex = null;
 
       const galleryGrid = document.getElementById("gallery-grid");
@@ -114,7 +123,7 @@
         galleryGrid.innerHTML = "";
 
         if (photos.length === 0) {
-          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #777; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS UPLOADED YET. CLICK "+ UPLOAD PHOTO" ABOVE TO ADD OBSERVATION IMAGES.</div>`;
+          galleryGrid.innerHTML = `<div style="font-family: monospace; color: #777; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 15vh;">NO PHOTOS AVAILABLE.</div>`;
           return;
         }
 
@@ -138,40 +147,78 @@
         fileInput.click();
       });
 
-      // Handle file uploads with safety check for storage limits
-      fileInput.addEventListener("change", (e) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        let filesProcessed = 0;
-        const newPhotos = [];
-
-        Array.from(files).forEach(file => {
+      // Hulpfunctie om foto's automatisch te verkleinen voor opslag
+      function compressImage(file, maxWidth = 1200, quality = 0.7) {
+        return new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onload = (uploadEvent) => {
-            newPhotos.push(uploadEvent.target.result);
-            filesProcessed++;
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              let width = img.width;
+              let height = img.height;
 
-            if (filesProcessed === files.length) {
-              try {
-                photos = photos.concat(newPhotos);
-                localStorage.setItem("street_observation_photos", JSON.stringify(photos));
-                renderGallery();
-              } catch (error) {
-                alert("Opslaglimiet bereikt! De foto('s) zijn te groot voor het geheugen van de browser. Probeer kleinere of minder foto's tegelijk te uploaden.");
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
               }
-              fileInput.value = ""; // Reset de input zodat je direct weer nieuwe foto's kunt selecteren
-            }
+
+              canvas.width = width;
+              canvas.height = height;
+
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+
+              resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.src = e.target.result;
           };
           reader.readAsDataURL(file);
         });
+      }
+
+      // Handle file uploads met automatische compressie
+      fileInput.addEventListener("change", async (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        const newPhotos = [];
+
+        for (let file of Array.from(files)) {
+          try {
+            const compressedDataUrl = await compressImage(file);
+            newPhotos.push(compressedDataUrl);
+          } catch (err) {
+            console.error("Fout bij comprimeren van foto:", err);
+          }
+        }
+
+        try {
+          localPhotos = localPhotos.concat(newPhotos);
+          localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+          photos = defaultPhotos.concat(localPhotos);
+          renderGallery();
+        } catch (error) {
+          alert("Het geheugen van de browser zit vol! Verwijder een paar lokaal geüploade foto's om nieuwe toe te kunnen voegen.");
+        }
+
+        fileInput.value = "";
       });
 
-      // Delete photo
+      // Delete photo (let op: verwijdert alleen lokaal geüploade foto's uit localStorage, vaste map-foto's blijven)
       deletePhotoBtn.addEventListener("click", () => {
         if (selectedPhotoIndex !== null) {
-          photos.splice(selectedPhotoIndex, 1);
-          localStorage.setItem("street_observation_photos", JSON.stringify(photos));
+          // Check of het een lokale foto is (index valt buiten defaultPhotos)
+          const localIndex = selectedPhotoIndex - defaultPhotos.length;
+          
+          if (localIndex >= 0) {
+            localPhotos.splice(localIndex, 1);
+            localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+            photos = defaultPhotos.concat(localPhotos);
+          } else {
+            alert("Dit is een vaste foto uit de map 'beeld' en kan niet worden verwijderd via de browser.");
+          }
+
           selectedPhotoIndex = null;
           photoModal.classList.add("hidden");
           renderGallery();
