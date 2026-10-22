@@ -1,10 +1,14 @@
-document.addEventListener("DOMContentLoaded", function() {
-  // 1. Directe en harde navigatie naar de Typography Log pagina
+// 1. Veilige en robuuste navigatie naar de Typography Log pagina
   const btnToIndex = document.getElementById("btn-to-index");
   if (btnToIndex) {
     btnToIndex.onclick = function(e) {
       e.stopPropagation();
-      window.location.href = "index.html";
+      e.preventDefault();
+      
+      // Bepaal automatisch het juiste pad (werkt zowel lokaal als op GitHub Pages submappen)
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+      window.location.href = basePath + "index.html";
     };
   }
 
