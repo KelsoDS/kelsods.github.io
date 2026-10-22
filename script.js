@@ -112,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Bereken dynamische lettergrootte op basis van aantal regels
       const baseFontSize = Math.max(1.8, Math.min(5.5, (65 / totalRows) / 1.5));
 
       observations.forEach((item, index) => {
@@ -274,7 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (attemptIndex < attempts.length) {
               this.src = attempts[attemptIndex];
             } else {
-              // Fallback placeholder als afbeelding lokaal niet bestaat
               this.src = `https://placehold.co/600x600/111111/ffffff?text=ARTBOARD+${num}`;
             }
           };
@@ -378,4 +376,3 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGallery();
   }
 });
-
