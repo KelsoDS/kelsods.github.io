@@ -15,49 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=41">
-
-  <style>
-    /* Zorg dat de drawer altijd bovenaan ligt en de links direct aanklikbaar zijn */
-    .nav-drawer {
-      z-index: 9999999 !important;
-    }
-    .drawer-links a {
-      cursor: pointer !important;
-      position: relative;
-      z-index: 10000000 !important;
-      display: block;
-    }
-
-    /* GALERIJ: Geen witruimte (gap: 0), strak raster met gelijke tegels */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0px !important;
-      padding: 0px !important;
-      margin: 0px !important;
-    }
-    
-    .gallery-item {
-      aspect-ratio: 1 / 1 !important; /* Maakt elk kader exact vierkant */
-      width: 100% !important;
-      height: 100% !important;
-      overflow: hidden;
-      background: #000;
-      border: none !important;
-      cursor: pointer;
-      position: relative;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    .gallery-item img {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important; /* Snijd de foto's netjes bij zodat ze het vak vullen zonder vervorming of witruimte */
-      display: block;
-    }
-  </style>
+  <!-- Verwezen naar v=42 zodat de browser de nieuwe CSS direct inlaadt -->
+  <link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
 
@@ -107,13 +66,13 @@
   </div>
 
   <script>
-    // 1. HARDESWITCH VOOR TYPOGRAPHY LOG LINK
+    // 1. Directe link naar Typography Log
     document.getElementById("btn-to-index").onclick = function(e) {
       e.stopPropagation();
       window.location.href = "index.html";
     };
 
-    // 2. HAMBURGER MENU TOGGLE
+    // 2. Hamburger menu toggle
     const menuToggle = document.getElementById("menu-toggle");
     const navDrawer = document.getElementById("nav-drawer");
     const closeDrawer = document.getElementById("close-drawer");
@@ -132,7 +91,7 @@
       };
     }
 
-    // 3. FOTOGALERIJ
+    // 3. Fotogalerij logica
     document.addEventListener("DOMContentLoaded", function() {
       const galleryGrid = document.getElementById("gallery-grid");
       const fileInput = document.getElementById("file-input");
