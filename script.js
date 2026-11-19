@@ -1,28 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. Hamburger Menu & Drawer
+  // 1. Menu & Drawer
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
   const drawerOverlay = document.getElementById("drawer-overlay");
 
-  function openMenu() {
-    if (navDrawer) navDrawer.classList.add("open");
-    if (drawerOverlay) drawerOverlay.classList.add("open");
-  }
-
-  function closeMenu() {
-    if (navDrawer) navDrawer.classList.remove("open");
-    if (drawerOverlay) drawerOverlay.classList.remove("open");
+  function setMenuOpen(isOpen) {
+    if (navDrawer) navDrawer.classList.toggle("open", isOpen);
+    if (drawerOverlay) drawerOverlay.classList.toggle("open", isOpen);
   }
 
   if (menuToggle) {
-    menuToggle.addEventListener("click", (e) => {
+    menuToggle.addEventListener("click", function (e) {
       e.stopPropagation();
-      navDrawer && navDrawer.classList.contains("open") ? closeMenu() : openMenu();
+      const currentlyOpen = navDrawer && navDrawer.classList.contains("open");
+      setMenuOpen(!currentlyOpen);
     });
   }
-  if (closeDrawer) closeDrawer.addEventListener("click", closeMenu);
-  if (drawerOverlay) drawerOverlay.addEventListener("click", closeMenu);
+
+  if (closeDrawer) {
+    closeDrawer.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setMenuOpen(false);
+    });
+  }
+
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener("click", function () {
+      setMenuOpen(false);
+    });
+  }
 
   const isMobileView = () => window.innerWidth < 900;
 
@@ -32,31 +39,95 @@ document.addEventListener("DOMContentLoaded", function () {
     let startY = 0;
     let tracking = false;
 
-    element.addEventListener("touchstart", (e) => {
+    element.addEventListener("touchstart", function (e) {
       if (e.touches.length !== 1) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       tracking = true;
     }, { passive: true });
 
-    element.addEventListener("touchend", (e) => {
+    element.addEventListener("touchend", function (e) {
       if (!tracking) return;
       tracking = false;
-      const endX = e.changedTouches[0].clientX;
-      const endY = e.changedTouches[0].clientY;
-      const diffX = endX - startX;
-      const diffY = endY - startY;
-
-      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX < 0) onSwipeLeft();
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) onSwipeLeft();
         else onSwipeRight();
       }
     }, { passive: true });
   }
 
-  // ==========================================
-  // 2. TYPOGRAPHY LOG (MOBILE: 1 TEKST + SWIPE | DESKTOP: OVERZICHT)
-  // ==========================================
+  // 2. Klik-geluid en betekenislaag
+  let activeSoundTimer = null;
+  let activeAudioCtx = null;
+
+  function stopClickAudio() {
+    if (activeSoundTimer) {
+      clearInterval(activeSoundTimer);
+      activeSoundTimer = null;
+    }
+    if (activeAudioCtx && typeof activeAudioCtx.close === "function") {
+      activeAudioCtx.close().catch(function () {});
+      activeAudioCtx = null;
+    }
+  }
+
+  function playObservationMeaning(obs, container) {
+    stopClickAudio();
+    if (!obs || !container) return;
+
+    let meaningBox = container.querySelector(".click-meaning-layer");
+    if (!meaningBox) {
+      meaningBox = document.createElement("div");
+      meaningBox.className = "click-meaning-layer";
+      container.appendChild(meaningBox);
+    }
+    meaningBox.textContent = "";
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      try {
+        activeAudioCtx = new AudioContextClass();
+      } catch (_) {
+        activeAudioCtx = null;
+      }
+    }
+
+    const segments = [
+      `${obs.time} — `,
+      "geluid op straat: ",
+      obs.text.toLowerCase()
+    ];
+
+    let step = 0;
+    activeSoundTimer = setInterval(function () {
+      if (step < segments.length) {
+        meaningBox.textContent += segments[step];
+
+        if (activeAudioCtx) {
+          try {
+            const osc = activeAudioCtx.createOscillator();
+            const gain = activeAudioCtx.createGain();
+            osc.type = step === 1 ? "triangle" : "sine";
+            osc.frequency.setValueAtTime(190 + step * 100, activeAudioCtx.currentTime);
+            gain.gain.setValueAtTime(0.035, activeAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, activeAudioCtx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(activeAudioCtx.destination);
+            osc.start();
+            osc.stop(activeAudioCtx.currentTime + 0.26);
+          } catch (_) {}
+        }
+
+        step++;
+      } else {
+        stopClickAudio();
+      }
+    }, 450);
+  }
+
+  // 3. Typography Log
   const typoContainer = document.getElementById("typography-container");
 
   if (typoContainer) {
@@ -69,13 +140,13 @@ document.addEventListener("DOMContentLoaded", function () {
       { day: "SUN 11 OCT", time: "9AM", text: "CHALK MESSAGE WASHING AWAY ON PAVEMENT" }
     ];
 
-    let observations = [];
+    let observations = defaultObservations.slice();
     try {
       const saved = JSON.parse(localStorage.getItem("street_observations_v4"));
-      observations = Array.isArray(saved) && saved.length > 0 ? saved : defaultObservations;
-    } catch (e) {
-      observations = defaultObservations;
-    }
+      if (Array.isArray(saved) && saved.length > 0) {
+        observations = saved;
+      }
+    } catch (_) {}
 
     let currentObsIndex = 0;
     let selectedLogIndex = null;
@@ -93,21 +164,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const obsNextBtn = document.getElementById("obs-next-btn");
     const obsSwipeCounter = document.getElementById("obs-swipe-counter");
 
-    function nextObs() {
+    function stepObservation(delta) {
       if (!observations.length) return;
-      currentObsIndex = (currentObsIndex + 1) % observations.length;
-      renderLogs();
+      currentObsIndex = (currentObsIndex + delta + observations.length) % observations.length;
+      renderObservations();
     }
 
-    function prevObs() {
-      if (!observations.length) return;
-      currentObsIndex = (currentObsIndex - 1 + observations.length) % observations.length;
-      renderLogs();
-    }
-
-    if (obsPrevBtn) obsPrevBtn.addEventListener("click", prevObs);
-    if (obsNextBtn) obsNextBtn.addEventListener("click", nextObs);
-    enableSwipe(typoContainer, nextObs, prevObs);
+    if (obsPrevBtn) obsPrevBtn.addEventListener("click", function () { stepObservation(-1); });
+    if (obsNextBtn) obsNextBtn.addEventListener("click", function () { stepObservation(1); });
+    enableSwipe(
+      typoContainer,
+      function () { stepObservation(1); },
+      function () { stepObservation(-1); }
+    );
 
     function formatDateString(dateStr) {
       const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -126,99 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return `${hours}:${paddedMinutes}${period}`;
     }
 
-    function renderDesktopLogs() {
-      const rowsData = [];
-      observations.forEach((obs, obsIndex) => {
-        const tokens = [obs.day, obs.time, ...obs.text.split(/\s+/).filter(Boolean)];
-        const chunkSize = 5;
-        for (let i = 0; i < tokens.length; i += chunkSize) {
-          rowsData.push({
-            words: tokens.slice(i, i + chunkSize),
-            obsIndex: obsIndex,
-            isFirstRow: i === 0
-          });
-        }
-      });
-
-      if (!rowsData.length) return;
-
-      const availableHeight = typoContainer.clientHeight || (window.innerHeight - 60);
-      let fontSizePx = Math.min(48, Math.max(10, (availableHeight / rowsData.length) * 0.78));
-      let metaSizePx = Math.max(8, fontSizePx * 0.42);
-
-      function draw(wordPx, tagPx) {
-        typoContainer.innerHTML = "";
-        rowsData.forEach((rowObj) => {
-          const rowDiv = document.createElement("div");
-          rowDiv.className = "log-row";
-
-          rowObj.words.forEach((word, wordIdx) => {
-            const span = document.createElement("span");
-            span.className = "log-word";
-            span.textContent = word;
-
-            if (rowObj.isFirstRow && (wordIdx === 0 || wordIdx === 1)) {
-              span.classList.add("meta-tag");
-              span.style.fontSize = tagPx + "px";
-            } else {
-              span.style.fontSize = wordPx + "px";
-            }
-
-            span.addEventListener("click", () => openDetailModal(rowObj.obsIndex));
-            rowDiv.appendChild(span);
-          });
-
-          typoContainer.appendChild(rowDiv);
-        });
-      }
-
-      draw(fontSizePx, metaSizePx);
-
-      let guard = 0;
-      while (typoContainer.scrollHeight > typoContainer.clientHeight && fontSizePx > 8 && guard < 40) {
-        fontSizePx *= 0.92;
-        metaSizePx = Math.max(7, fontSizePx * 0.42);
-        draw(fontSizePx, metaSizePx);
-        guard++;
-      }
-    }
-
-    function renderMobileSingleObs() {
-      typoContainer.innerHTML = "";
-      if (!observations.length) {
-        typoContainer.innerHTML = `<div class="mobile-single-obs"><p class="mobile-single-text">GEEN OBSERVATIES</p></div>`;
-        if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
-        return;
-      }
-
-      if (currentObsIndex >= observations.length) {
-        currentObsIndex = observations.length - 1;
-      }
-
-      const obs = observations[currentObsIndex];
-      const card = document.createElement("article");
-      card.className = "mobile-single-obs";
-      card.innerHTML = `
-        <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
-        <p class="mobile-single-text">${obs.text}</p>
-        <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR OPTIES</div>
-      `;
-      card.addEventListener("click", () => openDetailModal(currentObsIndex));
-      typoContainer.appendChild(card);
-
-      if (obsSwipeCounter) {
-        obsSwipeCounter.textContent = `${currentObsIndex + 1} / ${observations.length}`;
-      }
-    }
-
-    function renderLogs() {
-      if (isMobileView()) {
-        renderMobileSingleObs();
-      } else {
-        renderDesktopLogs();
-      }
-    }
-
     const detailModal = document.getElementById("detail-modal");
     const detailMeta = document.getElementById("detail-meta");
     const detailText = document.getElementById("detail-text");
@@ -229,31 +205,95 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedLogIndex = index;
       const obs = observations[index];
       if (!obs || !detailModal) return;
-      detailMeta.textContent = `${obs.day} — ${obs.time}`;
-      detailText.textContent = obs.text;
+      if (detailMeta) detailMeta.textContent = `${obs.day} — ${obs.time}`;
+      if (detailText) detailText.textContent = obs.text;
       detailModal.classList.remove("hidden");
+
+      const card = detailModal.querySelector(".modal-card") || detailModal;
+      playObservationMeaning(obs, card);
     }
 
     if (closeDetailModalBtn) {
-      closeDetailModalBtn.addEventListener("click", () => {
-        detailModal.classList.add("hidden");
+      closeDetailModalBtn.addEventListener("click", function () {
+        stopClickAudio();
+        if (detailModal) detailModal.classList.add("hidden");
         selectedLogIndex = null;
       });
     }
 
     if (deleteLogBtn) {
-      deleteLogBtn.addEventListener("click", () => {
-        if (selectedLogIndex !== null) {
-          observations.splice(selectedLogIndex, 1);
-          localStorage.setItem("street_observations_v4", JSON.stringify(observations));
-          if (currentObsIndex >= observations.length) {
-            currentObsIndex = Math.max(0, observations.length - 1);
-          }
-          selectedLogIndex = null;
-          detailModal.classList.add("hidden");
-          renderLogs();
+      deleteLogBtn.addEventListener("click", function () {
+        if (selectedLogIndex === null) return;
+        stopClickAudio();
+        observations.splice(selectedLogIndex, 1);
+        localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+        if (currentObsIndex >= observations.length) {
+          currentObsIndex = Math.max(0, observations.length - 1);
         }
+        selectedLogIndex = null;
+        if (detailModal) detailModal.classList.add("hidden");
+        renderObservations();
       });
+    }
+
+    function renderObservations() {
+      const keepOutline = typoContainer.classList.contains("outline-mode");
+      const keepDrift = typoContainer.classList.contains("drift-active");
+      typoContainer.innerHTML = "";
+
+      if (!observations.length) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+        typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></article>`;
+        if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
+        return;
+      }
+
+      if (isMobileView()) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        if (currentObsIndex >= observations.length) {
+          currentObsIndex = observations.length - 1;
+        }
+
+        const obs = observations[currentObsIndex];
+        const card = document.createElement("article");
+        card.className = "mobile-single-obs";
+        card.innerHTML = `
+          <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
+          <p class="mobile-single-text">${obs.text}</p>
+          <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
+        `;
+        card.addEventListener("click", function () {
+          openDetailModal(currentObsIndex);
+        });
+        typoContainer.appendChild(card);
+
+        if (obsSwipeCounter) {
+          obsSwipeCounter.textContent = `${currentObsIndex + 1} / ${observations.length}`;
+        }
+      } else {
+        typoContainer.className = "typography-container desktop-overview";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        observations.forEach(function (obs, idx) {
+          const card = document.createElement("article");
+          card.className = "overview-card";
+          card.innerHTML = `
+            <div class="overview-meta">${obs.day} · ${obs.time}</div>
+            <p class="overview-text">${obs.text}</p>
+            <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
+          `;
+          card.addEventListener("click", function () {
+            openDetailModal(idx);
+          });
+          typoContainer.appendChild(card);
+        });
+      }
     }
 
     const openAddModalBtn = document.getElementById("open-add-modal");
@@ -266,44 +306,55 @@ document.addEventListener("DOMContentLoaded", function () {
     function openNativePicker(inputEl) {
       if (!inputEl) return;
       if (typeof inputEl.showPicker === "function") {
-        try { inputEl.showPicker(); } catch (_) { inputEl.focus(); }
+        try {
+          inputEl.showPicker();
+        } catch (_) {
+          inputEl.focus();
+        }
       } else {
         inputEl.focus();
       }
     }
 
-    if (inputDay) inputDay.addEventListener("click", () => openNativePicker(inputDay));
-    if (inputTime) inputTime.addEventListener("click", () => openNativePicker(inputTime));
+    if (inputDay) {
+      inputDay.addEventListener("click", function () { openNativePicker(inputDay); });
+    }
+    if (inputTime) {
+      inputTime.addEventListener("click", function () { openNativePicker(inputTime); });
+    }
 
     if (openAddModalBtn && addModal) {
-      openAddModalBtn.addEventListener("click", () => {
+      openAddModalBtn.addEventListener("click", function () {
         if (addForm) addForm.reset();
         addModal.classList.remove("hidden");
       });
     }
 
     if (closeAddModalBtn && addModal) {
-      closeAddModalBtn.addEventListener("click", () => addModal.classList.add("hidden"));
+      closeAddModalBtn.addEventListener("click", function () {
+        addModal.classList.add("hidden");
+      });
     }
 
     if (addForm) {
-      addForm.addEventListener("submit", (e) => {
+      addForm.addEventListener("submit", function (e) {
         e.preventDefault();
         const rawDate = inputDay ? inputDay.value : "";
         const rawTime = inputTime ? inputTime.value : "";
-        const text = document.getElementById("input-text").value.trim().toUpperCase();
+        const textEl = document.getElementById("input-text");
+        const text = textEl ? textEl.value.trim().toUpperCase() : "";
 
         if (rawDate && rawTime && text) {
           observations.push({
             day: formatDateString(rawDate),
             time: formatTimeString(rawTime),
-            text
+            text: text
           });
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
           currentObsIndex = observations.length - 1;
           addForm.reset();
           if (addModal) addModal.classList.add("hidden");
-          renderLogs();
+          renderObservations();
         }
       });
     }
@@ -312,23 +363,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggleDriftBtn = document.getElementById("toggle-drift");
 
     if (toggleStyleBtn) {
-      toggleStyleBtn.addEventListener("click", () => typoContainer.classList.toggle("outline-mode"));
+      toggleStyleBtn.addEventListener("click", function () {
+        typoContainer.classList.toggle("outline-mode");
+      });
     }
 
     if (toggleDriftBtn) {
-      toggleDriftBtn.addEventListener("click", () => {
+      toggleDriftBtn.addEventListener("click", function () {
         const isActive = typoContainer.classList.toggle("drift-active");
         toggleDriftBtn.textContent = isActive ? "DRIFT: ON" : "DRIFT: OFF";
       });
     }
 
-    window.addEventListener("resize", renderLogs);
-    renderLogs();
+    window.addEventListener("resize", renderObservations);
+    renderObservations();
   }
 
-  // ==========================================
-  // 3. PHOTO GALLERY (MOBILE: 1 FOTO + SWIPE | DESKTOP: RASTER)
-  // ==========================================
+  // 4. Photo Gallery
   const galleryGrid = document.getElementById("gallery-grid");
 
   if (galleryGrid) {
@@ -343,9 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let localPhotos = [];
     try {
       localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
-    } catch (e) {
-      localPhotos = [];
-    }
+    } catch (_) {}
 
     let photos = defaultPhotos.concat(localPhotos);
     let currentPhotoIndex = 0;
@@ -364,21 +413,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const photoNextBtn = document.getElementById("photo-next-btn");
     const photoSwipeCounter = document.getElementById("photo-swipe-counter");
 
-    function nextPhoto() {
+    function stepPhoto(delta) {
       if (!photos.length) return;
-      currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+      currentPhotoIndex = (currentPhotoIndex + delta + photos.length) % photos.length;
       renderGallery();
     }
 
-    function prevPhoto() {
-      if (!photos.length) return;
-      currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
-      renderGallery();
-    }
-
-    if (photoPrevBtn) photoPrevBtn.addEventListener("click", prevPhoto);
-    if (photoNextBtn) photoNextBtn.addEventListener("click", nextPhoto);
-    enableSwipe(galleryGrid, nextPhoto, prevPhoto);
+    if (photoPrevBtn) photoPrevBtn.addEventListener("click", function () { stepPhoto(-1); });
+    if (photoNextBtn) photoNextBtn.addEventListener("click", function () { stepPhoto(1); });
+    enableSwipe(
+      galleryGrid,
+      function () { stepPhoto(1); },
+      function () { stepPhoto(-1); }
+    );
 
     function createPhotoElement(photoItem, index) {
       const itemDiv = document.createElement("div");
@@ -410,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       itemDiv.appendChild(img);
-      itemDiv.addEventListener("click", () => {
+      itemDiv.addEventListener("click", function () {
         selectedPhotoIndex = index;
         if (modalImg && photoModal) {
           modalImg.src = img.src;
@@ -434,18 +481,18 @@ document.addEventListener("DOMContentLoaded", function () {
           photoSwipeCounter.textContent = `${currentPhotoIndex + 1} / ${photos.length}`;
         }
       } else {
-        photos.forEach((photoItem, index) => {
+        photos.forEach(function (photoItem, index) {
           galleryGrid.appendChild(createPhotoElement(photoItem, index));
         });
       }
     }
 
     function compressImage(file, maxWidth = 1200, quality = 0.7) {
-      return new Promise((resolve) => {
+      return new Promise(function (resolve) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = function (e) {
           const img = new Image();
-          img.onload = () => {
+          img.onload = function () {
             const canvas = document.createElement("canvas");
             let width = img.width;
             let height = img.height;
@@ -466,9 +513,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (triggerUploadBtn && fileInput) {
-      triggerUploadBtn.onclick = () => fileInput.click();
+      triggerUploadBtn.onclick = function () {
+        fileInput.click();
+      };
 
-      fileInput.onchange = async (e) => {
+      fileInput.onchange = async function (e) {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
@@ -492,7 +541,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (deletePhotoBtn) {
-      deletePhotoBtn.onclick = () => {
+      deletePhotoBtn.onclick = function () {
         if (selectedPhotoIndex !== null) {
           const localIndex = selectedPhotoIndex - defaultPhotos.length;
           if (localIndex >= 0) {
@@ -504,15 +553,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           selectedPhotoIndex = null;
-          photoModal.classList.add("hidden");
+          if (photoModal) photoModal.classList.add("hidden");
           renderGallery();
         }
       };
     }
 
     if (closePhotoModalBtn) {
-      closePhotoModalBtn.onclick = () => {
-        photoModal.classList.add("hidden");
+      closePhotoModalBtn.onclick = function () {
+        if (photoModal) photoModal.classList.add("hidden");
         selectedPhotoIndex = null;
       };
     }
