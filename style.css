@@ -1,6 +1,6 @@
 /* ==========================================
-STREET OBSERVATIONS - GLOBAL STYLESHEET
-========================================== */
+   STREET OBSERVATIONS - GLOBAL & UNIFIED UI
+   ========================================== */
 
 * {
   box-sizing: border-box;
@@ -8,46 +8,38 @@ STREET OBSERVATIONS - GLOBAL STYLESHEET
   padding: 0;
 }
 
-html, body {
-  width: 100vw;
-  min-height: 100vh;
-  background-color: #050505;
-  color: #ffffff;
+body {
+  background-color: #0b0b0b;
+  color: #f2f2f2;
   font-family: monospace, sans-serif;
   overflow-x: hidden;
+  width: 100vw;
+  min-height: 100vh;
 }
 
 body.page-typography {
   height: 100vh;
-  overflow: hidden !important;
-  display: flex;
-  flex-direction: column;
-}
-
-body.page-gallery {
-  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 /* ==========================================
-HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
-========================================== */
+   TOP CONTROL PANEL (IDENTIEK OP ELKE PAGINA)
+   ========================================== */
+
 .control-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  padding: 10px 20px;
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 60px;
+  padding: 0 20px;
+  background: #111111;
   border-bottom: 1px solid #222222;
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 100;
 }
 
 .panel-left {
@@ -60,85 +52,89 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
   font-family: 'Press Start 2P', monospace;
   font-size: 0.7rem;
   letter-spacing: 1px;
-  color: #888888;
+  color: #ffffff;
 }
 
 .panel-actions {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
 }
 
+/* Buttons */
 .btn {
-  background: #121212;
+  background: #1c1c1c;
   color: #ffffff;
   border: 1px solid #333333;
   padding: 8px 14px;
-  font-family: monospace;
-  font-size: 0.75rem;
-  font-weight: bold;
-  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
+  font-family: monospace, sans-serif;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .btn:hover {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
+  background: #2e2e2e;
+  border-color: #555555;
 }
 
-.btn.active-mode {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary {
-  border-color: #ffffff;
   background: #ffffff;
   color: #000000;
+  font-weight: bold;
+  border: 1px solid #ffffff;
 }
 
 .btn-primary:hover {
   background: #dddddd;
-  color: #000000;
+  border-color: #dddddd;
 }
 
 .btn-danger {
-  border-color: #ff3333;
-  color: #ff3333;
-  background: rgba(255, 51, 51, 0.05);
+  background: #8b0000;
+  color: #ffffff;
+  border: 1px solid #a30000;
 }
 
 .btn-danger:hover {
-  background: #ff3333;
-  color: #ffffff;
+  background: #b30000;
 }
 
+/* ==========================================
+   HAMBURGER KNOP & DRAWER MENU (100% UNIFORM)
+   ========================================== */
+
 .btn-icon {
-  padding: 8px 10px;
+  background: #161616;
+  border: 1px solid #333333;
+  display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 4px;
-  background: #111111;
-  border: 1px solid #333333;
-  cursor: pointer;
   width: 38px;
   height: 38px;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.btn-icon:hover {
+  border-color: #ff3333;
+  background: #1f1f1f;
 }
 
 .hamburger-bar {
-  display: block;
   width: 18px;
   height: 2px;
   background-color: #ffffff;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 .btn-icon:hover .hamburger-bar {
@@ -147,17 +143,19 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
 
 .drawer-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 2000;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  z-index: 999998;
 }
 
-.drawer-overlay.active {
+.drawer-overlay.open {
   opacity: 1;
   pointer-events: auto;
 }
@@ -165,183 +163,153 @@ HEADER / CONTROL PANEL (EXACT GELIJK VOOR ELKE PAGINA)
 .nav-drawer {
   position: fixed;
   top: 0;
-  left: 0;
+  left: -320px;
   width: 320px;
-  max-width: 85vw;
   height: 100vh;
   background: #0d0d0d;
   border-right: 1px solid #222222;
-  z-index: 2500;
-  padding: 30px 25px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+  transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 999999;
+  padding: 25px;
 }
 
 .nav-drawer.open {
-  transform: translateX(0);
+  left: 0;
 }
 
 .drawer-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
   background: none;
   border: none;
-  color: #888888;
-  font-size: 2rem;
-  cursor: pointer;
+  color: #ffffff;
+  font-size: 1.8rem;
   line-height: 1;
-  transition: color 0.2s;
+  cursor: pointer;
+  float: right;
+  transition: color 0.2s ease;
 }
 
 .drawer-close:hover {
   color: #ff3333;
 }
 
-.drawer-header {
-  margin-top: 20px;
-  margin-bottom: 30px;
-}
-
 .drawer-title {
-  font-family: Impact, sans-serif;
-  font-size: 1.5rem;
-  letter-spacing: 2px;
-  color: #ffffff;
-}
-
-.drawer-subtitle {
-  font-family: monospace;
-  font-size: 0.7rem;
-  color: #ff3333;
-  margin-top: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  margin-top: 45px;
+  margin-bottom: 25px;
+  color: #666666;
+  letter-spacing: 1px;
 }
 
 .drawer-links {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+}
+
+.drawer-links li {
+  margin-bottom: 18px;
 }
 
 .drawer-links a {
-  color: #888888;
+  color: #cccccc;
   text-decoration: none;
-  font-family: monospace;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  display: block;
+  padding: 6px 0;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.drawer-links a span {
-  color: #444444;
-  font-size: 0.75rem;
-}
-
-.drawer-links a:hover,
-.drawer-links a.active {
-  color: #ffffff;
-}
-
-.drawer-links a.active span {
+.drawer-links a.active,
+.drawer-links a:hover {
   color: #ff3333;
+  transform: translateX(5px);
 }
 
-.drawer-footer {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #222222;
-  font-family: monospace;
-  font-size: 0.75rem;
-  color: #666666;
-}
+/* ==========================================
+   EDGE-TO-EDGE SVG TYPOGRAPHY CONTAINER
+   ========================================== */
 
 .typography-container {
-  font-family: Impact, 'Arial Black', sans-serif;
-  margin-top: 60px;
-  min-height: calc(100vh - 60px);
+  flex: 1;
   width: 100vw;
-  padding: 0;
+  height: calc(100vh - 60px);
+  max-height: calc(100vh - 60px);
+  padding: 0 !important;
+  margin: 0 !important;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  overflow: hidden;
-  gap: 0;
-}
-
-.log-row {
-  display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
+  overflow: hidden;
+}
+
+.svg-log-row {
+  width: 100vw;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
   align-items: center;
-  width: 100%;
-  line-height: 0.8;
-  row-gap: 0.5vh;
-  column-gap: 0.7vw;
-  padding: 0;
-}
-
-.log-word {
-  font-size: var(--dynamic-font-size, 3.8vh);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #ffffff;
-  transition: color 0.15s ease, -webkit-text-stroke 0.15s ease, text-shadow 0.15s ease;
-  user-select: none;
   cursor: pointer;
-  white-space: nowrap;
-  word-break: keep-all;
-  flex: 0 0 auto;
+  overflow: hidden;
 }
 
-.log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 1.5px #ff3333 !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);
+.svg-log-row svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 
-body.solid-style .log-word {
-  color: #ffffff !important;
-  -webkit-text-stroke: 0px transparent !important;
+.svg-text-main {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-weight: 900;
+  fill: #f2f2f2;
+  transition: fill 0.15s ease;
 }
 
-body.solid-style .log-word:hover {
-  color: #ff3333 !important;
-  -webkit-text-stroke: 0px transparent !important;
-  text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
+.svg-text-meta {
+  font-family: 'Press Start 2P', monospace;
+  fill: #ff3333;
 }
 
-@keyframes ambientDrift {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
+.svg-log-row:hover .svg-text-main {
+  fill: #ff3333;
 }
 
-body.drift-mode .log-row:nth-child(even) {
-  animation: ambientDrift 4s ease-in-out infinite;
+/* Outline mode op SVG */
+.typography-container.outline-mode .svg-text-main {
+  fill: transparent;
+  stroke: #ffffff;
+  stroke-width: 2px;
 }
 
-body.drift-mode .log-row:nth-child(odd) {
-  animation: ambientDrift 5.5s ease-in-out infinite reverse;
+.typography-container.outline-mode .svg-log-row:hover .svg-text-main {
+  fill: #ff3333;
+  stroke: #ff3333;
 }
+
+/* Drift animation */
+@keyframes subtleDrift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+
+.typography-container.drift-active .svg-log-row:nth-child(odd) {
+  animation: subtleDrift 5s ease-in-out infinite;
+}
+
+.typography-container.drift-active .svg-log-row:nth-child(even) {
+  animation: subtleDrift 6s ease-in-out infinite reverse;
+}
+
+/* ==========================================
+   STRIKTE FOTOGALERIJ (PHOTOS.HTML)
+   ========================================== */
 
 .gallery-container {
-  margin-top: 60px;
   padding: 0 !important;
+  margin: 0 !important;
   width: 100%;
-}
-
-.gallery-header-actions {
-  padding: 20px;
 }
 
 .gallery-grid {
@@ -377,8 +345,12 @@ body.drift-mode .log-row:nth-child(odd) {
 }
 
 .gallery-item:hover img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
+
+/* ==========================================
+   MODALS, KALENDER & KLOK STYLING
+   ========================================== */
 
 .modal-overlay {
   position: fixed;
@@ -387,13 +359,11 @@ body.drift-mode .log-row:nth-child(odd) {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 99999999;
-  padding: 20px;
 }
 
 .modal-overlay.hidden {
@@ -401,40 +371,40 @@ body.drift-mode .log-row:nth-child(odd) {
 }
 
 .modal-card {
-  background: #111111;
-  padding: 30px;
+  background: #141414;
   border: 1px solid #333333;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  padding: 25px;
+  max-width: 92vw;
+  max-height: 90vh;
+  width: 500px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
 }
 
 .modal-card h2 {
-  font-family: Impact, sans-serif;
-  letter-spacing: 1px;
-  font-size: 1.3rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  margin-bottom: 20px;
   color: #ffffff;
+  line-height: 1.5;
 }
 
 .modal-card label {
   display: block;
-  margin-top: 15px;
-  font-family: monospace;
   font-size: 0.75rem;
-  color: #888888;
+  color: #aaaaaa;
+  margin-bottom: 6px;
+  margin-top: 14px;
 }
 
 .modal-card input,
 .modal-card textarea {
   width: 100%;
-  background: #050505;
+  background: #0b0b0b;
   border: 1px solid #333333;
   color: #ffffff;
   padding: 10px;
-  margin-top: 5px;
-  font-family: monospace;
-  font-size: 0.9rem;
-  border-radius: 2px;
+  font-family: monospace, sans-serif;
+  font-size: 0.95rem;
 }
 
 .modal-card input:focus,
@@ -443,35 +413,38 @@ body.drift-mode .log-row:nth-child(odd) {
   border-color: #ff3333;
 }
 
+/* Dark-mode kalender & klok in de modal */
+.modal-card input[type="date"],
+.modal-card input[type="time"] {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.modal-card input[type="date"]::-webkit-calendar-picker-indicator,
+.modal-card input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 25px;
-}
-
-.info-tag {
-  font-family: monospace;
-  font-size: 0.65rem;
-  color: #ff3333;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
-}
-
-.info-content {
-  font-family: monospace;
-  color: #dddddd;
-  margin-top: 15px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  background: #080808;
-  padding: 15px;
-  border-left: 2px solid #ff3333;
-}
-
-.info-actions {
   justify-content: space-between;
   align-items: center;
+  margin-top: 22px;
+  gap: 10px;
+}
+
+.detail-meta {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  color: #ff3333;
+  margin-bottom: 12px;
+}
+
+.detail-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #f2f2f2;
 }
 
 .modal-preview-img {
@@ -480,39 +453,5 @@ body.drift-mode .log-row:nth-child(odd) {
   object-fit: contain;
   margin-bottom: 15px;
   display: block;
+  background: #000000;
 }
-
-.modal-notice-card {
-  max-width: 380px;
-}
-
-.notice-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.7rem;
-  color: #ff3333;
-  margin-bottom: 10px;
-}
-
-.notice-text {
-  font-family: monospace;
-  font-size: 0.85rem;
-  color: #eeeeee;
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-@media (max-width: 600px) {
-  .panel-brand {
-    display: none;
-  }
-
-  .btn {
-    padding: 6px 10px;
-    font-size: 0.7rem;
-  }
-
-  .modal-card {
-    padding: 20px;
-  }
-}
-
