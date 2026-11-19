@@ -77,12 +77,8 @@ document.addEventListener("DOMContentLoaded", function () {
     stopClickAudio();
     if (!obs || !container) return;
 
-    if (textTarget) {
-      textTarget.textContent = "";
-    }
-    if (cardTextTarget) {
-      cardTextTarget.textContent = "";
-    }
+    if (textTarget) textTarget.textContent = "";
+    if (cardTextTarget) cardTextTarget.textContent = "";
 
     let statusBar = container.querySelector(".click-status-bar");
     if (!statusBar) {
@@ -167,20 +163,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 320);
   }
 
-  // 3. Typography Log
+  // 3. Typography Log + data.json sync
   const typoContainer = document.getElementById("typography-container");
 
   if (typoContainer) {
-    const defaultObservations = [
-      { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
-      { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
-    ];
+    let dataDoc = {
+      observations: [
+        { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
+        { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
+      ],
+      photos: []
+    };
 
-    let observations = defaultObservations.slice();
+    let observations = dataDoc.observations.slice();
     try {
       const saved = JSON.parse(localStorage.getItem("street_observations_v4"));
       if (Array.isArray(saved) && saved.length > 0) {
         observations = saved;
+        dataDoc.observations = saved;
       }
     } catch (_) {}
 
@@ -231,6 +231,60 @@ document.addEventListener("DOMContentLoaded", function () {
       return `${hours}:${paddedMinutes}${period}`;
     }
 
+    function buildDataJsonString() {
+      dataDoc.observations = observations.slice();
+      return JSON.stringify(dataDoc, null, 2);
+    }
+
+    function downloadDataJson() {
+      const blob = new Blob([buildDataJsonString()], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "data.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function pushDataJsonToGitHub(token) {
+      const owner = "KelsoDS";
+      const repo = "kelsods.github.io";
+      const path = "data.json";
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+      const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      };
+
+      const getRes = await fetch(`${apiUrl}?ref=main`, { headers });
+      if (!getRes.ok) {
+        throw new Error("Kan data.json op GitHub niet ophalen (controleer token & repo-rechten).");
+      }
+      const existingFile = await getRes.json();
+
+      const jsonText = buildDataJsonString();
+      const base64Content = btoa(unescape(encodeURIComponent(jsonText)));
+
+      const putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: "Update observations in data.json",
+          content: base64Content,
+          sha: existingFile.sha,
+          branch: "main"
+        })
+      });
+
+      if (!putRes.ok) {
+        throw new Error("Opslaan naar data.json op GitHub mislukt.");
+      }
+    }
+
     const detailModal = document.getElementById("detail-modal");
     const detailMeta = document.getElementById("detail-meta");
     const detailText = document.getElementById("detail-text");
@@ -263,6 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selectedLogIndex === null) return;
         stopClickAudio();
         observations.splice(selectedLogIndex, 1);
+        dataDoc.observations = observations.slice();
         localStorage.setItem("street_observations_v4", JSON.stringify(observations));
         if (currentObsIndex >= observations.length) {
           currentObsIndex = Math.max(0, observations.length - 1);
@@ -418,6 +473,9 @@ document.addEventListener("DOMContentLoaded", function () {
           return res.json();
         })
         .then(function (data) {
+          if (data && typeof data === "object" && !Array.isArray(data)) {
+            dataDoc = Object.assign({ observations: [], photos: [] }, data);
+          }
           const list = Array.isArray(data) ? data : (data && Array.isArray(data.observations) ? data.observations : null);
           if (list && list.length > 0) {
             observations = list;
@@ -426,7 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         })
         .catch(function () {
-          // Valt terug op localStorage of defaultObservations
+          // Valt terug op localStorage of standaardlijst
         });
     }
 
@@ -436,6 +494,57 @@ document.addEventListener("DOMContentLoaded", function () {
     const addForm = document.getElementById("add-log-form");
     const inputDay = document.getElementById("input-day");
     const inputTime = document.getElementById("input-time");
+
+    // Optioneel GitHub token-veld & export-knoppen in het toevoeg-venster
+    let syncPanel = null;
+    let tokenInput = null;
+    let syncStatus = null;
+
+    if (addForm) {
+      syncPanel = document.createElement("div");
+      syncPanel.style.marginTop = "16px";
+      syncPanel.style.paddingTop = "12px";
+      syncPanel.style.borderTop = "1px solid #262626";
+      syncPanel.innerHTML = `
+        <label for="gh-token-input" style="margin-top:0;">GITHUB TOKEN (OPTIONEEL VOOR DIRECTE SYNC NAAR DATA.JSON)</label>
+        <input type="password" id="gh-token-input" placeholder="github_pat_..." autocomplete="off" />
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+          <button type="button" class="btn" id="copy-data-json-btn">KOPIEER DATA.JSON</button>
+          <button type="button" class="btn" id="download-data-json-btn">DOWNLOAD DATA.JSON</button>
+        </div>
+        <div id="gh-sync-status" style="margin-top:8px; font-size:0.75rem; color:#bbbbbb;"></div>
+      `;
+      addForm.appendChild(syncPanel);
+
+      tokenInput = document.getElementById("gh-token-input");
+      syncStatus = document.getElementById("gh-sync-status");
+
+      const savedToken = localStorage.getItem("street_gh_token") || "";
+      if (tokenInput && savedToken) {
+        tokenInput.value = savedToken;
+      }
+
+      const copyBtn = document.getElementById("copy-data-json-btn");
+      const dlBtn = document.getElementById("download-data-json-btn");
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", function () {
+          const textToCopy = buildDataJsonString();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(function () {
+              if (syncStatus) syncStatus.textContent = "data.json gekopieerd naar klembord.";
+            });
+          }
+        });
+      }
+
+      if (dlBtn) {
+        dlBtn.addEventListener("click", function () {
+          downloadDataJson();
+          if (syncStatus) syncStatus.textContent = "data.json gedownload.";
+        });
+      }
+    }
 
     function openNativePicker(inputEl) {
       if (!inputEl) return;
@@ -460,6 +569,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (openAddModalBtn && addModal) {
       openAddModalBtn.addEventListener("click", function () {
         if (addForm) addForm.reset();
+        const savedToken = localStorage.getItem("street_gh_token") || "";
+        if (tokenInput && savedToken) tokenInput.value = savedToken;
+        if (syncStatus) syncStatus.textContent = "";
         addModal.classList.remove("hidden");
       });
     }
@@ -471,12 +583,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (addForm) {
-      addForm.addEventListener("submit", function (e) {
+      addForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const rawDate = inputDay ? inputDay.value : "";
         const rawTime = inputTime ? inputTime.value : "";
         const textEl = document.getElementById("input-text");
         const text = textEl ? textEl.value.trim().toUpperCase() : "";
+        const token = tokenInput ? tokenInput.value.trim() : "";
+
+        if (token) {
+          localStorage.setItem("street_gh_token", token);
+        }
 
         if (rawDate && rawTime && text) {
           observations.push({
@@ -484,11 +601,28 @@ document.addEventListener("DOMContentLoaded", function () {
             time: formatTimeString(rawTime),
             text: text
           });
+          dataDoc.observations = observations.slice();
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
           currentObsIndex = observations.length - 1;
-          addForm.reset();
-          if (addModal) addModal.classList.add("hidden");
           renderObservations();
+
+          if (token) {
+            if (syncStatus) syncStatus.textContent = "Bezig met wegschrijven naar data.json op GitHub...";
+            try {
+              await pushDataJsonToGitHub(token);
+              if (syncStatus) syncStatus.textContent = "Opgeslagen in data.json op GitHub!";
+              setTimeout(function () {
+                if (addModal) addModal.classList.add("hidden");
+              }, 700);
+              return;
+            } catch (err) {
+              if (syncStatus) syncStatus.textContent = err.message + " Gebruik Kopieer of Download data.json.";
+              return;
+            }
+          } else {
+            downloadDataJson();
+            if (addModal) addModal.classList.add("hidden");
+          }
         }
       });
     }
