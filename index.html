@@ -1,46 +1,39 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Street Observations - Typography Log</title>
   
-  <!-- Google Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  
-  <!-- Global Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-typography">
 
-  <!-- Overlay for drawer menu -->
+  <!-- Drawer Overlay -->
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
-  <!-- Navigation Drawer (Hamburger Menu) -->
-  <nav class="nav-drawer" id="nav-drawer" aria-label="Hoofdnavigatie">
-    <button class="drawer-close" id="close-drawer" aria-label="Sluit menu">&times;</button>
-    <div class="drawer-header">
-      <div class="drawer-title">STREET LOGS</div>
-      <div class="drawer-subtitle">URBAN OBSERVATION ARCHIVE</div>
-    </div>
-
+  <!-- Navigation Drawer (Identiek op elke pagina) -->
+  <nav class="nav-drawer" id="nav-drawer">
+    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
+    <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="index.html" class="active" id="nav-typo"><span>01</span> TYPOGRAPHY LOG</a></li>
-      <li><a href="photos.html" id="nav-photos"><span>02</span> PHOTO GALLERY</a></li>
-      <li><a href="#" id="nav-archive"><span>03</span> ARCHIVE</a></li>
+      <li><a href="index.html" class="active">Typography Log</a></li>
+      <li><a href="photos.html">Photo Gallery</a></li>
+      <li><a href="#" id="open-github-settings">GitHub Sync Setup</a></li>
     </ul>
-
-    <div class="drawer-footer">
-      <span class="log-counter">LOGS ACTIEF: <strong id="drawer-log-count">0</strong></span>
-    </div>
   </nav>
 
   <!-- Top Control Bar -->
   <header class="control-panel">
     <div class="panel-left">
-      <button class="btn btn-icon" id="menu-toggle" aria-label="Open menu">
+      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
@@ -49,51 +42,86 @@
     </div>
     <div class="panel-actions">
       <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
-      <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
-      <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
+      <button class="btn" id="toggle-drift">DRIFT: OFF</button>
+      <button class="btn btn-primary" id="open-add-modal">+ ADD LOG</button>
     </div>
   </header>
 
-  <!-- Main Typography Display -->
-  <main class="typography-container" id="log-display"></main>
+  <!-- Edge-to-Edge SVG Typography Container -->
+  <main class="typography-container" id="typography-container"></main>
 
-  <!-- Modal: Observation Toevoegen -->
+  <!-- Modal: Nieuwe Observatie Toevoegen (Kalender & Klok) -->
   <div class="modal-overlay hidden" id="observation-modal">
     <div class="modal-card">
       <h2>NIEUWE OBSERVATIE TOEVOEGEN</h2>
       <form id="add-log-form">
-        <label for="input-day">DAG (BIJV. MON 5 OCT)</label>
-        <input type="text" id="input-day" required placeholder="MON 5 OCT" autocomplete="off">
+        <label for="input-day">DATUM (KLIK VOOR KALENDER)</label>
+        <input type="date" id="input-day" required>
 
-        <label for="input-time">TIJD (BIJV. 2AM)</label>
-        <input type="text" id="input-time" required placeholder="2AM" autocomplete="off">
+        <label for="input-time">TIJD (KLIK VOOR KLOK)</label>
+        <input type="time" id="input-time" required>
 
         <label for="input-text">OBSERVATIE TEKST</label>
         <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..."></textarea>
 
         <div class="form-actions">
           <button type="button" class="btn" id="close-modal">ANNULEREN</button>
-          <button type="submit" class="btn btn-primary">TOEVOEGEN</button>
+          <button type="submit" class="btn btn-primary" id="submit-log-btn">PUBLICEREN NAAR GITHUB</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Observation Info & Verwijderen -->
-  <div class="modal-overlay hidden" id="info-modal">
+  <!-- Modal: Observatie Details / Verwijderen -->
+  <div class="modal-overlay hidden" id="detail-modal">
     <div class="modal-card">
-      <div class="info-tag">OBSERVATIE DETAILS</div>
-      <h2 id="info-time">--</h2>
-      <p id="info-text" class="info-content"></p>
-      
-      <div class="form-actions info-actions">
-        <button type="button" class="btn btn-danger" id="delete-current-info">VERWIJDER OBSERVATIE</button>
-        <button type="button" class="btn" id="close-info-modal">SLUITEN</button>
+      <div class="detail-meta" id="detail-meta"></div>
+      <p class="detail-text" id="detail-text"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-danger" id="delete-log-btn">VERWIJDEREN</button>
+        <button type="button" class="btn" id="close-detail-modal">SLUITEN</button>
       </div>
     </div>
   </div>
 
-  <!-- Global Application Logic -->
+  <!-- Modal: GitHub Sync Instellingen -->
+  <div class="modal-overlay hidden" id="github-modal">
+    <div class="modal-card">
+      <h2>GITHUB PUBLIEKE OPSLAG</h2>
+      <p class="detail-text" style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">
+        Vul dit eenmalig in op jouw toestel zodat nieuwe posts en foto's automatisch op GitHub worden opgeslagen voor alle bezoekers.
+      </p>
+      <form id="github-settings-form">
+        <label for="gh-owner">GITHUB GEBRUIKERSNAAM</label>
+        <input type="text" id="gh-owner" required placeholder="bijv. jouw-naam">
+
+        <label for="gh-repo">REPOSITORY NAAM</label>
+        <input type="text" id="gh-repo" required placeholder="bijv. street-observations">
+
+        <label for="gh-branch">BRANCH (MEESTAL main)</label>
+        <input type="text" id="gh-branch" value="main" required>
+
+        <label for="gh-token">PERSONAL ACCESS TOKEN (CONTENTS: READ & WRITE)</label>
+        <input type="password" id="gh-token" required placeholder="github_pat_...">
+
+        <div class="form-actions">
+          <button type="button" class="btn" id="close-github-modal">SLUITEN</button>
+          <button type="submit" class="btn btn-primary">OPSLAAN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Melding / Status -->
+  <div class="modal-overlay hidden" id="notice-modal">
+    <div class="modal-card">
+      <p id="notice-message" class="detail-text"></p>
+      <div class="form-actions" style="justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" id="close-notice-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js" defer></script>
 </body>
 </html>
