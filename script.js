@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
         card.className = "mobile-single-obs";
         card.innerHTML = `
           <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
-          <div class="mobile-single-hint-only"></div>
+          <p class="mobile-single-text">${obs.text}</p>
           <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
         `;
         card.addEventListener("click", function () {
