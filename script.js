@@ -244,35 +244,66 @@ document.addEventListener("DOMContentLoaded", function () {
       const height = typoContainer.clientHeight || (window.innerHeight - 60);
 
       let cols = Math.ceil(Math.sqrt(count * (width / Math.max(height, 1))));
-      cols = Math.max(1, Math.min(cols, count, 6));
-      const rows = Math.max(1, Math.ceil(count / cols));
+      cols = Math.max(1, Math.min(cols, count, 8));
+      let rows = Math.max(1, Math.ceil(count / cols));
 
-      typoContainer.style.setProperty("--grid-cols", String(cols));
+      function applyLayout(c, r, textPx, metaPx, padPx, gapPx) {
+        const idxPx = Math.max(7, Math.round(metaPx * 0.85));
+        typoContainer.style.setProperty("--grid-cols", String(c));
+        typoContainer.style.setProperty("--grid-rows", String(r));
+        typoContainer.style.setProperty("--card-text-size", textPx.toFixed(1) + "px");
+        typoContainer.style.setProperty("--card-meta-size", metaPx.toFixed(1) + "px");
+        typoContainer.style.setProperty("--card-index-size", idxPx + "px");
+        typoContainer.style.setProperty("--card-pad", padPx + "px");
+        typoContainer.style.setProperty("--card-gap", gapPx + "px");
+      }
 
       const cellW = width / cols;
       const cellH = height / rows;
 
-      let textPx = Math.min(44, Math.max(10, Math.min(cellH * 0.36, cellW * 0.085)));
-      let metaPx = Math.max(8, Math.min(12, textPx * 0.42));
+      let gapPx = count > 16 ? 6 : 10;
+      let padPx = count > 16 ? 8 : 14;
+      let textPx = Math.min(44, Math.max(9, Math.min(cellH * 0.34, cellW * 0.085)));
+      let metaPx = Math.max(7.5, Math.min(12, textPx * 0.42));
 
-      typoContainer.style.setProperty("--card-text-size", textPx + "px");
-      typoContainer.style.setProperty("--card-meta-size", metaPx + "px");
+      applyLayout(cols, rows, textPx, metaPx, padPx, gapPx);
 
       const cards = typoContainer.querySelectorAll(".overview-card");
-      let guard = 0;
-      while (guard < 30) {
-        let anyOverflow = false;
-        cards.forEach(function (card) {
+
+      function hasAnyOverflow() {
+        if (typoContainer.scrollHeight > typoContainer.clientHeight + 1 || typoContainer.scrollWidth > typoContainer.clientWidth + 1) {
+          return true;
+        }
+        for (let i = 0; i < cards.length; i++) {
+          const card = cards[i];
           const textEl = card.querySelector(".overview-text");
-          if (card.scrollHeight > card.clientHeight || (textEl && textEl.scrollHeight > textEl.clientHeight)) {
-            anyOverflow = true;
+          if (card.scrollHeight > card.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1) {
+            return true;
           }
-        });
-        if (!anyOverflow || textPx <= 8) break;
-        textPx *= 0.9;
-        metaPx = Math.max(7, textPx * 0.42);
-        typoContainer.style.setProperty("--card-text-size", textPx + "px");
-        typoContainer.style.setProperty("--card-meta-size", metaPx + "px");
+          if (textEl && (textEl.scrollHeight > textEl.clientHeight + 1 || textEl.scrollWidth > textEl.clientWidth + 1)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      let guard = 0;
+      while (hasAnyOverflow() && guard < 80) {
+        if (textPx > 8) {
+          textPx = Math.max(8, textPx * 0.9);
+          metaPx = Math.max(7, textPx * 0.42);
+        } else if (padPx > 4) {
+          padPx = Math.max(4, padPx - 2);
+        } else if (gapPx > 3) {
+          gapPx = Math.max(3, gapPx - 2);
+        } else if (cols < Math.min(count, 10)) {
+          cols++;
+          rows = Math.max(1, Math.ceil(count / cols));
+          textPx = Math.max(8, textPx * 1.08);
+        } else {
+          break;
+        }
+        applyLayout(cols, rows, textPx, metaPx, padPx, gapPx);
         guard++;
       }
     }
@@ -287,6 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (keepOutline) typoContainer.classList.add("outline-mode");
         if (keepDrift) typoContainer.classList.add("drift-active");
         typoContainer.style.setProperty("--grid-cols", "1");
+        typoContainer.style.setProperty("--grid-rows", "1");
         typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></article>`;
         if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
         return;
