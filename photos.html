@@ -1,46 +1,43 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Street Observations - Photo Gallery</title>
   
   <!-- Google Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  
-  <!-- Global Stylesheet -->
+
+  <!-- Gedeelde Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-gallery">
 
-  <!-- Overlay for drawer menu -->
+  <!-- Drawer Overlay -->
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
-  <!-- Navigation Drawer (Hamburger Menu) -->
-  <nav class="nav-drawer" id="nav-drawer" aria-label="Hoofdnavigatie">
-    <button class="drawer-close" id="close-drawer" aria-label="Sluit menu">&times;</button>
-    <div class="drawer-header">
-      <div class="drawer-title">STREET LOGS</div>
-      <div class="drawer-subtitle">URBAN OBSERVATION ARCHIVE</div>
-    </div>
-
+  <!-- Navigation Drawer (Exact dezelfde structuur als index.html) -->
+  <nav class="nav-drawer" id="nav-drawer">
+    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
+    <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
-      <li><a href="index.html" id="nav-typo"><span>01</span> TYPOGRAPHY LOG</a></li>
-      <li><a href="photos.html" class="active" id="nav-photos"><span>02</span> PHOTO GALLERY</a></li>
-      <li><a href="#" id="nav-archive"><span>03</span> ARCHIVE</a></li>
+      <li><a href="index.html">Typography Log</a></li>
+      <li><a href="photos.html" class="active">Photo Gallery</a></li>
+      <li><a href="#">Archive</a></li>
     </ul>
-
-    <div class="drawer-footer">
-      <span class="log-counter">LOGS ACTIEF: <strong id="drawer-log-count">0</strong></span>
-    </div>
   </nav>
 
-  <!-- Top Control Bar (zelfde als op index.html) -->
+  <!-- Top Control Bar (Exact dezelfde structuur als index.html) -->
   <header class="control-panel">
     <div class="panel-left">
-      <button class="btn btn-icon" id="menu-toggle" aria-label="Open menu">
+      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
@@ -48,20 +45,13 @@
       <span class="panel-brand">STREET OBSERVATIONS</span>
     </div>
     <div class="panel-actions">
-      <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
-      <button class="btn" id="toggle-drift">DRIFT ANIMATION</button>
-      <button class="btn btn-primary" id="toggle-modal">+ ADD OBS</button>
+      <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
+      <button class="btn btn-primary" id="trigger-upload-btn">+ UPLOAD PHOTO</button>
     </div>
   </header>
 
   <!-- Gallery Main Container -->
   <main class="gallery-container">
-    <div class="gallery-header-actions">
-      <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
-      <button class="btn btn-primary" id="trigger-upload-btn">+ UPLOAD PHOTO</button>
-    </div>
-
-    <!-- Gallery Grid -->
     <div class="gallery-grid" id="gallery-grid"></div>
   </main>
 
@@ -69,25 +59,24 @@
   <div class="modal-overlay hidden" id="photo-modal">
     <div class="modal-card">
       <img id="modal-img" src="" alt="Enlarged Observation Photo" class="modal-preview-img">
-      <div class="form-actions info-actions">
+      <div class="form-actions">
         <button type="button" class="btn btn-danger" id="delete-photo-btn">DELETE PHOTO</button>
         <button type="button" class="btn" id="close-photo-modal">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Custom Notice -->
+  <!-- Modal: Melding / Notice (Vervangt browser alerts) -->
   <div class="modal-overlay hidden" id="notice-modal">
-    <div class="modal-card modal-notice-card">
-      <div class="notice-title">NOTICE</div>
-      <p id="notice-message" class="notice-text"></p>
-      <div class="form-actions">
+    <div class="modal-card">
+      <p id="notice-message" class="detail-text"></p>
+      <div class="form-actions" style="justify-content: flex-end;">
         <button type="button" class="btn btn-primary" id="close-notice-btn">OK</button>
       </div>
     </div>
   </div>
 
-  <!-- Global Application Logic -->
+  <!-- Gedeeld Script -->
   <script src="script.js" defer></script>
 </body>
 </html>
