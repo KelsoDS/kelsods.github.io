@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, { passive: true });
   }
 
-  // 2. Klik-geluid en betekenislaag
+  // 2. Klik-geluid, stapsgewijze tekst-onthulling & betekenislaag
   let activeSoundTimer = null;
   let activeAudioCtx = null;
 
@@ -73,15 +73,35 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function playObservationMeaning(obs, container) {
+  function playObservationMeaning(obs, container, textTarget) {
     stopClickAudio();
     if (!obs || !container) return;
+
+    if (textTarget) {
+      textTarget.textContent = "";
+    }
+
+    let statusBar = container.querySelector(".click-status-bar");
+    if (!statusBar) {
+      statusBar = document.createElement("div");
+      statusBar.className = "click-status-bar";
+      if (textTarget && textTarget.parentNode) {
+        textTarget.parentNode.insertBefore(statusBar, textTarget.nextSibling);
+      } else {
+        container.appendChild(statusBar);
+      }
+    }
+    statusBar.style.width = "0%";
 
     let meaningBox = container.querySelector(".click-meaning-layer");
     if (!meaningBox) {
       meaningBox = document.createElement("div");
       meaningBox.className = "click-meaning-layer";
-      container.appendChild(meaningBox);
+      if (statusBar && statusBar.parentNode) {
+        statusBar.parentNode.insertBefore(meaningBox, statusBar.nextSibling);
+      } else {
+        container.appendChild(meaningBox);
+      }
     }
     meaningBox.textContent = "";
 
@@ -94,37 +114,51 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    const segments = [
-      `${obs.time} — `,
-      "geluid op straat: ",
+    const words = obs.text.split(/\s+/).filter(Boolean);
+    const meaningParts = [
+      `${obs.day} · ${obs.time} — `,
+      "straatgeluid & spoor: ",
       obs.text.toLowerCase()
     ];
 
+    const totalSteps = Math.max(words.length, meaningParts.length);
     let step = 0;
-    activeSoundTimer = setInterval(function () {
-      if (step < segments.length) {
-        meaningBox.textContent += segments[step];
 
-        if (activeAudioCtx) {
-          try {
-            const osc = activeAudioCtx.createOscillator();
-            const gain = activeAudioCtx.createGain();
-            osc.type = step === 1 ? "triangle" : "sine";
-            osc.frequency.setValueAtTime(190 + step * 100, activeAudioCtx.currentTime);
-            gain.gain.setValueAtTime(0.035, activeAudioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, activeAudioCtx.currentTime + 0.25);
-            osc.connect(gain);
-            gain.connect(activeAudioCtx.destination);
-            osc.start();
-            osc.stop(activeAudioCtx.currentTime + 0.26);
-          } catch (_) {}
+    function emitTone(freq, type) {
+      if (!activeAudioCtx) return;
+      try {
+        const osc = activeAudioCtx.createOscillator();
+        const gain = activeAudioCtx.createGain();
+        osc.type = type || "sine";
+        osc.frequency.setValueAtTime(freq, activeAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.035, activeAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, activeAudioCtx.currentTime + 0.24);
+        osc.connect(gain);
+        gain.connect(activeAudioCtx.destination);
+        osc.start();
+        osc.stop(activeAudioCtx.currentTime + 0.25);
+      } catch (_) {}
+    }
+
+    activeSoundTimer = setInterval(function () {
+      if (step < totalSteps) {
+        if (textTarget && step < words.length) {
+          textTarget.textContent += (step > 0 ? " " : "") + words[step];
+        }
+        if (step < meaningParts.length) {
+          meaningBox.textContent += meaningParts[step];
         }
 
+        const progress = Math.min(100, Math.round(((step + 1) / totalSteps) * 100));
+        statusBar.style.width = progress + "%";
+
+        emitTone(185 + step * 55, step % 2 === 0 ? "sine" : "triangle");
         step++;
       } else {
+        statusBar.style.width = "100%";
         stopClickAudio();
       }
-    }, 450);
+    }, 320);
   }
 
   // 3. Typography Log
@@ -205,12 +239,13 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedLogIndex = index;
       const obs = observations[index];
       if (!obs || !detailModal) return;
+
       if (detailMeta) detailMeta.textContent = `${obs.day} — ${obs.time}`;
-      if (detailText) detailText.textContent = obs.text;
+      if (detailText) detailText.textContent = "";
       detailModal.classList.remove("hidden");
 
       const card = detailModal.querySelector(".modal-card") || detailModal;
-      playObservationMeaning(obs, card);
+      playObservationMeaning(obs, card, detailText);
     }
 
     if (closeDetailModalBtn) {
@@ -338,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
         card.className = "mobile-single-obs";
         card.innerHTML = `
           <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
-          <p class="mobile-single-text">${obs.text}</p>
+          <div class="mobile-single-hint-only"></div>
           <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
         `;
         card.addEventListener("click", function () {
