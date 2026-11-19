@@ -1,123 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-
-  <title>Street Observations - Typography Log</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Street Observations — Typography Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body class="page-typography">
+  <div id="drawer-overlay" class="drawer-overlay"></div>
 
-  <!-- Drawer Overlay -->
-  <div class="drawer-overlay" id="drawer-overlay"></div>
-
-  <!-- Navigation Drawer (Identiek op elke pagina) -->
-  <nav class="nav-drawer" id="nav-drawer">
-    <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
-    <div class="drawer-title">NAVIGATION</div>
+  <aside id="nav-drawer" class="nav-drawer" aria-label="Navigatie">
+    <button type="button" id="close-drawer" class="drawer-close" aria-label="Sluit menu">&times;</button>
+    <p class="drawer-title">STREET OBSERVATIONS</p>
     <ul class="drawer-links">
-      <li><a href="index.html" class="active">Typography Log</a></li>
-      <li><a href="photos.html">Photo Gallery</a></li>
-      <li><a href="#" id="open-github-settings">GitHub Sync Setup</a></li>
+      <li><a href="index.html" class="active">TYPOGRAPHY LOG</a></li>
+      <li><a href="photos.html">PHOTO GALLERY</a></li>
     </ul>
-  </nav>
+  </aside>
 
-  <!-- Top Control Bar -->
   <header class="control-panel">
     <div class="panel-left">
-      <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
+      <button type="button" id="menu-toggle" class="btn-icon" aria-label="Open menu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
       <span class="panel-brand">STREET OBSERVATIONS</span>
     </div>
+
     <div class="panel-actions">
-      <button class="btn" id="toggle-style">SOLID / OUTLINE</button>
-      <button class="btn" id="toggle-drift">DRIFT: OFF</button>
-      <button class="btn btn-primary" id="open-add-modal">+ ADD LOG</button>
+      <button type="button" id="toggle-style" class="btn">OUTLINE</button>
+      <button type="button" id="toggle-drift" class="btn">DRIFT: OFF</button>
+      <button type="button" id="open-add-modal" class="btn btn-primary">+ ADD LOG</button>
     </div>
   </header>
 
-  <!-- Edge-to-Edge SVG Typography Container -->
-  <main class="typography-container" id="typography-container"></main>
+  <main id="typography-container" class="typography-container"></main>
 
-  <!-- Modal: Nieuwe Observatie Toevoegen (Kalender & Klok) -->
-  <div class="modal-overlay hidden" id="observation-modal">
+  <!-- Nieuwe observatie toevoegen -->
+  <div id="observation-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
     <div class="modal-card">
-      <h2>NIEUWE OBSERVATIE TOEVOEGEN</h2>
+      <h2 id="add-modal-title">NEW OBSERVATION</h2>
       <form id="add-log-form">
-        <label for="input-day">DATUM (KLIK VOOR KALENDER)</label>
-        <input type="date" id="input-day" required>
+        <label for="input-day">DATE</label>
+        <input type="date" id="input-day" required />
 
-        <label for="input-time">TIJD (KLIK VOOR KLOK)</label>
-        <input type="time" id="input-time" required>
+        <label for="input-time">TIME</label>
+        <input type="time" id="input-time" required />
 
-        <label for="input-text">OBSERVATIE TEKST</label>
-        <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..."></textarea>
+        <label for="input-text">OBSERVATION</label>
+        <textarea id="input-text" rows="3" placeholder="WHAT DID YOU SEE ON THE STREET?" required></textarea>
 
         <div class="form-actions">
-          <button type="button" class="btn" id="close-modal">ANNULEREN</button>
-          <button type="submit" class="btn btn-primary" id="submit-log-btn">PUBLICEREN NAAR GITHUB</button>
+          <button type="button" id="close-modal" class="btn">CANCEL</button>
+          <button type="submit" class="btn btn-primary">SAVE</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Observatie Details / Verwijderen -->
-  <div class="modal-overlay hidden" id="detail-modal">
+  <!-- Detail / Klik-geluid & betekenislaag -->
+  <div id="detail-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="detail-meta">
     <div class="modal-card">
-      <div class="detail-meta" id="detail-meta"></div>
-      <p class="detail-text" id="detail-text"></p>
+      <div id="detail-meta" class="detail-meta"></div>
+      <p id="detail-text" class="detail-text"></p>
       <div class="form-actions">
-        <button type="button" class="btn btn-danger" id="delete-log-btn">VERWIJDEREN</button>
-        <button type="button" class="btn" id="close-detail-modal">SLUITEN</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: GitHub Sync Instellingen -->
-  <div class="modal-overlay hidden" id="github-modal">
-    <div class="modal-card">
-      <h2>GITHUB PUBLIEKE OPSLAG</h2>
-      <p class="detail-text" style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">
-        Vul dit eenmalig in op jouw toestel zodat nieuwe posts en foto's automatisch op GitHub worden opgeslagen voor alle bezoekers.
-      </p>
-      <form id="github-settings-form">
-        <label for="gh-owner">GITHUB GEBRUIKERSNAAM</label>
-        <input type="text" id="gh-owner" required placeholder="bijv. jouw-naam">
-
-        <label for="gh-repo">REPOSITORY NAAM</label>
-        <input type="text" id="gh-repo" required placeholder="bijv. street-observations">
-
-        <label for="gh-branch">BRANCH (MEESTAL main)</label>
-        <input type="text" id="gh-branch" value="main" required>
-
-        <label for="gh-token">PERSONAL ACCESS TOKEN (CONTENTS: READ & WRITE)</label>
-        <input type="password" id="gh-token" required placeholder="github_pat_...">
-
-        <div class="form-actions">
-          <button type="button" class="btn" id="close-github-modal">SLUITEN</button>
-          <button type="submit" class="btn btn-primary">OPSLAAN</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Melding / Status -->
-  <div class="modal-overlay hidden" id="notice-modal">
-    <div class="modal-card">
-      <p id="notice-message" class="detail-text"></p>
-      <div class="form-actions" style="justify-content: flex-end;">
-        <button type="button" class="btn btn-primary" id="close-notice-btn">OK</button>
+        <button type="button" id="delete-log-btn" class="btn btn-danger">DELETE</button>
+        <button type="button" id="close-detail-modal" class="btn">CLOSE</button>
       </div>
     </div>
   </div>
