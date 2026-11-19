@@ -236,15 +236,57 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
+    function fitDesktopCards() {
+      const count = observations.length;
+      if (!count) return;
+
+      const width = typoContainer.clientWidth || window.innerWidth;
+      const height = typoContainer.clientHeight || (window.innerHeight - 60);
+
+      let cols = Math.ceil(Math.sqrt(count * (width / Math.max(height, 1))));
+      cols = Math.max(1, Math.min(cols, count, 6));
+      const rows = Math.max(1, Math.ceil(count / cols));
+
+      typoContainer.style.setProperty("--grid-cols", String(cols));
+
+      const cellW = width / cols;
+      const cellH = height / rows;
+
+      let textPx = Math.min(44, Math.max(10, Math.min(cellH * 0.36, cellW * 0.085)));
+      let metaPx = Math.max(8, Math.min(12, textPx * 0.42));
+
+      typoContainer.style.setProperty("--card-text-size", textPx + "px");
+      typoContainer.style.setProperty("--card-meta-size", metaPx + "px");
+
+      const cards = typoContainer.querySelectorAll(".overview-card");
+      let guard = 0;
+      while (guard < 30) {
+        let anyOverflow = false;
+        cards.forEach(function (card) {
+          const textEl = card.querySelector(".overview-text");
+          if (card.scrollHeight > card.clientHeight || (textEl && textEl.scrollHeight > textEl.clientHeight)) {
+            anyOverflow = true;
+          }
+        });
+        if (!anyOverflow || textPx <= 8) break;
+        textPx *= 0.9;
+        metaPx = Math.max(7, textPx * 0.42);
+        typoContainer.style.setProperty("--card-text-size", textPx + "px");
+        typoContainer.style.setProperty("--card-meta-size", metaPx + "px");
+        guard++;
+      }
+    }
+
     function renderObservations() {
       const keepOutline = typoContainer.classList.contains("outline-mode");
       const keepDrift = typoContainer.classList.contains("drift-active");
       typoContainer.innerHTML = "";
 
       if (!observations.length) {
-        typoContainer.className = "typography-container";
+        typoContainer.className = "typography-container desktop-overview";
         if (keepOutline) typoContainer.classList.add("outline-mode");
         if (keepDrift) typoContainer.classList.add("drift-active");
+        typoContainer.style.setProperty("--grid-cols", "1");
         typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></article>`;
         if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
         return;
@@ -293,6 +335,8 @@ document.addEventListener("DOMContentLoaded", function () {
           });
           typoContainer.appendChild(card);
         });
+
+        requestAnimationFrame(fitDesktopCards);
       }
     }
 
