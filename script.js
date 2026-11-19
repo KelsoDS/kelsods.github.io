@@ -31,10 +31,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, { passive: true });
   }
 
-  // 2. Typography Log: Telefoon = 1 observatie + vegen | Groot scherm = hele overzicht
+// 2. Typography Log: Behoud eigen tekst & originele standaardteksten
   const typoContainer = document.getElementById("typography-container");
   if (typoContainer) {
-    const defaultObs = [
+    const originalDefaultObs = [
       { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
       { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" },
       { day: "THU 8 OCT", time: "4PM", text: "PIGEON RIDING THE METRO FOR THREE STOPS" },
@@ -43,16 +43,25 @@ document.addEventListener("DOMContentLoaded", function () {
       { day: "SUN 11 OCT", time: "9AM", text: "CHALK MESSAGE WASHING AWAY ON PAVEMENT" }
     ];
 
-    let observations = defaultObs;
-    try {
-      const saved = JSON.parse(localStorage.getItem("street_observations_v4"));
-      if (Array.isArray(saved) && saved.length) observations = saved;
-    } catch (_) {}
+    function loadSavedObservations() {
+      const keys = ["street_observations_v4", "street_observations", "observations"];
+      for (const key of keys) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        } catch (_) {}
+      }
+      return originalDefaultObs;
+    }
 
+    let observations = loadSavedObservations();
     let activeIndex = 0;
     let selectedIndex = null;
 
-    // Maak bladerbalk aan voor telefoon
     const pager = document.createElement("div");
     pager.className = "mobile-pager";
     pager.innerHTML = `
@@ -147,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Modal voor nieuwe observatie met kalender en klok
     const openAddBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
     const closeAddBtn = document.getElementById("close-modal");
@@ -212,97 +220,3 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("resize", renderTypography);
     renderTypography();
   }
-
-  // 3. Photo Gallery: Telefoon = 1 foto tegelijk + vegen | Groot scherm = 5-koloms overzicht
-  const galleryGrid = document.getElementById("gallery-grid");
-  if (galleryGrid) {
-    const defaultPhotos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let localPhotos = [];
-    try {
-      localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
-    } catch (_) {}
-
-    let photos = defaultPhotos.concat(localPhotos);
-    let photoIdx = 0;
-
-    const pager = document.createElement("div");
-    pager.className = "mobile-pager";
-    pager.innerHTML = `
-      <button type="button" class="btn" id="prev-photo">← VORIGE</button>
-      <span class="pager-status" id="photo-counter"></span>
-      <button type="button" class="btn" id="next-photo">VOLGENDE →</button>
-    `;
-    document.body.appendChild(pager);
-
-    const prevPhotoBtn = document.getElementById("prev-photo");
-    const nextPhotoBtn = document.getElementById("next-photo");
-    const photoCounter = document.getElementById("photo-counter");
-
-    function stepPhoto(delta) {
-      if (!photos.length) return;
-      photoIdx = (photoIdx + delta + photos.length) % photos.length;
-      renderGallery();
-    }
-
-    prevPhotoBtn.addEventListener("click", () => stepPhoto(-1));
-    nextPhotoBtn.addEventListener("click", () => stepPhoto(1));
-    attachSwipe(galleryGrid, () => stepPhoto(-1), () => stepPhoto(1));
-
-    const photoModal = document.getElementById("photo-modal");
-    const modalImg = document.getElementById("modal-img");
-    const closePhotoModal = document.getElementById("close-photo-modal");
-
-    function buildItem(item, idx) {
-      const div = document.createElement("div");
-      div.className = "gallery-item";
-      const img = document.createElement("img");
-      img.alt = `Observation ${idx + 1}`;
-
-      if (idx < defaultPhotos.length) {
-        const tries = [
-          `./beeld/Artboard ${item}.jpg`,
-          `./beeld/Artboard%20${item}.jpg`,
-          `beeld/Artboard ${item}.jpg`
-        ];
-        let t = 0;
-        img.src = tries[0];
-        img.onerror = function () {
-          t++;
-          if (t < tries.length) this.src = tries[t];
-          else div.style.display = "none";
-        };
-      } else {
-        img.src = item;
-      }
-
-      img.addEventListener("click", () => {
-        if (!isMobile() && modalImg && photoModal) {
-          modalImg.src = img.src;
-          photoModal.classList.remove("hidden");
-        }
-      });
-
-      div.appendChild(img);
-      return div;
-    }
-
-    function renderGallery() {
-      galleryGrid.innerHTML = "";
-      if (!photos.length) return;
-
-      if (isMobile()) {
-        galleryGrid.appendChild(buildItem(photos[photoIdx], photoIdx));
-        photoCounter.textContent = `${photoIdx + 1} / ${photos.length}`;
-      } else {
-        photos.forEach((p, idx) => galleryGrid.appendChild(buildItem(p, idx)));
-      }
-    }
-
-    if (closePhotoModal && photoModal) {
-      closePhotoModal.addEventListener("click", () => photoModal.classList.add("hidden"));
-    }
-
-    window.addEventListener("resize", renderGallery);
-    renderGallery();
-  }
-});
