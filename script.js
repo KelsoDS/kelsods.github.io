@@ -1,40 +1,47 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. Menu
+  // 1. Hamburger Menu & Drawer
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
   const closeDrawer = document.getElementById("close-drawer");
   const drawerOverlay = document.getElementById("drawer-overlay");
 
-  function setMenu(open) {
-    if (navDrawer) navDrawer.classList.toggle("open", open);
-    if (drawerOverlay) drawerOverlay.classList.toggle("open", open);
+  function openMenu() {
+    if (navDrawer) navDrawer.classList.add("open");
+    if (drawerOverlay) drawerOverlay.classList.add("open");
   }
 
-  if (menuToggle) menuToggle.addEventListener("click", () => setMenu(!navDrawer?.classList.contains("open")));
-  if (closeDrawer) closeDrawer.addEventListener("click", () => setMenu(false));
-  if (drawerOverlay) drawerOverlay.addEventListener("click", () => setMenu(false));
-
-  const isMobile = () => window.innerWidth < 900;
-
-  // Helper voor veeggebaren op telefoon
-  function attachSwipe(el, onPrev, onNext) {
-    if (!el) return;
-    let startX = 0;
-    el.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-    }, { passive: true });
-    el.addEventListener("touchend", (e) => {
-      const dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) < 45) return;
-      if (dx < 0) onNext();
-      else onPrev();
-    }, { passive: true });
+  function closeMenu() {
+    if (navDrawer) navDrawer.classList.remove("open");
+    if (drawerOverlay) drawerOverlay.classList.remove("open");
   }
 
-// 2. Typography Log: Behoud eigen tekst & originele standaardteksten
+  if (menuToggle) {
+    menuToggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (navDrawer && navDrawer.classList.contains("open")) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+  }
+
+  if (closeDrawer) {
+    closeDrawer.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeMenu();
+    });
+  }
+
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener("click", closeMenu);
+  }
+
+  // 2. Typography Log
   const typoContainer = document.getElementById("typography-container");
+
   if (typoContainer) {
-    const originalDefaultObs = [
+    const defaultObservations = [
       { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
       { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" },
       { day: "THU 8 OCT", time: "4PM", text: "PIGEON RIDING THE METRO FOR THREE STOPS" },
@@ -43,180 +50,356 @@ document.addEventListener("DOMContentLoaded", function () {
       { day: "SUN 11 OCT", time: "9AM", text: "CHALK MESSAGE WASHING AWAY ON PAVEMENT" }
     ];
 
-    function loadSavedObservations() {
-      const keys = ["street_observations_v4", "street_observations", "observations"];
-      for (const key of keys) {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) continue;
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        } catch (_) {}
+    let observations = [];
+    try {
+      const saved = JSON.parse(localStorage.getItem("street_observations_v4"));
+      observations = Array.isArray(saved) && saved.length > 0 ? saved : defaultObservations;
+    } catch (e) {
+      observations = defaultObservations;
+    }
+
+    let selectedLogIndex = null;
+
+    function formatDateString(dateStr) {
+      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      return `${days[dateObj.getDay()]} ${day} ${months[dateObj.getMonth()]}`;
+    }
+
+    function formatTimeString(timeStr) {
+      let [hours, minutes] = timeStr.split(":").map(Number);
+      const period = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      if (minutes === 0) {
+        return `${hours}${period}`;
       }
-      return originalDefaultObs;
+      const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      return `${hours}:${paddedMinutes}${period}`;
     }
 
-    let observations = loadSavedObservations();
-    let activeIndex = 0;
-    let selectedIndex = null;
-
-    const pager = document.createElement("div");
-    pager.className = "mobile-pager";
-    pager.innerHTML = `
-      <button type="button" class="btn" id="prev-obs">← VORIGE</button>
-      <span class="pager-status" id="obs-counter"></span>
-      <button type="button" class="btn" id="next-obs">VOLGENDE →</button>
-    `;
-    document.body.appendChild(pager);
-
-    const prevBtn = document.getElementById("prev-obs");
-    const nextBtn = document.getElementById("next-obs");
-    const counterEl = document.getElementById("obs-counter");
-
-    function stepObs(delta) {
-      if (!observations.length) return;
-      activeIndex = (activeIndex + delta + observations.length) % observations.length;
-      renderTypography();
+    function buildRowsData() {
+      const rowsData = [];
+      observations.forEach((obs, obsIndex) => {
+        const tokens = [obs.day, obs.time, ...obs.text.split(/\s+/).filter(Boolean)];
+        const chunkSize = 5;
+        for (let i = 0; i < tokens.length; i += chunkSize) {
+          rowsData.push({
+            words: tokens.slice(i, i + chunkSize),
+            obsIndex: obsIndex,
+            isFirstRow: i === 0
+          });
+        }
+      });
+      return rowsData;
     }
 
-    prevBtn.addEventListener("click", () => stepObs(-1));
-    nextBtn.addEventListener("click", () => stepObs(1));
-    attachSwipe(typoContainer, () => stepObs(-1), () => stepObs(1));
+    function renderLogs() {
+      typoContainer.innerHTML = "";
+      const rowsData = buildRowsData();
+      if (!rowsData.length) return;
+
+      const totalRows = rowsData.length;
+      const availableHeight = typoContainer.clientHeight || (window.innerHeight - 60);
+      const maxRowPx = Math.max(10, availableHeight / totalRows);
+
+      let fontSizePx = Math.min(48, maxRowPx * 0.78);
+      let metaSizePx = Math.max(8, fontSizePx * 0.42);
+
+      function drawAtSizes(wordPx, tagPx) {
+        typoContainer.innerHTML = "";
+        rowsData.forEach((rowObj) => {
+          const rowDiv = document.createElement("div");
+          rowDiv.className = "log-row";
+
+          rowObj.words.forEach((word, wordIdx) => {
+            const span = document.createElement("span");
+            span.className = "log-word";
+            span.textContent = word;
+
+            if (rowObj.isFirstRow && (wordIdx === 0 || wordIdx === 1)) {
+              span.classList.add("meta-tag");
+              span.style.fontSize = tagPx + "px";
+            } else {
+              span.style.fontSize = wordPx + "px";
+            }
+
+            span.addEventListener("click", () => openDetailModal(rowObj.obsIndex));
+            rowDiv.appendChild(span);
+          });
+
+          typoContainer.appendChild(rowDiv);
+        });
+      }
+
+      drawAtSizes(fontSizePx, metaSizePx);
+
+      // Verklein indien nodig zodat regels niet onderaan buiten het scherm vallen
+      let guard = 0;
+      while (typoContainer.scrollHeight > typoContainer.clientHeight && fontSizePx > 8 && guard < 40) {
+        fontSizePx *= 0.92;
+        metaSizePx = Math.max(7, fontSizePx * 0.42);
+        drawAtSizes(fontSizePx, metaSizePx);
+        guard++;
+      }
+    }
+
+    window.addEventListener("resize", renderLogs);
 
     const detailModal = document.getElementById("detail-modal");
     const detailMeta = document.getElementById("detail-meta");
     const detailText = document.getElementById("detail-text");
+    const closeDetailModalBtn = document.getElementById("close-detail-modal");
     const deleteLogBtn = document.getElementById("delete-log-btn");
-    const closeDetailBtn = document.getElementById("close-detail-modal");
 
-    function openDetail(idx) {
-      selectedIndex = idx;
-      const item = observations[idx];
-      if (!item || !detailModal) return;
-      detailMeta.textContent = `${item.day} — ${item.time}`;
-      detailText.textContent = item.text;
+    function openDetailModal(index) {
+      selectedLogIndex = index;
+      const obs = observations[index];
+      if (!obs) return;
+      detailMeta.textContent = `${obs.day} — ${obs.time}`;
+      detailText.textContent = obs.text;
       detailModal.classList.remove("hidden");
     }
 
-    if (closeDetailBtn) {
-      closeDetailBtn.addEventListener("click", () => {
+    if (closeDetailModalBtn) {
+      closeDetailModalBtn.addEventListener("click", () => {
         detailModal.classList.add("hidden");
-        selectedIndex = null;
+        selectedLogIndex = null;
       });
     }
 
     if (deleteLogBtn) {
       deleteLogBtn.addEventListener("click", () => {
-        if (selectedIndex === null) return;
-        observations.splice(selectedIndex, 1);
-        localStorage.setItem("street_observations_v4", JSON.stringify(observations));
-        if (activeIndex >= observations.length) activeIndex = Math.max(0, observations.length - 1);
-        detailModal.classList.add("hidden");
-        selectedIndex = null;
-        renderTypography();
+        if (selectedLogIndex !== null) {
+          observations.splice(selectedLogIndex, 1);
+          localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+          selectedLogIndex = null;
+          detailModal.classList.add("hidden");
+          renderLogs();
+        }
       });
     }
 
-    function renderTypography() {
-      typoContainer.innerHTML = "";
-      if (!observations.length) {
-        typoContainer.innerHTML = `<div class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></div>`;
-        counterEl.textContent = "0 / 0";
-        return;
-      }
-
-      if (isMobile()) {
-        typoContainer.className = "typography-container";
-        const obs = observations[activeIndex];
-        const card = document.createElement("article");
-        card.className = "overview-card";
-        card.innerHTML = `
-          <div class="overview-meta">${obs.day} · ${obs.time}</div>
-          <p class="overview-text">${obs.text}</p>
-          <div class="overview-index">VEEG HORIZONTAAL OF GEBRUIK KNOPPEN · TIK VOOR OPTIES</div>
-        `;
-        card.addEventListener("click", () => openDetail(activeIndex));
-        typoContainer.appendChild(card);
-        counterEl.textContent = `${activeIndex + 1} / ${observations.length}`;
-      } else {
-        typoContainer.className = "typography-container desktop-overview";
-        observations.forEach((obs, idx) => {
-          const card = document.createElement("article");
-          card.className = "overview-card";
-          card.innerHTML = `
-            <div class="overview-meta">${obs.day} · ${obs.time}</div>
-            <p class="overview-text">${obs.text}</p>
-            <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
-          `;
-          card.addEventListener("click", () => openDetail(idx));
-          typoContainer.appendChild(card);
-        });
-      }
-    }
-
-    const openAddBtn = document.getElementById("open-add-modal");
+    const openAddModalBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
-    const closeAddBtn = document.getElementById("close-modal");
+    const closeAddModalBtn = document.getElementById("close-modal");
     const addForm = document.getElementById("add-log-form");
     const inputDay = document.getElementById("input-day");
     const inputTime = document.getElementById("input-time");
 
-    [inputDay, inputTime].forEach((el) => {
-      if (el) {
-        el.addEventListener("click", () => {
-          if (typeof el.showPicker === "function") {
-            try { el.showPicker(); } catch (_) { el.focus(); }
-          }
-        });
+    function openNativePicker(inputEl) {
+      if (!inputEl) return;
+      if (typeof inputEl.showPicker === "function") {
+        try {
+          inputEl.showPicker();
+        } catch (err) {
+          inputEl.focus();
+        }
+      } else {
+        inputEl.focus();
       }
-    });
+    }
 
-    if (openAddBtn && addModal) {
-      openAddBtn.addEventListener("click", () => {
+    if (inputDay) {
+      inputDay.addEventListener("click", () => openNativePicker(inputDay));
+    }
+    if (inputTime) {
+      inputTime.addEventListener("click", () => openNativePicker(inputTime));
+    }
+
+    if (openAddModalBtn && addModal) {
+      openAddModalBtn.addEventListener("click", () => {
         if (addForm) addForm.reset();
         addModal.classList.remove("hidden");
       });
     }
-    if (closeAddBtn && addModal) {
-      closeAddBtn.addEventListener("click", () => addModal.classList.add("hidden"));
-    }
 
-    function formatDate(dateStr) {
-      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-      const [y, m, d] = dateStr.split("-").map(Number);
-      const dt = new Date(y, m - 1, d);
-      return `${days[dt.getDay()]} ${d} ${months[dt.getMonth()]}`;
-    }
-
-    function formatTime(timeStr) {
-      let [h, min] = timeStr.split(":").map(Number);
-      const suffix = h >= 12 ? "PM" : "AM";
-      h = h % 12 || 12;
-      return min === 0 ? `${h}${suffix}` : `${h}:${String(min).padStart(2, "0")}${suffix}`;
+    if (closeAddModalBtn && addModal) {
+      closeAddModalBtn.addEventListener("click", () => {
+        addModal.classList.add("hidden");
+      });
     }
 
     if (addForm) {
       addForm.addEventListener("submit", (e) => {
         e.preventDefault();
+        const rawDate = inputDay ? inputDay.value : "";
+        const rawTime = inputTime ? inputTime.value : "";
         const text = document.getElementById("input-text").value.trim().toUpperCase();
-        if (!inputDay.value || !inputTime.value || !text) return;
 
-        observations.push({
-          day: formatDate(inputDay.value),
-          time: formatTime(inputTime.value),
-          text
-        });
-        localStorage.setItem("street_observations_v4", JSON.stringify(observations));
-        activeIndex = observations.length - 1;
-        addForm.reset();
-        addModal.classList.add("hidden");
-        renderTypography();
+        if (rawDate && rawTime && text) {
+          observations.push({
+            day: formatDateString(rawDate),
+            time: formatTimeString(rawTime),
+            text
+          });
+          localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+          renderLogs();
+          addForm.reset();
+          if (addModal) addModal.classList.add("hidden");
+        }
       });
     }
 
-    window.addEventListener("resize", renderTypography);
-    renderTypography();
+    const toggleStyleBtn = document.getElementById("toggle-style");
+    const toggleDriftBtn = document.getElementById("toggle-drift");
+
+    if (toggleStyleBtn) {
+      toggleStyleBtn.addEventListener("click", () => {
+        typoContainer.classList.toggle("outline-mode");
+      });
+    }
+
+    if (toggleDriftBtn) {
+      toggleDriftBtn.addEventListener("click", () => {
+        const isActive = typoContainer.classList.toggle("drift-active");
+        toggleDriftBtn.textContent = isActive ? "DRIFT: ON" : "DRIFT: OFF";
+      });
+    }
+
+    renderLogs();
   }
+
+  // 3. Photo Gallery
+  const galleryGrid = document.getElementById("gallery-grid");
+
+  if (galleryGrid) {
+    const fileInput = document.getElementById("file-input");
+    const triggerUploadBtn = document.getElementById("trigger-upload-btn");
+    const photoModal = document.getElementById("photo-modal");
+    const modalImg = document.getElementById("modal-img");
+    const closePhotoModalBtn = document.getElementById("close-photo-modal");
+    const deletePhotoBtn = document.getElementById("delete-photo-btn");
+
+    const defaultPhotos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let localPhotos = [];
+    try {
+      localPhotos = JSON.parse(localStorage.getItem("street_observation_photos")) || [];
+    } catch (e) {
+      localPhotos = [];
+    }
+
+    let photos = defaultPhotos.concat(localPhotos);
+    let selectedPhotoIndex = null;
+
+    function renderGallery() {
+      galleryGrid.innerHTML = "";
+      photos.forEach(function (photoItem, index) {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "gallery-item";
+
+        const img = document.createElement("img");
+        img.alt = "Observation " + (index + 1);
+
+        if (index < defaultPhotos.length) {
+          const num = photoItem;
+          const attempts = [
+            "./beeld/Artboard " + num + ".jpg",
+            "./beeld/Artboard%20" + num + ".jpg",
+            "beeld/Artboard " + num + ".jpg",
+            "./beeld/Artboard " + num + ".JPG"
+          ];
+          let attemptIndex = 0;
+          img.src = attempts[0];
+          img.onerror = function () {
+            attemptIndex++;
+            if (attemptIndex < attempts.length) {
+              this.src = attempts[attemptIndex];
+            } else {
+              itemDiv.style.display = "none";
+            }
+          };
+        } else {
+          img.src = photoItem;
+        }
+
+        itemDiv.appendChild(img);
+        itemDiv.onclick = function () {
+          selectedPhotoIndex = index;
+          modalImg.src = img.src;
+          photoModal.classList.remove("hidden");
+        };
+
+        galleryGrid.appendChild(itemDiv);
+      });
+    }
+
+    function compressImage(file, maxWidth = 1200, quality = 0.7) {
+      return new Promise(function (resolve) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (triggerUploadBtn && fileInput) {
+      triggerUploadBtn.onclick = function () {
+        fileInput.click();
+      };
+
+      fileInput.onchange = async function (e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        const newPhotos = [];
+        for (let file of Array.from(files)) {
+          try {
+            const compressed = await compressImage(file);
+            newPhotos.push(compressed);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        localPhotos = localPhotos.concat(newPhotos);
+        localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+        photos = defaultPhotos.concat(localPhotos);
+        renderGallery();
+        fileInput.value = "";
+      };
+    }
+
+    if (deletePhotoBtn) {
+      deletePhotoBtn.onclick = function () {
+        if (selectedPhotoIndex !== null) {
+          const localIndex = selectedPhotoIndex - defaultPhotos.length;
+          if (localIndex >= 0) {
+            localPhotos.splice(localIndex, 1);
+            localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
+            photos = defaultPhotos.concat(localPhotos);
+          }
+          selectedPhotoIndex = null;
+          photoModal.classList.add("hidden");
+          renderGallery();
+        }
+      };
+    }
+
+    if (closePhotoModalBtn) {
+      closePhotoModalBtn.onclick = function () {
+        photoModal.classList.add("hidden");
+        selectedPhotoIndex = null;
+      };
+    }
+
+    renderGallery();
+  }
+});
