@@ -339,6 +339,7 @@ body {
     user-select: none;
   }
 
+  /* Eén enkele beeldvullende observatie op mobiel */
   .mobile-single-obs {
     width: 100%;
     height: 100%;
@@ -379,6 +380,7 @@ body {
     letter-spacing: 1px;
   }
 
+  /* Eén enkele beeldvullende foto op mobiel */
   .gallery-item {
     width: 100vw;
     height: 100%;
@@ -397,6 +399,7 @@ body {
     pointer-events: none;
   }
 
+  /* Swipe- & bladerbalk onderaan */
   .mobile-swipe-bar {
     height: 56px;
     width: 100vw;
