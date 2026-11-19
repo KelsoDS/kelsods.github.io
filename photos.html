@@ -3,19 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
   <title>Street Observations - Photo Gallery</title>
   
-  <!-- Google Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
-  <!-- Gedeelde Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-gallery">
@@ -23,18 +19,18 @@
   <!-- Drawer Overlay -->
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
-  <!-- Navigation Drawer (Exact dezelfde structuur als index.html) -->
+  <!-- Navigation Drawer (Identiek aan index.html) -->
   <nav class="nav-drawer" id="nav-drawer">
     <button class="drawer-close" id="close-drawer" aria-label="Close Menu">&times;</button>
     <div class="drawer-title">NAVIGATION</div>
     <ul class="drawer-links">
       <li><a href="index.html">Typography Log</a></li>
       <li><a href="photos.html" class="active">Photo Gallery</a></li>
-      <li><a href="#">Archive</a></li>
+      <li><a href="#" id="open-github-settings">GitHub Sync Setup</a></li>
     </ul>
   </nav>
 
-  <!-- Top Control Bar (Exact dezelfde structuur als index.html) -->
+  <!-- Top Control Bar -->
   <header class="control-panel">
     <div class="panel-left">
       <button class="btn btn-icon" id="menu-toggle" aria-label="Open Menu">
@@ -66,7 +62,35 @@
     </div>
   </div>
 
-  <!-- Modal: Melding / Notice (Vervangt browser alerts) -->
+  <!-- Modal: GitHub Sync Instellingen -->
+  <div class="modal-overlay hidden" id="github-modal">
+    <div class="modal-card">
+      <h2>GITHUB PUBLIEKE OPSLAG</h2>
+      <p class="detail-text" style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">
+        Vul dit eenmalig in op jouw toestel zodat nieuwe foto's automatisch naar GitHub worden geüpload voor alle bezoekers.
+      </p>
+      <form id="github-settings-form">
+        <label for="gh-owner">GITHUB GEBRUIKERSNAAM</label>
+        <input type="text" id="gh-owner" required placeholder="bijv. jouw-naam">
+
+        <label for="gh-repo">REPOSITORY NAAM</label>
+        <input type="text" id="gh-repo" required placeholder="bijv. street-observations">
+
+        <label for="gh-branch">BRANCH (MEESTAL main)</label>
+        <input type="text" id="gh-branch" value="main" required>
+
+        <label for="gh-token">PERSONAL ACCESS TOKEN (CONTENTS: READ & WRITE)</label>
+        <input type="password" id="gh-token" required placeholder="github_pat_...">
+
+        <div class="form-actions">
+          <button type="button" class="btn" id="close-github-modal">SLUITEN</button>
+          <button type="submit" class="btn btn-primary">OPSLAAN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Melding / Status -->
   <div class="modal-overlay hidden" id="notice-modal">
     <div class="modal-card">
       <p id="notice-message" class="detail-text"></p>
@@ -76,7 +100,6 @@
     </div>
   </div>
 
-  <!-- Gedeeld Script -->
   <script src="script.js" defer></script>
 </body>
 </html>
