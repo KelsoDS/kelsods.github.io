@@ -76,17 +76,27 @@
     </div>
   </div>
 
-  <!-- Modal: Observatie Details / Verwijderen -->
-  <div class="modal-overlay hidden" id="detail-modal">
-    <div class="modal-card">
-      <div class="detail-meta" id="detail-meta"></div>
-      <p class="detail-text" id="detail-text"></p>
+<!-- Modal: Nieuwe Observatie Toevoegen (Kalender & Klok) -->
+<div class="modal-overlay hidden" id="observation-modal">
+  <div class="modal-card">
+    <h2>NIEUWE OBSERVATIE TOEVOEGEN</h2>
+    <form id="add-log-form">
+      <label for="input-day">DATUM (KLIK VOOR KALENDER)</label>
+      <input type="date" id="input-day" required>
+
+      <label for="input-time">TIJD (KLIK VOOR KLOK)</label>
+      <input type="time" id="input-time" required>
+
+      <label for="input-text">OBSERVATIE TEKST</label>
+      <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..."></textarea>
+
       <div class="form-actions">
-        <button type="button" class="btn btn-danger" id="delete-log-btn">VERWIJDEREN</button>
-        <button type="button" class="btn" id="close-detail-modal">SLUITEN</button>
+        <button type="button" class="btn" id="close-modal">ANNULEREN</button>
+        <button type="submit" class="btn btn-primary">TOEVOEGEN</button>
       </div>
-    </div>
+    </form>
   </div>
+</div>
 
   <!-- Gedeeld Script -->
   <script src="script.js" defer></script>
