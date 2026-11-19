@@ -62,14 +62,15 @@
     <div class="modal-card">
       <h2>NIEUWE OBSERVATIE TOEVOEGEN</h2>
       <form id="add-log-form">
-        <label for="input-day">DAG (BIJV. MON 5 OCT)</label>
-        <input type="text" id="input-day" required placeholder="MON 5 OCT" autocomplete="off">
+        <label for="input-day">DAG</label>
+        <input type="date" id="input-day" required autocomplete="off" aria-label="Kies een datum uit de kalender">
 
-        <label for="input-time">TIJD (BIJV. 2AM)</label>
-        <input type="text" id="input-time" required placeholder="2AM" autocomplete="off">
+        <label for="input-time">TIJD</label>
+        <input type="time" id="input-time" required autocomplete="off" aria-label="Kies een tijd via de klok">
 
         <label for="input-text">OBSERVATIE TEKST</label>
-        <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..."></textarea>
+        <textarea id="input-text" rows="4" required placeholder="BESCHRIJF DE SITUATIE IN HOOFDLETTERS..." aria-describedby="observation-error"></textarea>
+        <p id="observation-error" class="notice-text" role="alert" aria-live="polite" hidden></p>
 
         <div class="form-actions">
           <button type="button" class="btn" id="close-modal">ANNULEREN</button>
@@ -95,5 +96,6 @@
 
   <!-- Global Application Logic -->
   <script src="script.js" defer></script>
+  <script src="observation-validation.js" defer></script>
 </body>
 </html>
