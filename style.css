@@ -549,6 +549,15 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   color: #f2f2f2;
+  min-height: 1.5em;
+}
+
+.click-status-bar {
+  margin-top: 12px;
+  height: 2px;
+  width: 0%;
+  background: #ff3333;
+  transition: width 0.35s linear;
 }
 
 .click-meaning-layer {
