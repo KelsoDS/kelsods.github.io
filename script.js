@@ -37,7 +37,23 @@ document.addEventListener("DOMContentLoaded", function () {
     drawerOverlay.addEventListener("click", closeMenu);
   }
 
-  // 2. Typography Log
+  const isMobile = () => window.innerWidth < 900;
+
+  function attachSwipe(el, onPrev, onNext) {
+    if (!el) return;
+    let startX = 0;
+    el.addEventListener("touchstart", function (e) {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    el.addEventListener("touchend", function (e) {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) < 45) return;
+      if (dx < 0) onNext();
+      else onPrev();
+    }, { passive: true });
+  }
+
+  // 2. Typography Log: Telefoon = 1 observatie + vegen | Laptop = hele overzicht
   const typoContainer = document.getElementById("typography-container");
 
   if (typoContainer) {
@@ -58,94 +74,31 @@ document.addEventListener("DOMContentLoaded", function () {
       observations = defaultObservations;
     }
 
+    let activeIndex = 0;
     let selectedLogIndex = null;
 
-    function formatDateString(dateStr) {
-      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-      const [year, month, day] = dateStr.split("-").map(Number);
-      const dateObj = new Date(year, month - 1, day);
-      return `${days[dateObj.getDay()]} ${day} ${months[dateObj.getMonth()]}`;
+    const pager = document.createElement("div");
+    pager.className = "mobile-pager";
+    pager.innerHTML = `
+      <button type="button" class="btn" id="prev-obs">← VORIGE</button>
+      <span class="pager-status" id="obs-counter"></span>
+      <button type="button" class="btn" id="next-obs">VOLGENDE →</button>
+    `;
+    document.body.appendChild(pager);
+
+    const prevBtn = document.getElementById("prev-obs");
+    const nextBtn = document.getElementById("next-obs");
+    const counterEl = document.getElementById("obs-counter");
+
+    function stepObs(delta) {
+      if (!observations.length) return;
+      activeIndex = (activeIndex + delta + observations.length) % observations.length;
+      renderTypography();
     }
 
-    function formatTimeString(timeStr) {
-      let [hours, minutes] = timeStr.split(":").map(Number);
-      const period = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12 || 12;
-      if (minutes === 0) {
-        return `${hours}${period}`;
-      }
-      const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-      return `${hours}:${paddedMinutes}${period}`;
-    }
-
-    function buildRowsData() {
-      const rowsData = [];
-      observations.forEach((obs, obsIndex) => {
-        const tokens = [obs.day, obs.time, ...obs.text.split(/\s+/).filter(Boolean)];
-        const chunkSize = 5;
-        for (let i = 0; i < tokens.length; i += chunkSize) {
-          rowsData.push({
-            words: tokens.slice(i, i + chunkSize),
-            obsIndex: obsIndex,
-            isFirstRow: i === 0
-          });
-        }
-      });
-      return rowsData;
-    }
-
-    function renderLogs() {
-      typoContainer.innerHTML = "";
-      const rowsData = buildRowsData();
-      if (!rowsData.length) return;
-
-      const totalRows = rowsData.length;
-      const availableHeight = typoContainer.clientHeight || (window.innerHeight - 60);
-      const maxRowPx = Math.max(10, availableHeight / totalRows);
-
-      let fontSizePx = Math.min(48, maxRowPx * 0.78);
-      let metaSizePx = Math.max(8, fontSizePx * 0.42);
-
-      function drawAtSizes(wordPx, tagPx) {
-        typoContainer.innerHTML = "";
-        rowsData.forEach((rowObj) => {
-          const rowDiv = document.createElement("div");
-          rowDiv.className = "log-row";
-
-          rowObj.words.forEach((word, wordIdx) => {
-            const span = document.createElement("span");
-            span.className = "log-word";
-            span.textContent = word;
-
-            if (rowObj.isFirstRow && (wordIdx === 0 || wordIdx === 1)) {
-              span.classList.add("meta-tag");
-              span.style.fontSize = tagPx + "px";
-            } else {
-              span.style.fontSize = wordPx + "px";
-            }
-
-            span.addEventListener("click", () => openDetailModal(rowObj.obsIndex));
-            rowDiv.appendChild(span);
-          });
-
-          typoContainer.appendChild(rowDiv);
-        });
-      }
-
-      drawAtSizes(fontSizePx, metaSizePx);
-
-      // Verklein indien nodig zodat regels niet onderaan buiten het scherm vallen
-      let guard = 0;
-      while (typoContainer.scrollHeight > typoContainer.clientHeight && fontSizePx > 8 && guard < 40) {
-        fontSizePx *= 0.92;
-        metaSizePx = Math.max(7, fontSizePx * 0.42);
-        drawAtSizes(fontSizePx, metaSizePx);
-        guard++;
-      }
-    }
-
-    window.addEventListener("resize", renderLogs);
+    if (prevBtn) prevBtn.addEventListener("click", () => stepObs(-1));
+    if (nextBtn) nextBtn.addEventListener("click", () => stepObs(1));
+    attachSwipe(typoContainer, () => stepObs(-1), () => stepObs(1));
 
     const detailModal = document.getElementById("detail-modal");
     const detailMeta = document.getElementById("detail-meta");
@@ -156,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function openDetailModal(index) {
       selectedLogIndex = index;
       const obs = observations[index];
-      if (!obs) return;
+      if (!obs || !detailModal) return;
       detailMeta.textContent = `${obs.day} — ${obs.time}`;
       detailText.textContent = obs.text;
       detailModal.classList.remove("hidden");
@@ -174,13 +127,69 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selectedLogIndex !== null) {
           observations.splice(selectedLogIndex, 1);
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
+          if (activeIndex >= observations.length) {
+            activeIndex = Math.max(0, observations.length - 1);
+          }
           selectedLogIndex = null;
           detailModal.classList.add("hidden");
-          renderLogs();
+          renderTypography();
         }
       });
     }
 
+    function renderTypography() {
+      const keepOutline = typoContainer.classList.contains("outline-mode");
+      const keepDrift = typoContainer.classList.contains("drift-active");
+      typoContainer.innerHTML = "";
+
+      if (!observations.length) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+        typoContainer.innerHTML = `<div class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></div>`;
+        if (counterEl) counterEl.textContent = "0 / 0";
+        return;
+      }
+
+      if (isMobile()) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        const obs = observations[activeIndex];
+        const card = document.createElement("article");
+        card.className = "overview-card";
+        card.innerHTML = `
+          <div class="overview-meta">${obs.day} · ${obs.time}</div>
+          <p class="overview-text">${obs.text}</p>
+          <div class="overview-index">VEEG OF GEBRUIK KNOPPEN · TIK VOOR OPTIES</div>
+        `;
+        card.addEventListener("click", () => openDetailModal(activeIndex));
+        typoContainer.appendChild(card);
+
+        if (counterEl) {
+          counterEl.textContent = `${activeIndex + 1} / ${observations.length}`;
+        }
+      } else {
+        typoContainer.className = "typography-container desktop-overview";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        observations.forEach((obs, idx) => {
+          const card = document.createElement("article");
+          card.className = "overview-card";
+          card.innerHTML = `
+            <div class="overview-meta">${obs.day} · ${obs.time}</div>
+            <p class="overview-text">${obs.text}</p>
+            <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
+          `;
+          card.addEventListener("click", () => openDetailModal(idx));
+          typoContainer.appendChild(card);
+        });
+      }
+    }
+
+    // Modal voor nieuwe observatie met kalender en klok
     const openAddModalBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
     const closeAddModalBtn = document.getElementById("close-modal");
@@ -201,12 +210,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    if (inputDay) {
-      inputDay.addEventListener("click", () => openNativePicker(inputDay));
-    }
-    if (inputTime) {
-      inputTime.addEventListener("click", () => openNativePicker(inputTime));
-    }
+    if (inputDay) inputDay.addEventListener("click", () => openNativePicker(inputDay));
+    if (inputTime) inputTime.addEventListener("click", () => openNativePicker(inputTime));
 
     if (openAddModalBtn && addModal) {
       openAddModalBtn.addEventListener("click", () => {
@@ -216,9 +221,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (closeAddModalBtn && addModal) {
-      closeAddModalBtn.addEventListener("click", () => {
-        addModal.classList.add("hidden");
-      });
+      closeAddModalBtn.addEventListener("click", () => addModal.classList.add("hidden"));
+    }
+
+    function formatDateString(dateStr) {
+      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      return `${days[dateObj.getDay()]} ${day} ${months[dateObj.getMonth()]}`;
+    }
+
+    function formatTimeString(timeStr) {
+      let [hours, minutes] = timeStr.split(":").map(Number);
+      const period = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      if (minutes === 0) return `${hours}${period}`;
+      const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      return `${hours}:${paddedMinutes}${period}`;
     }
 
     if (addForm) {
@@ -235,9 +255,10 @@ document.addEventListener("DOMContentLoaded", function () {
             text
           });
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
-          renderLogs();
+          activeIndex = observations.length - 1;
           addForm.reset();
           if (addModal) addModal.classList.add("hidden");
+          renderTypography();
         }
       });
     }
@@ -258,10 +279,11 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    renderLogs();
+    window.addEventListener("resize", renderTypography);
+    renderTypography();
   }
 
-  // 3. Photo Gallery
+  // 3. Photo Gallery: Telefoon = 1 foto + vegen | Laptop = raster
   const galleryGrid = document.getElementById("gallery-grid");
 
   if (galleryGrid) {
@@ -282,47 +304,86 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let photos = defaultPhotos.concat(localPhotos);
     let selectedPhotoIndex = null;
+    let photoIdx = 0;
 
-    function renderGallery() {
-      galleryGrid.innerHTML = "";
-      photos.forEach(function (photoItem, index) {
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "gallery-item";
+    const pager = document.createElement("div");
+    pager.className = "mobile-pager";
+    pager.innerHTML = `
+      <button type="button" class="btn" id="prev-photo">← VORIGE</button>
+      <span class="pager-status" id="photo-counter"></span>
+      <button type="button" class="btn" id="next-photo">VOLGENDE →</button>
+    `;
+    document.body.appendChild(pager);
 
-        const img = document.createElement("img");
-        img.alt = "Observation " + (index + 1);
+    const prevPhotoBtn = document.getElementById("prev-photo");
+    const nextPhotoBtn = document.getElementById("next-photo");
+    const photoCounter = document.getElementById("photo-counter");
 
-        if (index < defaultPhotos.length) {
-          const num = photoItem;
-          const attempts = [
-            "./beeld/Artboard " + num + ".jpg",
-            "./beeld/Artboard%20" + num + ".jpg",
-            "beeld/Artboard " + num + ".jpg",
-            "./beeld/Artboard " + num + ".JPG"
-          ];
-          let attemptIndex = 0;
-          img.src = attempts[0];
-          img.onerror = function () {
-            attemptIndex++;
-            if (attemptIndex < attempts.length) {
-              this.src = attempts[attemptIndex];
-            } else {
-              itemDiv.style.display = "none";
-            }
-          };
-        } else {
-          img.src = photoItem;
-        }
+    function stepPhoto(delta) {
+      if (!photos.length) return;
+      photoIdx = (photoIdx + delta + photos.length) % photos.length;
+      renderGallery();
+    }
 
-        itemDiv.appendChild(img);
-        itemDiv.onclick = function () {
+    if (prevPhotoBtn) prevPhotoBtn.addEventListener("click", () => stepPhoto(-1));
+    if (nextPhotoBtn) nextPhotoBtn.addEventListener("click", () => stepPhoto(1));
+    attachSwipe(galleryGrid, () => stepPhoto(-1), () => stepPhoto(1));
+
+    function buildGalleryItem(photoItem, index) {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "gallery-item";
+
+      const img = document.createElement("img");
+      img.alt = "Observation " + (index + 1);
+
+      if (index < defaultPhotos.length) {
+        const num = photoItem;
+        const attempts = [
+          "./beeld/Artboard " + num + ".jpg",
+          "./beeld/Artboard%20" + num + ".jpg",
+          "beeld/Artboard " + num + ".jpg",
+          "./beeld/Artboard " + num + ".JPG"
+        ];
+        let attemptIndex = 0;
+        img.src = attempts[0];
+        img.onerror = function () {
+          attemptIndex++;
+          if (attemptIndex < attempts.length) {
+            this.src = attempts[attemptIndex];
+          } else {
+            itemDiv.style.display = "none";
+          }
+        };
+      } else {
+        img.src = photoItem;
+      }
+
+      img.addEventListener("click", function () {
+        if (!isMobile() && modalImg && photoModal) {
           selectedPhotoIndex = index;
           modalImg.src = img.src;
           photoModal.classList.remove("hidden");
-        };
-
-        galleryGrid.appendChild(itemDiv);
+        }
       });
+
+      itemDiv.appendChild(img);
+      return itemDiv;
+    }
+
+    function renderGallery() {
+      galleryGrid.innerHTML = "";
+      if (!photos.length) return;
+
+      if (isMobile()) {
+        galleryGrid.appendChild(buildGalleryItem(photos[photoIdx], photoIdx));
+        if (photoCounter) {
+          photoCounter.textContent = `${photoIdx + 1} / ${photos.length}`;
+        }
+      } else {
+        photos.forEach((photoItem, index) => {
+          galleryGrid.appendChild(buildGalleryItem(photoItem, index));
+        });
+      }
     }
 
     function compressImage(file, maxWidth = 1200, quality = 0.7) {
@@ -372,6 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
         localPhotos = localPhotos.concat(newPhotos);
         localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
         photos = defaultPhotos.concat(localPhotos);
+        photoIdx = photos.length - 1;
         renderGallery();
         fileInput.value = "";
       };
@@ -385,6 +447,9 @@ document.addEventListener("DOMContentLoaded", function () {
             localPhotos.splice(localIndex, 1);
             localStorage.setItem("street_observation_photos", JSON.stringify(localPhotos));
             photos = defaultPhotos.concat(localPhotos);
+            if (photoIdx >= photos.length) {
+              photoIdx = Math.max(0, photos.length - 1);
+            }
           }
           selectedPhotoIndex = null;
           photoModal.classList.add("hidden");
@@ -400,6 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
     }
 
+    window.addEventListener("resize", renderGallery);
     renderGallery();
   }
 });
