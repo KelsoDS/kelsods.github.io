@@ -117,14 +117,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    const words = obs.text.split(/\s+/).filter(Boolean);
+    const obsText = obs.text || "";
+    const words = obsText.split(/\s+/).filter(Boolean);
     const meaningParts = [
       `${obs.day} · ${obs.time} — `,
       "straatgeluid & spoor: ",
-      obs.text.toLowerCase()
+      obsText.toLowerCase()
     ];
 
-    const totalSteps = Math.max(words.length, meaningParts.length);
+    const totalSteps = Math.max(words.length, meaningParts.length, 1);
     let step = 0;
 
     function emitTone(freq, type) {
@@ -172,11 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (typoContainer) {
     const defaultObservations = [
       { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
-      { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" },
-      { day: "THU 8 OCT", time: "4PM", text: "PIGEON RIDING THE METRO FOR THREE STOPS" },
-      { day: "FRI 9 OCT", time: "1AM", text: "TWO STRANGERS SHARING HEADPHONES ON BENCH" },
-      { day: "SAT 10 OCT", time: "6PM", text: "SHOPPING CART FLOATING IN THE CANAL" },
-      { day: "SUN 11 OCT", time: "9AM", text: "CHALK MESSAGE WASHING AWAY ON PAVEMENT" }
+      { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
     ];
 
     let observations = defaultObservations.slice();
@@ -414,6 +411,25 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    function loadObservationsFromDataJson() {
+      fetch("./data.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Geen data.json");
+          return res.json();
+        })
+        .then(function (data) {
+          const list = Array.isArray(data) ? data : (data && Array.isArray(data.observations) ? data.observations : null);
+          if (list && list.length > 0) {
+            observations = list;
+            currentObsIndex = 0;
+            renderObservations();
+          }
+        })
+        .catch(function () {
+          // Valt terug op localStorage of defaultObservations
+        });
+    }
+
     const openAddModalBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
     const closeAddModalBtn = document.getElementById("close-modal");
@@ -495,6 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.addEventListener("resize", renderObservations);
     renderObservations();
+    loadObservationsFromDataJson();
   }
 
   // 4. Photo Gallery
