@@ -25,22 +25,19 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 60px;
-  padding: 10px 20px;
+  height: 60px;
+  padding: 0 20px;
   background: #111111;
   border-bottom: 1px solid #222222;
-  gap: 12px;
-  flex-wrap: wrap;
   width: 100%;
   flex-shrink: 0;
-  position: relative;
   z-index: 100;
 }
 
 .panel-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 15px;
 }
 
 .panel-brand {
@@ -53,8 +50,7 @@ body {
 .panel-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .btn {
@@ -201,62 +197,69 @@ body {
 }
 
 /* ==========================================
-   GROOT SCHERM (>= 900px): KADERS & OVERZICHT
+   DESKTOP (>= 900px): VOLLEDIG OVERZICHT
    ========================================== */
 
 @media (min-width: 900px) {
-  .desktop-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-    padding: 20px;
-    width: 100%;
+  body.page-typography {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
-  .overview-card {
-    border: 1px solid #333333;
-    padding: 20px;
-    background: #0b0b0b;
+  .typography-container {
+    flex: 1;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 14px;
+    overflow: hidden;
+  }
+
+  .log-row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    line-height: 1;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .log-word {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    user-select: none;
+    letter-spacing: -0.03em;
+    transition: color 0.15s ease;
   }
 
-  .overview-card:hover {
-    border-color: #666666;
-    background: #141414;
-  }
-
-  .overview-meta {
+  .log-word.meta-tag {
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.68rem;
+    color: #ff3333;
+    letter-spacing: 0;
+  }
+
+  .log-word:hover {
     color: #ff3333;
   }
 
-  .overview-text {
-    font-family: 'Arial Black', Impact, sans-serif;
-    font-weight: 900;
-    font-size: clamp(1.2rem, 1.8vw, 2rem);
-    line-height: 1.08;
-    text-transform: uppercase;
-    color: #f2f2f2;
-    word-break: break-word;
-  }
-
-  .overview-index {
-    font-size: 0.75rem;
-    color: #666666;
-  }
-
-  .typography-container.outline-mode .overview-text {
+  .typography-container.outline-mode .log-word:not(.meta-tag) {
     color: transparent;
     -webkit-text-stroke: 1.5px #ffffff;
   }
 
-  .typography-container.outline-mode .overview-card:hover .overview-text {
+  .typography-container.outline-mode .log-word:not(.meta-tag):hover {
     color: #ff3333;
     -webkit-text-stroke: 1.5px #ff3333;
   }
@@ -295,7 +298,7 @@ body {
 }
 
 /* ==========================================
-   TELEFOON (< 900px): 1 TEKST OF 1 FOTO + SWIPE
+   MOBILE (< 900px): 1 TEKST OF 1 FOTO + SWIPEN
    ========================================== */
 
 @media (max-width: 899px) {
@@ -344,7 +347,7 @@ body {
     flex-direction: column;
     justify-content: space-between;
     background: #0b0b0b;
-    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
   .mobile-single-meta {
@@ -357,8 +360,8 @@ body {
   .mobile-single-text {
     font-family: 'Arial Black', Impact, sans-serif;
     font-weight: 900;
-    font-size: clamp(1.9rem, 8.5vw, 3.5rem);
-    line-height: 1.04;
+    font-size: clamp(2rem, 9.5vw, 3.8rem);
+    line-height: 1.02;
     text-transform: uppercase;
     color: #f2f2f2;
     word-break: break-word;
@@ -419,17 +422,17 @@ body {
   50% { transform: translateX(8px); }
 }
 
-.typography-container.drift-active .overview-card:nth-child(odd),
+.typography-container.drift-active .log-row:nth-child(odd),
 .typography-container.drift-active .mobile-single-text {
   animation: subtleDrift 5s ease-in-out infinite;
 }
 
-.typography-container.drift-active .overview-card:nth-child(even) {
+.typography-container.drift-active .log-row:nth-child(even) {
   animation: subtleDrift 6s ease-in-out infinite reverse;
 }
 
 /* ==========================================
-   MODALS, KALENDER, KLOK & KLIK-BETEKENIS
+   MODALS, KALENDER & KLOK
    ========================================== */
 
 .modal-overlay {
@@ -454,7 +457,6 @@ body {
   padding: 25px;
   max-width: 92vw;
   max-height: 90vh;
-  overflow-y: auto;
   width: 500px;
 }
 
@@ -522,15 +524,6 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   color: #f2f2f2;
-}
-
-.click-meaning-layer {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #2a2a2a;
-  font-size: 0.85rem;
-  color: #bbbbbb;
-  line-height: 1.45;
 }
 
 .modal-preview-img {
