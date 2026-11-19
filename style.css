@@ -19,6 +19,7 @@ body {
 
 body.page-typography {
   height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -76,6 +77,11 @@ body.page-typography {
 .btn:hover {
   background: #2e2e2e;
   border-color: #555555;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -221,7 +227,7 @@ body.page-typography {
 }
 
 /* ==========================================
-   EDGE-TO-EDGE TYPOGRAPHY CONTAINER (INDEX)
+   EDGE-TO-EDGE SVG TYPOGRAPHY CONTAINER
    ========================================== */
 
 .typography-container {
@@ -237,48 +243,49 @@ body.page-typography {
   overflow: hidden;
 }
 
-.log-row {
+.svg-log-row {
+  width: 100vw;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: 1;
-  flex: 1;
+  cursor: pointer;
+  overflow: hidden;
 }
 
-.log-word {
+.svg-log-row svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.svg-text-main {
   font-family: 'Arial Black', Impact, sans-serif;
   font-weight: 900;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  letter-spacing: -0.03em;
-  transition: color 0.15s ease, transform 0.15s ease;
+  fill: #f2f2f2;
+  transition: fill 0.15s ease;
 }
 
-.log-word.meta-tag {
+.svg-text-meta {
   font-family: 'Press Start 2P', monospace;
-  color: #ff3333;
-  letter-spacing: 0;
+  fill: #ff3333;
 }
 
-.log-word:hover {
-  color: #ff3333;
+.svg-log-row:hover .svg-text-main {
+  fill: #ff3333;
 }
 
-/* Outline mode */
-.typography-container.outline-mode .log-word:not(.meta-tag) {
-  color: transparent;
-  -webkit-text-stroke: 1.5px #ffffff;
+/* Outline mode op SVG */
+.typography-container.outline-mode .svg-text-main {
+  fill: transparent;
+  stroke: #ffffff;
+  stroke-width: 2px;
 }
 
-.typography-container.outline-mode .log-word:not(.meta-tag):hover {
-  color: #ff3333;
-  -webkit-text-stroke: 1.5px #ff3333;
+.typography-container.outline-mode .svg-log-row:hover .svg-text-main {
+  fill: #ff3333;
+  stroke: #ff3333;
 }
 
 /* Drift animation */
@@ -287,11 +294,11 @@ body.page-typography {
   50% { transform: translateX(8px); }
 }
 
-.typography-container.drift-active .log-row:nth-child(odd) {
+.typography-container.drift-active .svg-log-row:nth-child(odd) {
   animation: subtleDrift 5s ease-in-out infinite;
 }
 
-.typography-container.drift-active .log-row:nth-child(even) {
+.typography-container.drift-active .svg-log-row:nth-child(even) {
   animation: subtleDrift 6s ease-in-out infinite reverse;
 }
 
