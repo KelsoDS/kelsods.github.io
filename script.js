@@ -16,31 +16,43 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (menuToggle) {
-    menuToggle.addEventListener("click", (e) => {
+    menuToggle.addEventListener("click", function (e) {
       e.stopPropagation();
-      navDrawer && navDrawer.classList.contains("open") ? closeMenu() : openMenu();
+      if (navDrawer && navDrawer.classList.contains("open")) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
     });
   }
-  if (closeDrawer) closeDrawer.addEventListener("click", closeMenu);
-  if (drawerOverlay) drawerOverlay.addEventListener("click", closeMenu);
+
+  if (closeDrawer) {
+    closeDrawer.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeMenu();
+    });
+  }
+
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener("click", closeMenu);
+  }
 
   const isMobileView = () => window.innerWidth < 900;
 
-  // Herbruikbare swipe-functie (touch + pointer)
   function enableSwipe(element, onSwipeLeft, onSwipeRight) {
     if (!element) return;
     let startX = 0;
     let startY = 0;
     let tracking = false;
 
-    element.addEventListener("touchstart", (e) => {
+    element.addEventListener("touchstart", function (e) {
       if (e.touches.length !== 1) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       tracking = true;
     }, { passive: true });
 
-    element.addEventListener("touchend", (e) => {
+    element.addEventListener("touchend", function (e) {
       if (!tracking) return;
       tracking = false;
       const endX = e.changedTouches[0].clientX;
@@ -55,8 +67,71 @@ document.addEventListener("DOMContentLoaded", function () {
     }, { passive: true });
   }
 
+  // Web Audio geluid + betekenislaag die pas na klik verschijnt
+  let activeAudioInterval = null;
+  let activeAudioCtx = null;
+
+  function stopAudioMeaning() {
+    if (activeAudioInterval) {
+      clearInterval(activeAudioInterval);
+      activeAudioInterval = null;
+    }
+    if (activeAudioCtx && typeof activeAudioCtx.close === "function") {
+      activeAudioCtx.close().catch(function () {});
+      activeAudioCtx = null;
+    }
+  }
+
+  function triggerAudioMeaning(obs, targetContainer) {
+    stopAudioMeaning();
+    if (!obs || !targetContainer) return;
+
+    let layerEl = targetContainer.querySelector(".click-meaning-layer");
+    if (!layerEl) {
+      layerEl = document.createElement("div");
+      layerEl.className = "click-meaning-layer";
+      targetContainer.appendChild(layerEl);
+    }
+    layerEl.textContent = "";
+
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      activeAudioCtx = new AudioCtx();
+    }
+
+    const parts = [
+      `${obs.time} — `,
+      "klank op straat: ",
+      obs.text.toLowerCase()
+    ];
+
+    let step = 0;
+    activeAudioInterval = setInterval(function () {
+      if (step < parts.length) {
+        layerEl.textContent += parts[step];
+
+        if (activeAudioCtx) {
+          const osc = activeAudioCtx.createOscillator();
+          const gain = activeAudioCtx.createGain();
+          osc.type = step === 1 ? "triangle" : "sine";
+          osc.frequency.setValueAtTime(180 + step * 95, activeAudioCtx.currentTime);
+          gain.gain.setValueAtTime(0.04, activeAudioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, activeAudioCtx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(activeAudioCtx.destination);
+          osc.start();
+          osc.stop(activeAudioCtx.currentTime + 0.3);
+        }
+
+        step++;
+      } else {
+        stopAudioMeaning();
+      }
+    }, 450);
+  }
+
   // ==========================================
-  // 2. TYPOGRAPHY LOG (MOBILE: 1 TEKST + SWIPE | DESKTOP: OVERZICHT)
+  // 2. TYPOGRAPHY LOG
   // ==========================================
   const typoContainer = document.getElementById("typography-container");
 
@@ -81,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentObsIndex = 0;
     let selectedLogIndex = null;
 
-    // Mobiele bladerbalk
     const swipeBar = document.createElement("div");
     swipeBar.className = "mobile-swipe-bar";
     swipeBar.innerHTML = `
@@ -123,105 +197,13 @@ document.addEventListener("DOMContentLoaded", function () {
       let [hours, minutes] = timeStr.split(":").map(Number);
       const period = hours >= 12 ? "PM" : "AM";
       hours = hours % 12 || 12;
-      if (minutes === 0) return `${hours}${period}`;
+      if (minutes === 0) {
+        return `${hours}${period}`;
+      }
       const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
       return `${hours}:${paddedMinutes}${period}`;
     }
 
-    function renderDesktopLogs() {
-      const rowsData = [];
-      observations.forEach((obs, obsIndex) => {
-        const tokens = [obs.day, obs.time, ...obs.text.split(/\s+/).filter(Boolean)];
-        const chunkSize = 5;
-        for (let i = 0; i < tokens.length; i += chunkSize) {
-          rowsData.push({
-            words: tokens.slice(i, i + chunkSize),
-            obsIndex: obsIndex,
-            isFirstRow: i === 0
-          });
-        }
-      });
-
-      if (!rowsData.length) return;
-
-      const availableHeight = typoContainer.clientHeight || (window.innerHeight - 60);
-      let fontSizePx = Math.min(48, Math.max(10, (availableHeight / rowsData.length) * 0.78));
-      let metaSizePx = Math.max(8, fontSizePx * 0.42);
-
-      function draw(wordPx, tagPx) {
-        typoContainer.innerHTML = "";
-        rowsData.forEach((rowObj) => {
-          const rowDiv = document.createElement("div");
-          rowDiv.className = "log-row";
-
-          rowObj.words.forEach((word, wordIdx) => {
-            const span = document.createElement("span");
-            span.className = "log-word";
-            span.textContent = word;
-
-            if (rowObj.isFirstRow && (wordIdx === 0 || wordIdx === 1)) {
-              span.classList.add("meta-tag");
-              span.style.fontSize = tagPx + "px";
-            } else {
-              span.style.fontSize = wordPx + "px";
-            }
-
-            span.addEventListener("click", () => openDetailModal(rowObj.obsIndex));
-            rowDiv.appendChild(span);
-          });
-
-          typoContainer.appendChild(rowDiv);
-        });
-      }
-
-      draw(fontSizePx, metaSizePx);
-
-      let guard = 0;
-      while (typoContainer.scrollHeight > typoContainer.clientHeight && fontSizePx > 8 && guard < 40) {
-        fontSizePx *= 0.92;
-        metaSizePx = Math.max(7, fontSizePx * 0.42);
-        draw(fontSizePx, metaSizePx);
-        guard++;
-      }
-    }
-
-    function renderMobileSingleObs() {
-      typoContainer.innerHTML = "";
-      if (!observations.length) {
-        typoContainer.innerHTML = `<div class="mobile-single-obs"><p class="mobile-single-text">GEEN OBSERVATIES</p></div>`;
-        if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
-        return;
-      }
-
-      if (currentObsIndex >= observations.length) {
-        currentObsIndex = observations.length - 1;
-      }
-
-      const obs = observations[currentObsIndex];
-      const card = document.createElement("article");
-      card.className = "mobile-single-obs";
-      card.innerHTML = `
-        <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
-        <p class="mobile-single-text">${obs.text}</p>
-        <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR OPTIES</div>
-      `;
-      card.addEventListener("click", () => openDetailModal(currentObsIndex));
-      typoContainer.appendChild(card);
-
-      if (obsSwipeCounter) {
-        obsSwipeCounter.textContent = `${currentObsIndex + 1} / ${observations.length}`;
-      }
-    }
-
-    function renderLogs() {
-      if (isMobileView()) {
-        renderMobileSingleObs();
-      } else {
-        renderDesktopLogs();
-      }
-    }
-
-    // Detail & Verwijderen Modal
     const detailModal = document.getElementById("detail-modal");
     const detailMeta = document.getElementById("detail-meta");
     const detailText = document.getElementById("detail-text");
@@ -232,21 +214,26 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedLogIndex = index;
       const obs = observations[index];
       if (!obs || !detailModal) return;
-      detailMeta.textContent = `${obs.day} — ${obs.time}`;
-      detailText.textContent = obs.text;
+      if (detailMeta) detailMeta.textContent = `${obs.day} — ${obs.time}`;
+      if (detailText) detailText.textContent = obs.text;
       detailModal.classList.remove("hidden");
+
+      const card = detailModal.querySelector(".modal-card") || detailModal;
+      triggerAudioMeaning(obs, card);
     }
 
     if (closeDetailModalBtn) {
-      closeDetailModalBtn.addEventListener("click", () => {
+      closeDetailModalBtn.addEventListener("click", function () {
+        stopAudioMeaning();
         detailModal.classList.add("hidden");
         selectedLogIndex = null;
       });
     }
 
     if (deleteLogBtn) {
-      deleteLogBtn.addEventListener("click", () => {
+      deleteLogBtn.addEventListener("click", function () {
         if (selectedLogIndex !== null) {
+          stopAudioMeaning();
           observations.splice(selectedLogIndex, 1);
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
           if (currentObsIndex >= observations.length) {
@@ -259,7 +246,66 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Toevoegen Modal met kalender en klok
+    function renderLogs() {
+      const keepOutline = typoContainer.classList.contains("outline-mode");
+      const keepDrift = typoContainer.classList.contains("drift-active");
+      typoContainer.innerHTML = "";
+
+      if (!observations.length) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+        typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></article>`;
+        if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
+        return;
+      }
+
+      if (isMobileView()) {
+        typoContainer.className = "typography-container";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        if (currentObsIndex >= observations.length) {
+          currentObsIndex = observations.length - 1;
+        }
+
+        const obs = observations[currentObsIndex];
+        const card = document.createElement("article");
+        card.className = "mobile-single-obs";
+        card.innerHTML = `
+          <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
+          <p class="mobile-single-text">${obs.text}</p>
+          <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
+        `;
+        card.addEventListener("click", function () {
+          openDetailModal(currentObsIndex);
+        });
+        typoContainer.appendChild(card);
+
+        if (obsSwipeCounter) {
+          obsSwipeCounter.textContent = `${currentObsIndex + 1} / ${observations.length}`;
+        }
+      } else {
+        typoContainer.className = "typography-container desktop-overview";
+        if (keepOutline) typoContainer.classList.add("outline-mode");
+        if (keepDrift) typoContainer.classList.add("drift-active");
+
+        observations.forEach(function (obs, idx) {
+          const card = document.createElement("article");
+          card.className = "overview-card";
+          card.innerHTML = `
+            <div class="overview-meta">${obs.day} · ${obs.time}</div>
+            <p class="overview-text">${obs.text}</p>
+            <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
+          `;
+          card.addEventListener("click", function () {
+            openDetailModal(idx);
+          });
+          typoContainer.appendChild(card);
+        });
+      }
+    }
+
     const openAddModalBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
     const closeAddModalBtn = document.getElementById("close-modal");
@@ -270,28 +316,43 @@ document.addEventListener("DOMContentLoaded", function () {
     function openNativePicker(inputEl) {
       if (!inputEl) return;
       if (typeof inputEl.showPicker === "function") {
-        try { inputEl.showPicker(); } catch (_) { inputEl.focus(); }
+        try {
+          inputEl.showPicker();
+        } catch (err) {
+          inputEl.focus();
+        }
       } else {
         inputEl.focus();
       }
     }
 
-    if (inputDay) inputDay.addEventListener("click", () => openNativePicker(inputDay));
-    if (inputTime) inputTime.addEventListener("click", () => openNativePicker(inputTime));
+    if (inputDay) {
+      inputDay.addEventListener("click", function () {
+        openNativePicker(inputDay);
+      });
+    }
+
+    if (inputTime) {
+      inputTime.addEventListener("click", function () {
+        openNativePicker(inputTime);
+      });
+    }
 
     if (openAddModalBtn && addModal) {
-      openAddModalBtn.addEventListener("click", () => {
+      openAddModalBtn.addEventListener("click", function () {
         if (addForm) addForm.reset();
         addModal.classList.remove("hidden");
       });
     }
 
     if (closeAddModalBtn && addModal) {
-      closeAddModalBtn.addEventListener("click", () => addModal.classList.add("hidden"));
+      closeAddModalBtn.addEventListener("click", function () {
+        addModal.classList.add("hidden");
+      });
     }
 
     if (addForm) {
-      addForm.addEventListener("submit", (e) => {
+      addForm.addEventListener("submit", function (e) {
         e.preventDefault();
         const rawDate = inputDay ? inputDay.value : "";
         const rawTime = inputTime ? inputTime.value : "";
@@ -301,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
           observations.push({
             day: formatDateString(rawDate),
             time: formatTimeString(rawTime),
-            text
+            text: text
           });
           localStorage.setItem("street_observations_v4", JSON.stringify(observations));
           currentObsIndex = observations.length - 1;
@@ -316,11 +377,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggleDriftBtn = document.getElementById("toggle-drift");
 
     if (toggleStyleBtn) {
-      toggleStyleBtn.addEventListener("click", () => typoContainer.classList.toggle("outline-mode"));
+      toggleStyleBtn.addEventListener("click", function () {
+        typoContainer.classList.toggle("outline-mode");
+      });
     }
 
     if (toggleDriftBtn) {
-      toggleDriftBtn.addEventListener("click", () => {
+      toggleDriftBtn.addEventListener("click", function () {
         const isActive = typoContainer.classList.toggle("drift-active");
         toggleDriftBtn.textContent = isActive ? "DRIFT: ON" : "DRIFT: OFF";
       });
@@ -331,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ==========================================
-  // 3. PHOTO GALLERY (MOBILE: 1 FOTO + SWIPE | DESKTOP: RASTER)
+  // 3. PHOTO GALLERY
   // ==========================================
   const galleryGrid = document.getElementById("gallery-grid");
 
@@ -355,7 +418,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentPhotoIndex = 0;
     let selectedPhotoIndex = null;
 
-    // Mobiele bladerbalk voor foto's
     const photoSwipeBar = document.createElement("div");
     photoSwipeBar.className = "mobile-swipe-bar";
     photoSwipeBar.innerHTML = `
@@ -415,7 +477,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       itemDiv.appendChild(img);
-      itemDiv.addEventListener("click", () => {
+      itemDiv.addEventListener("click", function () {
         selectedPhotoIndex = index;
         if (modalImg && photoModal) {
           modalImg.src = img.src;
@@ -439,18 +501,18 @@ document.addEventListener("DOMContentLoaded", function () {
           photoSwipeCounter.textContent = `${currentPhotoIndex + 1} / ${photos.length}`;
         }
       } else {
-        photos.forEach((photoItem, index) => {
+        photos.forEach(function (photoItem, index) {
           galleryGrid.appendChild(createPhotoElement(photoItem, index));
         });
       }
     }
 
     function compressImage(file, maxWidth = 1200, quality = 0.7) {
-      return new Promise((resolve) => {
+      return new Promise(function (resolve) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = function (e) {
           const img = new Image();
-          img.onload = () => {
+          img.onload = function () {
             const canvas = document.createElement("canvas");
             let width = img.width;
             let height = img.height;
@@ -471,9 +533,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (triggerUploadBtn && fileInput) {
-      triggerUploadBtn.onclick = () => fileInput.click();
+      triggerUploadBtn.onclick = function () {
+        fileInput.click();
+      };
 
-      fileInput.onchange = async (e) => {
+      fileInput.onchange = async function (e) {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
@@ -497,7 +561,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (deletePhotoBtn) {
-      deletePhotoBtn.onclick = () => {
+      deletePhotoBtn.onclick = function () {
         if (selectedPhotoIndex !== null) {
           const localIndex = selectedPhotoIndex - defaultPhotos.length;
           if (localIndex >= 0) {
@@ -516,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (closePhotoModalBtn) {
-      closePhotoModalBtn.onclick = () => {
+      closePhotoModalBtn.onclick = function () {
         photoModal.classList.add("hidden");
         selectedPhotoIndex = null;
       };
