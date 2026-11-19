@@ -73,12 +73,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function playObservationMeaning(obs, container, textTarget) {
+  function playObservationMeaning(obs, container, textTarget, cardTextTarget) {
     stopClickAudio();
     if (!obs || !container) return;
 
     if (textTarget) {
       textTarget.textContent = "";
+    }
+    if (cardTextTarget) {
+      cardTextTarget.textContent = "";
     }
 
     let statusBar = container.querySelector(".click-status-bar");
@@ -142,8 +145,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     activeSoundTimer = setInterval(function () {
       if (step < totalSteps) {
-        if (textTarget && step < words.length) {
-          textTarget.textContent += (step > 0 ? " " : "") + words[step];
+        if (step < words.length) {
+          const nextChunk = (step > 0 ? " " : "") + words[step];
+          if (textTarget) textTarget.textContent += nextChunk;
+          if (cardTextTarget) cardTextTarget.textContent += nextChunk;
         }
         if (step < meaningParts.length) {
           meaningBox.textContent += meaningParts[step];
@@ -235,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeDetailModalBtn = document.getElementById("close-detail-modal");
     const deleteLogBtn = document.getElementById("delete-log-btn");
 
-    function openDetailModal(index) {
+    function openDetailModal(index, cardTextEl) {
       selectedLogIndex = index;
       const obs = observations[index];
       if (!obs || !detailModal) return;
@@ -245,7 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
       detailModal.classList.remove("hidden");
 
       const card = detailModal.querySelector(".modal-card") || detailModal;
-      playObservationMeaning(obs, card, detailText);
+      playObservationMeaning(obs, card, detailText, cardTextEl || null);
     }
 
     if (closeDetailModalBtn) {
@@ -354,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (keepDrift) typoContainer.classList.add("drift-active");
         typoContainer.style.setProperty("--grid-cols", "1");
         typoContainer.style.setProperty("--grid-rows", "1");
-        typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text">GEEN OBSERVATIES</p></article>`;
+        typoContainer.innerHTML = `<article class="overview-card"><p class="overview-text"></p></article>`;
         if (obsSwipeCounter) obsSwipeCounter.textContent = "0 / 0";
         return;
       }
@@ -373,11 +378,12 @@ document.addEventListener("DOMContentLoaded", function () {
         card.className = "mobile-single-obs";
         card.innerHTML = `
           <div class="mobile-single-meta">${obs.day} · ${obs.time}</div>
-          <p class="mobile-single-text">${obs.text}</p>
+          <p class="mobile-single-text"></p>
           <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
         `;
+        const mobileTextEl = card.querySelector(".mobile-single-text");
         card.addEventListener("click", function () {
-          openDetailModal(currentObsIndex);
+          openDetailModal(currentObsIndex, mobileTextEl);
         });
         typoContainer.appendChild(card);
 
@@ -394,11 +400,12 @@ document.addEventListener("DOMContentLoaded", function () {
           card.className = "overview-card";
           card.innerHTML = `
             <div class="overview-meta">${obs.day} · ${obs.time}</div>
-            <p class="overview-text">${obs.text}</p>
+            <p class="overview-text"></p>
             <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
           `;
+          const cardTextEl = card.querySelector(".overview-text");
           card.addEventListener("click", function () {
-            openDetailModal(idx);
+            openDetailModal(idx, cardTextEl);
           });
           typoContainer.appendChild(card);
         });
