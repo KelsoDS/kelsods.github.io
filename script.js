@@ -166,7 +166,123 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 320);
   }
 
-  // 3. Typography Log + gedeelde online JSON (zonder token)
+const SHARED_JSON_URL = "";
+
+function isMobileView() {
+  return window.innerWidth <= 768;
+}
+
+function enableSwipe(element, onSwipeLeft, onSwipeRight) {
+  if (!element) return;
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+
+  element.addEventListener(
+    "touchstart",
+    function (e) {
+      if (!e.touches || e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    },
+    { passive: true }
+  );
+
+  element.addEventListener(
+    "touchend",
+    function (e) {
+      if (!tracking || !e.changedTouches || !e.changedTouches.length) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        if (dx < 0 && typeof onSwipeLeft === "function") {
+          onSwipeLeft();
+        } else if (dx > 0 && typeof onSwipeRight === "function") {
+          onSwipeRight();
+        }
+      }
+    },
+    { passive: true }
+  );
+}
+
+let activeClickAudioCtx = null;
+
+function stopClickAudio() {
+  if (activeClickAudioCtx) {
+    try {
+      activeClickAudioCtx.close().catch(function () {});
+    } catch (_) {}
+    activeClickAudioCtx = null;
+  }
+}
+
+function playObservationMeaning(obs, cardEl, targetTextEl, sourceTextEl) {
+  stopClickAudio();
+  const fullText = obs && obs.text ? String(obs.text) : "";
+
+  if (targetTextEl) {
+    targetTextEl.textContent = fullText;
+  }
+  if (sourceTextEl && !sourceTextEl.textContent) {
+    sourceTextEl.textContent = fullText;
+  }
+
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  try {
+    const ctx = new AudioCtx();
+    activeClickAudioCtx = ctx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    const baseFreq = 190 + ((fullText.length * 13) % 220);
+    osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.03, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.36);
+    setTimeout(function () {
+      if (activeClickAudioCtx === ctx) {
+        stopClickAudio();
+      }
+    }, 400);
+  } catch (_) {}
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  // 1. Navigatie-drawer
+  const menuToggle = document.getElementById("menu-toggle");
+  const closeDrawerBtn = document.getElementById("close-drawer");
+  const navDrawer = document.getElementById("nav-drawer");
+  const drawerOverlay = document.getElementById("drawer-overlay");
+
+  function openDrawer() {
+    if (navDrawer) navDrawer.classList.add("open");
+    if (drawerOverlay) drawerOverlay.classList.add("open");
+  }
+
+  function closeDrawer() {
+    if (navDrawer) navDrawer.classList.remove("open");
+    if (drawerOverlay) drawerOverlay.classList.remove("open");
+  }
+
+  if (menuToggle) menuToggle.addEventListener("click", openDrawer);
+  if (closeDrawerBtn) closeDrawerBtn.addEventListener("click", closeDrawer);
+  if (drawerOverlay) drawerOverlay.addEventListener("click", closeDrawer);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeDrawer();
+    }
+  });
+
+  // 2. Typography Log + data.json als primaire bron
   const typoContainer = document.getElementById("typography-container");
 
   if (typoContainer) {
@@ -174,14 +290,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const MODIFIED_KEY = "street_observations_modified_v4";
 
     let dataDoc = {
-      observations: [
-        { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
-        { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
-      ],
+      observations: [],
       photos: []
     };
 
-    let observations = dataDoc.observations.slice();
+    let observations = [];
     const hasLocalModifications = localStorage.getItem(MODIFIED_KEY) === "1";
 
     if (hasLocalModifications) {
@@ -253,6 +366,21 @@ document.addEventListener("DOMContentLoaded", function () {
       return null;
     }
 
+    function normalizeObservationEntry(entry, idx) {
+      if (typeof entry === "string") {
+        return {
+          day: "LOG",
+          time: "",
+          text: entry.trim()
+        };
+      }
+      return {
+        day: (entry && (entry.day || entry.date) ? String(entry.day || entry.date) : "LOG").trim(),
+        time: (entry && (entry.time || entry.hour) ? String(entry.time || entry.hour) : "").trim(),
+        text: (entry && (entry.text || entry.observation || entry.title) ? String(entry.text || entry.observation || entry.title) : "").trim()
+      };
+    }
+
     async function syncToSharedJson() {
       if (!SHARED_JSON_URL) return false;
       dataDoc.observations = observations.slice();
@@ -271,48 +399,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function loadSharedOrInitialObservations() {
-      if (SHARED_JSON_URL) {
-        try {
-          const res = await fetch(SHARED_JSON_URL + (SHARED_JSON_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), {
-            cache: "no-store",
-            headers: { "Accept": "application/json" }
-          });
-          if (res.ok) {
-            const remoteData = await res.json();
-            if (remoteData && typeof remoteData === "object" && !Array.isArray(remoteData)) {
-              dataDoc = Object.assign({ observations: [], photos: [] }, remoteData);
-            }
-            const remoteList = extractObservations(remoteData);
-            if (Array.isArray(remoteList)) {
-              observations = remoteList;
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
-              localStorage.setItem(MODIFIED_KEY, "1");
-              currentObsIndex = 0;
-              renderObservations();
-              return;
-            }
-          }
-        } catch (_) {
-          // Valt terug op lokale of repo-data
-        }
-      }
-
-      if (hasLocalModifications) return;
-
       try {
         const res = await fetch("./data.json?t=" + Date.now(), { cache: "no-store" });
-        if (!res.ok) return;
-        const localRepoData = await res.json();
-        if (localRepoData && typeof localRepoData === "object" && !Array.isArray(localRepoData)) {
-          dataDoc = Object.assign({ observations: [], photos: [] }, localRepoData);
-        }
-        const repoList = extractObservations(localRepoData);
-        if (Array.isArray(repoList) && repoList.length > 0) {
-          observations = repoList;
-          currentObsIndex = 0;
-          renderObservations();
+        if (res.ok) {
+          const localRepoData = await res.json();
+          if (localRepoData && typeof localRepoData === "object" && !Array.isArray(localRepoData)) {
+            dataDoc = Object.assign({ observations: [], photos: [] }, localRepoData);
+          }
+          const repoList = extractObservations(localRepoData);
+          if (Array.isArray(repoList) && repoList.length > 0) {
+            observations = repoList
+              .map(normalizeObservationEntry)
+              .filter(function (item) { return item.text.length > 0; });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
+            localStorage.setItem(MODIFIED_KEY, "1");
+            currentObsIndex = 0;
+            renderObservations();
+            window.dispatchEvent(new CustomEvent("observations:reloaded", { detail: observations }));
+            return;
+          }
         }
       } catch (_) {}
+
+      if (hasLocalModifications && observations.length > 0) {
+        renderObservations();
+      }
     }
 
     const detailModal = document.getElementById("detail-modal");
@@ -467,6 +578,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <div class="mobile-swipe-hint">← SWIPE VOOR VOLGENDE · TIK VOOR GELUID &amp; OPTIES</div>
         `;
         const mobileTextEl = card.querySelector(".mobile-single-text");
+        if (mobileTextEl) mobileTextEl.textContent = obs.text;
         card.addEventListener("click", function () {
           openDetailModal(currentObsIndex, mobileTextEl);
         });
@@ -489,6 +601,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="overview-index">#${String(idx + 1).padStart(2, "0")}</div>
           `;
           const cardTextEl = card.querySelector(".overview-text");
+          if (cardTextEl) cardTextEl.textContent = obs.text;
           card.addEventListener("click", function () {
             openDetailModal(idx, cardTextEl);
           });
@@ -558,6 +671,7 @@ document.addEventListener("DOMContentLoaded", function () {
           addForm.reset();
           if (addModal) addModal.classList.add("hidden");
           renderObservations();
+          window.dispatchEvent(new CustomEvent("observations:reloaded", { detail: observations }));
 
           try {
             await syncToSharedJson();
@@ -586,6 +700,248 @@ document.addEventListener("DOMContentLoaded", function () {
     renderObservations();
     loadSharedOrInitialObservations();
   }
+});
+
+// Gedeelde helper: haalt observaties uit ./data.json of street_observations_v4
+async function loadTypographyObservationsForEditions() {
+  const STORAGE_KEY = "street_observations_v4";
+  let items = [];
+
+  try {
+    const res = await fetch("./data.json?t=" + Date.now(), { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        items = json;
+      } else if (json && Array.isArray(json.observations)) {
+        items = json.observations;
+      }
+    }
+  } catch (_) {}
+
+  if (!items.length) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (Array.isArray(raw) && raw.length > 0) {
+        items = raw.slice();
+      }
+    } catch (_) {}
+  }
+
+  return items
+    .map(function (entry, index) {
+      if (typeof entry === "string") {
+        return {
+          id: index,
+          day: "LOG",
+          time: "",
+          text: entry.trim()
+        };
+      }
+      return {
+        id: entry.id || index,
+        day: (entry.day || entry.date || "LOG").toString().trim(),
+        time: (entry.time || entry.hour || "").toString().trim(),
+        text: (entry.text || entry.observation || entry.title || "").toString().trim()
+      };
+    })
+    .filter(function (item) {
+      return item.text.length > 0;
+    });
+}
+
+function parseObservationHour(timeStr, fallbackIndex) {
+  if (timeStr) {
+    const clean = timeStr.trim().toUpperCase();
+
+    const amPmMatch = clean.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);
+    if (amPmMatch) {
+      let h = parseInt(amPmMatch[1], 10) % 12;
+      if (amPmMatch[3] === "PM") h += 12;
+      return Math.max(0, Math.min(23, h));
+    }
+
+    const h24Match = clean.match(/^(\d{1,2})(?::(\d{2}))?$/);
+    if (h24Match) {
+      const h = parseInt(h24Match[1], 10);
+      if (h >= 0 && h <= 23) return h;
+    }
+  }
+
+  return Math.floor((fallbackIndex * 24) / Math.max(1, fallbackIndex + 6)) % 24;
+}
+
+// Editie 05: De pagina is één dag (gekoppeld aan observaties)
+(function initEdition05Day() {
+  const section = document.getElementById("edition-05-day");
+  const track = document.getElementById("day-timeline-track");
+  const hourEl = document.getElementById("day-clock-hour");
+  const phaseEl = document.getElementById("day-clock-phase");
+
+  if (!section || !track || !hourEl || !phaseEl) return;
+
+  const PX_PER_HOUR = 150;
+  const TOTAL_HOURS = 24;
+  track.style.height = TOTAL_HOURS * PX_PER_HOUR + "px";
+
+  const fallbackArtifacts = [
+    { hour: 0, xPct: 18, tilt: -3, title: "Verdwaald winkelkarretje", note: "Blijft haken achter een stoeprand" },
+    { hour: 2, xPct: 62, tilt: 4, title: "Vergeten paraplu", note: "Binnenstebuiten in de wind" },
+    { hour: 4, xPct: 30, tilt: -2, title: "Melkkrat voor bakkerij", note: "Eerste metaalklik op het asfalt" },
+    { hour: 6, xPct: 70, tilt: 2, title: "Koffiekop op een paaltje", note: "Laatste slok koud geworden" },
+    { hour: 8, xPct: 14, tilt: -1, title: "Losgeslagen krant", note: "Schuift langs schoenpunten" },
+    { hour: 10, xPct: 56, tilt: 3, title: "Gele markeringstape", note: "Om een scheur in de stoep" },
+    { hour: 12, xPct: 24, tilt: 0, title: "Zonnebril op een bankje", note: "Hard licht, korte schaduwen" },
+    { hour: 14, xPct: 68, tilt: -2, title: "Krijttekeningen op tegels", note: "Halverwege uitgeveegd" },
+    { hour: 16, xPct: 20, tilt: 2, title: "Verdwaalde ballon", note: "Vast in een lage boomtak" },
+    { hour: 18, xPct: 58, tilt: -3, title: "Groene bezorgtas", note: "Even neergezet tegen gevel" },
+    { hour: 20, xPct: 16, tilt: 1, title: "Neonschijn op natte klinkers", note: "Eerste reflecties na schemer" },
+    { hour: 22, xPct: 64, tilt: -4, title: "Eenzame linkerhandschoen", note: "Bij de nachtbushalte" },
+    { hour: 23, xPct: 36, tilt: 2, title: "Knipperende straatlantaarn", note: "Telt de laatste stappen" }
+  ];
+
+  for (let h = 0; h < TOTAL_HOURS; h++) {
+    const band = document.createElement("div");
+    band.className = "day-hour-band";
+    band.style.top = h * PX_PER_HOUR + "px";
+    track.appendChild(band);
+  }
+
+  function renderTimelineItems(items) {
+    track.querySelectorAll(".day-street-item").forEach(function (el) {
+      el.remove();
+    });
+
+    const hourCounters = {};
+
+    items.forEach(function (item) {
+      const countInHour = hourCounters[item.hour] || 0;
+      hourCounters[item.hour] = countInHour + 1;
+
+      const el = document.createElement("article");
+      el.className = "day-street-item";
+      const hh = String(item.hour).padStart(2, "0") + ":00";
+      const topPx = item.hour * PX_PER_HOUR + 18 + ((countInHour * 46) % 88);
+      const leftPct = Math.max(8, Math.min(68, item.xPct));
+
+      el.style.top = topPx + "px";
+      el.style.left = leftPct + "%";
+      el.style.transform = `rotate(${item.tilt}deg)`;
+
+      const hourSpan = document.createElement("span");
+      hourSpan.className = "item-hour";
+      hourSpan.textContent = item.metaLabel ? `${hh} · ${item.metaLabel}` : hh;
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "item-title";
+      titleSpan.textContent = item.title;
+
+      el.appendChild(hourSpan);
+      el.appendChild(titleSpan);
+
+      if (item.note) {
+        const noteSpan = document.createElement("span");
+        noteSpan.className = "item-note";
+        noteSpan.textContent = item.note;
+        el.appendChild(noteSpan);
+      }
+
+      track.appendChild(el);
+    });
+  }
+
+  function getDayAtmosphere(hourFloat) {
+    if (hourFloat < 5 || hourFloat >= 21) {
+      return { phase: "NACHT", bg: "#090b10", fg: "#eef1f7", accent: "#7aa2ff" };
+    }
+    if (hourFloat < 9) {
+      return { phase: "OCHTEND", bg: "#f4ede2", fg: "#181818", accent: "#c85a17" };
+    }
+    if (hourFloat < 17) {
+      return { phase: "DAG", bg: "#ffffff", fg: "#111111", accent: "#0057b8" };
+    }
+    return { phase: "AVOND", bg: "#1f1826", fg: "#f7efe6", accent: "#ff9f43" };
+  }
+
+  function updateDayByScroll() {
+    const rect = section.getBoundingClientRect();
+    const trackHeight = track.offsetHeight || TOTAL_HOURS * PX_PER_HOUR;
+    const rawOffset = -rect.top;
+    const clampedOffset = Math.max(0, Math.min(trackHeight - 1, rawOffset));
+    const hourFloat = Math.min(23.99, clampedOffset / PX_PER_HOUR);
+
+    const wholeHour = Math.floor(hourFloat);
+    const minutes = Math.floor((hourFloat - wholeHour) * 60);
+    const formattedTime =
+      String(wholeHour).padStart(2, "0") + ":" + String(minutes).padStart(2, "0");
+
+    const mood = getDayAtmosphere(hourFloat);
+    hourEl.textContent = formattedTime;
+    phaseEl.textContent = mood.phase;
+
+    section.style.setProperty("--day-bg", mood.bg);
+    section.style.setProperty("--day-fg", mood.fg);
+    section.style.setProperty("--day-accent", mood.accent);
+  }
+
+  function refreshEdition05() {
+    loadTypographyObservationsForEditions().then(function (obsList) {
+      if (obsList.length > 0) {
+        const mapped = obsList.map(function (obs, idx) {
+          return {
+            hour: parseObservationHour(obs.time, idx),
+            xPct: 12 + ((idx * 19) % 56),
+            tilt: ((idx % 5) - 2) * 1.5,
+            title: obs.text,
+            metaLabel: [obs.day, obs.time].filter(Boolean).join(" · "),
+            note: ""
+          };
+        });
+        renderTimelineItems(mapped);
+      } else {
+        renderTimelineItems(fallbackArtifacts);
+      }
+      updateDayByScroll();
+    });
+  }
+
+  refreshEdition05();
+  window.addEventListener("observations:reloaded", refreshEdition05);
+  window.addEventListener("scroll", updateDayByScroll, { passive: true });
+  window.addEventListener("resize", updateDayByScroll);
+  updateDayByScroll();
+})();
+
+// Editie 06: De pagina is een kaart (random zoom + chronologisch bladeren met pijltjes)
+(function initEdition06Map() {
+  const section = document.getElementById("edition-06-map");
+  const viewport = document.getElementById("map-viewport");
+  const world = document.getElementById("map-world");
+  const pinsLayer = document.getElementById("map-pins-layer");
+  const routeLine = document.getElementById("map-route-line");
+  const readoutEl = document.getElementById("map-coord-readout");
+  const inspectorMeta = document.getElementById("map-inspector-meta");
+  const inspectorText = document.getElementById("map-inspector-text");
+  const randomZoomBtn = document.getElementById("map-random-zoom-btn");
+  const resetZoomBtn = document.getElementById("map-reset-zoom-btn");
+
+  if (!section || !viewport || !world || !pinsLayer || !routeLine) return;
+
+  const WORLD_W = 1600;
+  const WORLD_H = 1100;
+  const ZOOMED_SCALE = 1.65;
+
+  const fallbackNodes = [
+    { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA", x: 240, y: 520, zone: "KADE & REGENKRUISING" },
+    { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP", x: 545, y: 517, zone: "TRAMKRUISING" },
+    { day: "WED 7 OCT", time: "8AM", text: "WARM BAKERY STEAM CROSSING COLD PAVEMENT", x: 740, y: 260, zone: "BLOK NOORD" },
+    { day: "THU 8 OCT", time: "4PM", text: "SHADOWS STRETCHING ACROSS PARK PATH", x: 1180, y: 340, zone: "PARKSTROOK" },
+    { day: "FRI 9 OCT", time: "9PM", text: "LATE CYCLIST BELL ECHOING BETWEEN BRICK WALLS", x: 760, y: 760, zone: "BLOK ZUID" }
+  ];
+
+  const zoneSpots = [
+    { x: 240, y: 520, zone: "KADE & REGENKRUISING" },
+    { x: 545, y: 517, zone: "TRAMKRUISING"
 
   // 4. Photo Gallery
   const galleryGrid = document.getElementById("gallery-grid");
