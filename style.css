@@ -782,3 +782,12 @@ body {
 #map-inspector-text {
   font-size: 0.85rem;
 }
+
+/* Editie 06: grid en duidelijkere kaartbeweging */
+#map-world {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 80px 80px;
+  will-change: transform;
+}
