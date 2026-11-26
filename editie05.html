@@ -3,28 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Editie 05 — De pagina is één dag</title>
+  <title>Street Observations — Editie 05</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <header class="site-header">
-    <button type="button" id="menu-toggle" class="btn">MENU</button>
-    <nav class="page-links" aria-label="Paginanavigatie">
-      <a href="index.html">TYPOGRAFIE</a>
-      <a href="photos.html">FOTO'S</a>
-      <a href="editie05.html" aria-current="page">EDITIE 05</a>
-    </nav>
-  </header>
+<body class="page-edition-05">
+  <div id="drawer-overlay" class="drawer-overlay"></div>
 
-  <div id="drawer-overlay"></div>
-  <aside id="nav-drawer" aria-hidden="true">
-    <button type="button" id="close-drawer" class="btn">SLUIT</button>
-    <ul>
-      <li><a href="index.html">Typografie</a></li>
-      <li><a href="photos.html">Foto's</a></li>
-      <li><a href="editie05.html">Editie 05: De pagina is één dag</a></li>
+  <aside id="nav-drawer" class="nav-drawer" aria-label="Navigatie">
+    <button type="button" id="close-drawer" class="drawer-close" aria-label="Sluit menu">&times;</button>
+    <p class="drawer-title">STREET OBSERVATIONS</p>
+    <ul class="drawer-links">
+      <li><a href="index.html">TYPOGRAPHY LOG</a></li>
+      <li><a href="photos.html">PHOTO GALLERY</a></li>
+      <li><a href="editie05.html" class="active">Editie 05</a></li>
     </ul>
   </aside>
+
+  <header class="control-panel">
+    <div class="panel-left">
+      <button type="button" id="menu-toggle" class="btn-icon" aria-label="Open menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      <span class="panel-brand">STREET OBSERVATIONS</span>
+    </div>
+  </header>
 
   <main>
     <section id="edition-05-day" aria-label="Editie 05: De pagina is één dag">
