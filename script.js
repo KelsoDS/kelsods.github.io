@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Zet hier je eigen gedeelde JSON-URL (bijv. van jsonblob.com: "https://jsonblob.com/api/jsonBlob/<JOUW_ID>")
-  const SHARED_JSON_URL = "https://jsonblob.com/01a21818-0fa6-7566-9325-21586e5a51cb";
+  const SHARED_JSON_URL = "https://jsonblob.com/api/jsonBlob/01a21818-0fa6-7566-9325-21586e5a51cb";
 
   // 1. Menu & Drawer
   const menuToggle = document.getElementById("menu-toggle");
