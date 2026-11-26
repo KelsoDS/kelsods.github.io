@@ -658,3 +658,127 @@ body {
   opacity: 0.85;
   margin-top: 4px;
 }
+
+/* Editie 06: De pagina is een kaart (alleen toevoeging) */
+#edition-06-map {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  background: #101318;
+  color: #f4f6f8;
+  overflow: hidden;
+}
+
+#map-hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  background: rgba(16, 19, 24, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+#map-viewport {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+#map-viewport:active {
+  cursor: grabbing;
+}
+
+#map-world {
+  position: relative;
+  width: 1600px;
+  height: 1100px;
+  transform-origin: 0 0;
+}
+
+.map-zone {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.zone-water {
+  background: rgba(34, 88, 138, 0.35);
+  color: #9bd0ff;
+}
+
+.zone-park {
+  background: rgba(46, 112, 74, 0.32);
+  color: #9ce6b8;
+}
+
+.zone-block {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.map-road {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#map-route-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#map-route-line {
+  stroke: #ffcf56;
+  stroke-width: 4;
+  stroke-dasharray: 10 10;
+}
+
+#map-pins-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 6px 10px;
+  background: #141820;
+  color: #ffffff;
+  border: 1px solid #ffcf56;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.map-pin.active {
+  background: #ffcf56;
+  color: #111111;
+}
+
+#map-inspector {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  background: #0c0e12;
+}
+
+#map-inspector-meta {
+  font-size: 0.75rem;
+  color: #ffcf56;
+  margin-bottom: 6px;
+}
+
+#map-inspector-text {
+  font-size: 0.85rem;
+}
