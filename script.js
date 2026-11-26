@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Zet hier je eigen gedeelde JSON-URL (bijv. van jsonblob.com: "https://jsonblob.com/api/jsonBlob/<JOUW_ID>")
+  const SHARED_JSON_URL = "";
+
   // 1. Menu & Drawer
   const menuToggle = document.getElementById("menu-toggle");
   const navDrawer = document.getElementById("nav-drawer");
@@ -163,19 +166,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 320);
   }
 
-  // 3. Typography Log
+  // 3. Typography Log + gedeelde online JSON (zonder token)
   const typoContainer = document.getElementById("typography-container");
 
   if (typoContainer) {
     const STORAGE_KEY = "street_observations_v4";
     const MODIFIED_KEY = "street_observations_modified_v4";
 
-    const defaultObservations = [
-      { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
-      { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
-    ];
+    let dataDoc = {
+      observations: [
+        { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
+        { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
+      ],
+      photos: []
+    };
 
-    let observations = defaultObservations.slice();
+    let observations = dataDoc.observations.slice();
     const hasLocalModifications = localStorage.getItem(MODIFIED_KEY) === "1";
 
     if (hasLocalModifications) {
@@ -183,6 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (Array.isArray(saved)) {
           observations = saved;
+          dataDoc.observations = saved;
         }
       } catch (_) {}
     }
@@ -235,8 +242,77 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function persistLocalObservations() {
+      dataDoc.observations = observations.slice();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
       localStorage.setItem(MODIFIED_KEY, "1");
+    }
+
+    function extractObservations(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (raw && Array.isArray(raw.observations)) return raw.observations;
+      return null;
+    }
+
+    async function syncToSharedJson() {
+      if (!SHARED_JSON_URL) return false;
+      dataDoc.observations = observations.slice();
+      const res = await fetch(SHARED_JSON_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(dataDoc)
+      });
+      if (!res.ok) {
+        throw new Error("Kon gedeelde JSON niet bijwerken");
+      }
+      return true;
+    }
+
+    async function loadSharedOrInitialObservations() {
+      if (SHARED_JSON_URL) {
+        try {
+          const res = await fetch(SHARED_JSON_URL + (SHARED_JSON_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), {
+            cache: "no-store",
+            headers: { "Accept": "application/json" }
+          });
+          if (res.ok) {
+            const remoteData = await res.json();
+            if (remoteData && typeof remoteData === "object" && !Array.isArray(remoteData)) {
+              dataDoc = Object.assign({ observations: [], photos: [] }, remoteData);
+            }
+            const remoteList = extractObservations(remoteData);
+            if (Array.isArray(remoteList)) {
+              observations = remoteList;
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
+              localStorage.setItem(MODIFIED_KEY, "1");
+              currentObsIndex = 0;
+              renderObservations();
+              return;
+            }
+          }
+        } catch (_) {
+          // Valt terug op lokale of repo-data
+        }
+      }
+
+      if (hasLocalModifications) return;
+
+      try {
+        const res = await fetch("./data.json?t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) return;
+        const localRepoData = await res.json();
+        if (localRepoData && typeof localRepoData === "object" && !Array.isArray(localRepoData)) {
+          dataDoc = Object.assign({ observations: [], photos: [] }, localRepoData);
+        }
+        const repoList = extractObservations(localRepoData);
+        if (Array.isArray(repoList) && repoList.length > 0) {
+          observations = repoList;
+          currentObsIndex = 0;
+          renderObservations();
+        }
+      } catch (_) {}
     }
 
     const detailModal = document.getElementById("detail-modal");
@@ -267,7 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (deleteLogBtn) {
-      deleteLogBtn.addEventListener("click", function () {
+      deleteLogBtn.addEventListener("click", async function () {
         if (selectedLogIndex === null) return;
         stopClickAudio();
         observations.splice(selectedLogIndex, 1);
@@ -278,6 +354,10 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedLogIndex = null;
         if (detailModal) detailModal.classList.add("hidden");
         renderObservations();
+
+        try {
+          await syncToSharedJson();
+        } catch (_) {}
       });
     }
 
@@ -419,25 +499,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    function loadInitialDataJson() {
-      if (hasLocalModifications) return;
-
-      fetch("./data.json?t=" + Date.now(), { cache: "no-store" })
-        .then(function (res) {
-          if (!res.ok) throw new Error("Geen data.json");
-          return res.json();
-        })
-        .then(function (data) {
-          const list = Array.isArray(data) ? data : (data && Array.isArray(data.observations) ? data.observations : null);
-          if (list && list.length > 0) {
-            observations = list;
-            currentObsIndex = 0;
-            renderObservations();
-          }
-        })
-        .catch(function () {});
-    }
-
     const openAddModalBtn = document.getElementById("open-add-modal");
     const addModal = document.getElementById("observation-modal");
     const closeAddModalBtn = document.getElementById("close-modal");
@@ -479,7 +540,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (addForm) {
-      addForm.addEventListener("submit", function (e) {
+      addForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const rawDate = inputDay ? inputDay.value : "";
         const rawTime = inputTime ? inputTime.value : "";
@@ -497,6 +558,10 @@ document.addEventListener("DOMContentLoaded", function () {
           addForm.reset();
           if (addModal) addModal.classList.add("hidden");
           renderObservations();
+
+          try {
+            await syncToSharedJson();
+          } catch (_) {}
         }
       });
     }
@@ -519,7 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.addEventListener("resize", renderObservations);
     renderObservations();
-    loadInitialDataJson();
+    loadSharedOrInitialObservations();
   }
 
   // 4. Photo Gallery
