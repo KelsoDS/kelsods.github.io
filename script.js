@@ -869,7 +869,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateDayByScroll();
 })();
 
-// Editie 06: De pagina is een kaart (alleen op editie06.html actief)
+// Editie 06: De pagina is een kaart (slepen + pijltjestoetsen)
 (function initEdition06Map() {
   const section = document.getElementById("edition-06-map");
   const viewport = document.getElementById("map-viewport");
@@ -932,27 +932,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const minY = Math.min(0, vh - WORLD_H);
     panX = Math.max(minX, Math.min(0, panX));
     panY = Math.max(minY, Math.min(0, panY));
-    world.style.transform = `translate(${panX}px, ${panY}px)`;
+    world.style.transform = `translate3d(${Math.round(panX)}px, ${Math.round(panY)}px, 0)`;
 
     if (readoutEl) {
       const centerX = Math.abs(panX) + vw / 2;
+      const centerY = Math.abs(panY) + vh / 2;
       const zoneName = centerX < 520 ? "KADE & WATER" : centerX < 980 ? "STADSBLOKKEN & TRAM" : "PARKSTROOK";
-      readoutEl.textContent = `SECTIE: ${zoneName}`;
+      readoutEl.textContent = `SECTIE: ${zoneName} · X:${Math.round(centerX)} Y:${Math.round(centerY)}`;
     }
   }
 
   let dragging = false;
+  let activePointerId = null;
   let lastX = 0;
   let lastY = 0;
 
   viewport.addEventListener("pointerdown", function (e) {
+    if (e.target.closest(".map-pin")) return;
     dragging = true;
+    activePointerId = e.pointerId;
     lastX = e.clientX;
     lastY = e.clientY;
+    if (viewport.setPointerCapture) {
+      try { viewport.setPointerCapture(e.pointerId); } catch (_) {}
+    }
   });
 
-  window.addEventListener("pointermove", function (e) {
-    if (!dragging) return;
+  viewport.addEventListener("pointermove", function (e) {
+    if (!dragging || e.pointerId !== activePointerId) return;
     panX += e.clientX - lastX;
     panY += e.clientY - lastY;
     lastX = e.clientX;
@@ -960,17 +967,24 @@ document.addEventListener("DOMContentLoaded", function () {
     applyPan();
   });
 
-  window.addEventListener("pointerup", function () {
+  function stopDragging(e) {
+    if (!dragging) return;
+    if (e && activePointerId !== null && e.pointerId !== activePointerId) return;
     dragging = false;
-  });
+    activePointerId = null;
+  }
 
-  window.addEventListener("keydown", function (e) {
-    if (!section.offsetParent) return;
-    const step = 60;
-    if (e.key === "ArrowLeft") { panX += step; applyPan(); }
-    if (e.key === "ArrowRight") { panX -= step; applyPan(); }
-    if (e.key === "ArrowUp") { panY += step; applyPan(); }
-    if (e.key === "ArrowDown") { panY -= step; applyPan(); }
+  viewport.addEventListener("pointerup", stopDragging);
+  viewport.addEventListener("pointercancel", stopDragging);
+
+  document.addEventListener("keydown", function (e) {
+    const isEdition06 = document.body.classList.contains("page-edition-06") || section.offsetParent !== null;
+    if (!isEdition06) return;
+    const step = 80;
+    if (e.key === "ArrowLeft") { e.preventDefault(); panX += step; applyPan(); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); panX -= step; applyPan(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); panY += step; applyPan(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); panY -= step; applyPan(); }
   });
 
   function playPinTone(idx) {
