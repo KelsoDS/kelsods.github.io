@@ -868,3 +868,156 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", updateDayByScroll);
   updateDayByScroll();
 })();
+
+// Editie 06: De pagina is een kaart (alleen op editie06.html actief)
+(function initEdition06Map() {
+  const section = document.getElementById("edition-06-map");
+  const viewport = document.getElementById("map-viewport");
+  const world = document.getElementById("map-world");
+  const pinsLayer = document.getElementById("map-pins-layer");
+  const routeLine = document.getElementById("map-route-line");
+  const readoutEl = document.getElementById("map-coord-readout");
+  const inspectorMeta = document.getElementById("map-inspector-meta");
+  const inspectorText = document.getElementById("map-inspector-text");
+
+  if (!section || !viewport || !world || !pinsLayer || !routeLine) return;
+
+  const WORLD_W = 1600;
+  const WORLD_H = 1100;
+
+  let savedObs = [];
+  try {
+    const raw = JSON.parse(localStorage.getItem("street_observations_v4"));
+    if (Array.isArray(raw)) savedObs = raw;
+  } catch (_) {}
+
+  const baseNodes = [
+    { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA", x: 240, y: 520, zone: "KADE & REGENKRUISING" },
+    { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP", x: 545, y: 517, zone: "TRAMKRUISING" },
+    { day: "WED 7 OCT", time: "8AM", text: "WARM BAKERY STEAM CROSSING COLD PAVEMENT", x: 740, y: 260, zone: "BLOK NOORD" },
+    { day: "THU 8 OCT", time: "4PM", text: "SHADOWS STRETCHING ACROSS PARK PATH", x: 1180, y: 340, zone: "PARKSTROOK" },
+    { day: "FRI 9 OCT", time: "9PM", text: "LATE CYCLIST BELL ECHOING BETWEEN BRICK WALLS", x: 760, y: 760, zone: "BLOK ZUID" }
+  ];
+
+  const fallbackCoords = [
+    { x: 310, y: 320, zone: "KADE NOORD" },
+    { x: 920, y: 240, zone: "NOORDPAS" },
+    { x: 1260, y: 680, zone: "OOSTKANT" },
+    { x: 520, y: 860, zone: "ZUIDKRUISING" }
+  ];
+
+  const nodes = savedObs.length
+    ? savedObs.map(function (obs, idx) {
+        const match = baseNodes.find(function (b) { return b.text === obs.text; });
+        if (match) return match;
+        const fb = fallbackCoords[idx % fallbackCoords.length];
+        return {
+          day: obs.day || "WAARNEMING",
+          time: obs.time || "",
+          text: obs.text || "",
+          x: fb.x + ((idx * 37) % 90),
+          y: fb.y + ((idx * 29) % 70),
+          zone: fb.zone
+        };
+      })
+    : baseNodes;
+
+  let panX = 0;
+  let panY = 0;
+
+  function applyPan() {
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const minX = Math.min(0, vw - WORLD_W);
+    const minY = Math.min(0, vh - WORLD_H);
+    panX = Math.max(minX, Math.min(0, panX));
+    panY = Math.max(minY, Math.min(0, panY));
+    world.style.transform = `translate(${panX}px, ${panY}px)`;
+
+    if (readoutEl) {
+      const centerX = Math.abs(panX) + vw / 2;
+      const zoneName = centerX < 520 ? "KADE & WATER" : centerX < 980 ? "STADSBLOKKEN & TRAM" : "PARKSTROOK";
+      readoutEl.textContent = `SECTIE: ${zoneName}`;
+    }
+  }
+
+  let dragging = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  viewport.addEventListener("pointerdown", function (e) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+
+  window.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    panX += e.clientX - lastX;
+    panY += e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    applyPan();
+  });
+
+  window.addEventListener("pointerup", function () {
+    dragging = false;
+  });
+
+  window.addEventListener("keydown", function (e) {
+    if (!section.offsetParent) return;
+    const step = 60;
+    if (e.key === "ArrowLeft") { panX += step; applyPan(); }
+    if (e.key === "ArrowRight") { panX -= step; applyPan(); }
+    if (e.key === "ArrowUp") { panY += step; applyPan(); }
+    if (e.key === "ArrowDown") { panY -= step; applyPan(); }
+  });
+
+  function playPinTone(idx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    try {
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(220 + idx * 45, ctx.currentTime);
+      gain.gain.setValueAtTime(0.03, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.23);
+      setTimeout(function () { ctx.close().catch(function () {}); }, 260);
+    } catch (_) {}
+  }
+
+  pinsLayer.innerHTML = "";
+  const points = [];
+
+  nodes.forEach(function (node, idx) {
+    points.push(`${node.x},${node.y}`);
+
+    const pin = document.createElement("button");
+    pin.type = "button";
+    pin.className = "map-pin";
+    pin.style.left = node.x + "px";
+    pin.style.top = node.y + "px";
+    pin.textContent = `${String(idx + 1).padStart(2, "0")} · ${node.time}`;
+
+    pin.addEventListener("click", function (e) {
+      e.stopPropagation();
+      pinsLayer.querySelectorAll(".map-pin").forEach(function (p) { p.classList.remove("active"); });
+      pin.classList.add("active");
+      if (inspectorMeta) inspectorMeta.textContent = `${node.day} · ${node.time} — ${node.zone}`;
+      if (inspectorText) inspectorText.textContent = node.text;
+      playPinTone(idx);
+    });
+
+    pinsLayer.appendChild(pin);
+  });
+
+  routeLine.setAttribute("points", points.join(" "));
+  window.addEventListener("resize", applyPan);
+  applyPan();
+})();
