@@ -774,13 +774,13 @@ body {
 }
 
 #map-inspector-meta {
-  font-size: 0.75rem;
+  font-size: 18px;
   color: #ffcf56;
-  margin-bottom: 6px;
+  margin-bottom: 0px;
 }
 
 #map-inspector-text {
-  font-size: 20PX;
+  font-size: 20px;
 }
 
 /* Editie 06: grid en duidelijkere kaartbeweging */
