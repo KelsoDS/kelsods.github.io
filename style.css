@@ -821,3 +821,24 @@ body {
   outline: 2px solid #ffffff;
   box-shadow: 0 0 0 4px rgba(255, 207, 86, 0.45);
 }
+
+/* Editie 06: kaart voller maken en extra ruimte onderaan beperken */
+.page-edition-06 {
+  background: #101318;
+}
+
+.page-edition-06 #edition-06-map {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px);
+}
+
+.page-edition-06 #map-viewport {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 520px;
+}
+
+.page-edition-06 #map-inspector {
+  padding: 10px 16px;
+}
