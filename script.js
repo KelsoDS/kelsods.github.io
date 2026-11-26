@@ -779,7 +779,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Editie 05: De pagina is één dag (alleen op aparte pagina actief)
+// Editie 05: De pagina is één dag (gekoppeld aan typografie-observaties)
 (function initEdition05Day() {
   const section = document.getElementById("edition-05-day");
   const track = document.getElementById("day-timeline-track");
@@ -792,7 +792,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const TOTAL_HOURS = 24;
   track.style.height = TOTAL_HOURS * PX_PER_HOUR + "px";
 
-  const streetArtifacts = [
+  const fallbackArtifacts = [
     { hour: 0, xPct: 18, tilt: -3, title: "Verdwaald winkelkarretje", note: "Blijft haken achter een stoeprand" },
     { hour: 2, xPct: 62, tilt: 4, title: "Vergeten paraplu", note: "Binnenstebuiten in de wind" },
     { hour: 4, xPct: 30, tilt: -2, title: "Melkkrat voor bakkerij", note: "Eerste metaalklik op het asfalt" },
@@ -815,20 +815,48 @@ document.addEventListener("DOMContentLoaded", function () {
     track.appendChild(band);
   }
 
-  streetArtifacts.forEach(function (item) {
-    const el = document.createElement("article");
-    el.className = "day-street-item";
-    const hh = String(item.hour).padStart(2, "0") + ":00";
-    el.style.top = item.hour * PX_PER_HOUR + 22 + "px";
-    el.style.left = item.xPct + "%";
-    el.style.transform = `rotate(${item.tilt}deg)`;
-    el.innerHTML = `
-      <span class="item-hour">${hh}</span>
-      <span class="item-title">${item.title}</span>
-      <span class="item-note">${item.note}</span>
-    `;
-    track.appendChild(el);
-  });
+  function renderTimelineItems(items) {
+    track.querySelectorAll(".day-street-item").forEach(function (el) {
+      el.remove();
+    });
+
+    const hourCounters = {};
+
+    items.forEach(function (item) {
+      const countInHour = hourCounters[item.hour] || 0;
+      hourCounters[item.hour] = countInHour + 1;
+
+      const el = document.createElement("article");
+      el.className = "day-street-item";
+      const hh = String(item.hour).padStart(2, "0") + ":00";
+      const topPx = item.hour * PX_PER_HOUR + 18 + ((countInHour * 46) % 88);
+      const leftPct = Math.max(8, Math.min(68, item.xPct));
+
+      el.style.top = topPx + "px";
+      el.style.left = leftPct + "%";
+      el.style.transform = `rotate(${item.tilt}deg)`;
+
+      const hourSpan = document.createElement("span");
+      hourSpan.className = "item-hour";
+      hourSpan.textContent = item.metaLabel ? `${hh} · ${item.metaLabel}` : hh;
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "item-title";
+      titleSpan.textContent = item.title;
+
+      el.appendChild(hourSpan);
+      el.appendChild(titleSpan);
+
+      if (item.note) {
+        const noteSpan = document.createElement("span");
+        noteSpan.className = "item-note";
+        noteSpan.textContent = item.note;
+        el.appendChild(noteSpan);
+      }
+
+      track.appendChild(el);
+    });
+  }
 
   function getDayAtmosphere(hourFloat) {
     if (hourFloat < 5 || hourFloat >= 21) {
@@ -863,6 +891,25 @@ document.addEventListener("DOMContentLoaded", function () {
     section.style.setProperty("--day-fg", mood.fg);
     section.style.setProperty("--day-accent", mood.accent);
   }
+
+  loadTypographyObservationsForEditions().then(function (obsList) {
+    if (obsList.length > 0) {
+      const mapped = obsList.map(function (obs, idx) {
+        return {
+          hour: parseObservationHour(obs.time, idx),
+          xPct: 12 + ((idx * 19) % 56),
+          tilt: ((idx % 5) - 2) * 1.5,
+          title: obs.text,
+          metaLabel: [obs.day, obs.time].filter(Boolean).join(" · "),
+          note: ""
+        };
+      });
+      renderTimelineItems(mapped);
+    } else {
+      renderTimelineItems(fallbackArtifacts);
+    }
+    updateDayByScroll();
+  });
 
   window.addEventListener("scroll", updateDayByScroll, { passive: true });
   window.addEventListener("resize", updateDayByScroll);
