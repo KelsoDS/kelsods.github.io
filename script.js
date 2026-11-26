@@ -916,7 +916,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateDayByScroll();
 })();
 
-// Editie 06: De pagina is een kaart (slepen + pijltjestoetsen)
+// Editie 06: De pagina is een kaart (gekoppeld aan typografie-observaties)
 (function initEdition06Map() {
   const section = document.getElementById("edition-06-map");
   const viewport = document.getElementById("map-viewport");
@@ -932,13 +932,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const WORLD_W = 1600;
   const WORLD_H = 1100;
 
-  let savedObs = [];
-  try {
-    const raw = JSON.parse(localStorage.getItem("street_observations_v4"));
-    if (Array.isArray(raw)) savedObs = raw;
-  } catch (_) {}
-
-  const baseNodes = [
+  const fallbackNodes = [
     { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA", x: 240, y: 520, zone: "KADE & REGENKRUISING" },
     { day: "TUE 6 OCT", time: "11PM", text: "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP", x: 545, y: 517, zone: "TRAMKRUISING" },
     { day: "WED 7 OCT", time: "8AM", text: "WARM BAKERY STEAM CROSSING COLD PAVEMENT", x: 740, y: 260, zone: "BLOK NOORD" },
@@ -946,28 +940,17 @@ document.addEventListener("DOMContentLoaded", function () {
     { day: "FRI 9 OCT", time: "9PM", text: "LATE CYCLIST BELL ECHOING BETWEEN BRICK WALLS", x: 760, y: 760, zone: "BLOK ZUID" }
   ];
 
-  const fallbackCoords = [
+  const zoneSpots = [
+    { x: 240, y: 520, zone: "KADE & REGENKRUISING" },
+    { x: 545, y: 517, zone: "TRAMKRUISING" },
+    { x: 740, y: 260, zone: "BLOK NOORD" },
+    { x: 1180, y: 340, zone: "PARKSTROOK" },
+    { x: 760, y: 760, zone: "BLOK ZUID" },
     { x: 310, y: 320, zone: "KADE NOORD" },
     { x: 920, y: 240, zone: "NOORDPAS" },
     { x: 1260, y: 680, zone: "OOSTKANT" },
     { x: 520, y: 860, zone: "ZUIDKRUISING" }
   ];
-
-  const nodes = savedObs.length
-    ? savedObs.map(function (obs, idx) {
-        const match = baseNodes.find(function (b) { return b.text === obs.text; });
-        if (match) return match;
-        const fb = fallbackCoords[idx % fallbackCoords.length];
-        return {
-          day: obs.day || "WAARNEMING",
-          time: obs.time || "",
-          text: obs.text || "",
-          x: fb.x + ((idx * 37) % 90),
-          y: fb.y + ((idx * 29) % 70),
-          zone: fb.zone
-        };
-      })
-    : baseNodes;
 
   let panX = 0;
   let panY = 0;
@@ -1053,32 +1036,61 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (_) {}
   }
 
-  pinsLayer.innerHTML = "";
-  const points = [];
+  function renderMapNodes(nodes) {
+    pinsLayer.innerHTML = "";
+    const points = [];
 
-  nodes.forEach(function (node, idx) {
-    points.push(`${node.x},${node.y}`);
+    nodes.forEach(function (node, idx) {
+      points.push(`${node.x},${node.y}`);
 
-    const pin = document.createElement("button");
-    pin.type = "button";
-    pin.className = "map-pin";
-    pin.style.left = node.x + "px";
-    pin.style.top = node.y + "px";
-    pin.textContent = `${String(idx + 1).padStart(2, "0")} · ${node.time}`;
+      const pin = document.createElement("button");
+      pin.type = "button";
+      pin.className = "map-pin";
+      pin.style.left = node.x + "px";
+      pin.style.top = node.y + "px";
+      const pinLabel = node.time ? `${String(idx + 1).padStart(2, "0")} · ${node.time}` : String(idx + 1).padStart(2, "0");
+      pin.textContent = pinLabel;
 
-    pin.addEventListener("click", function (e) {
-      e.stopPropagation();
-      pinsLayer.querySelectorAll(".map-pin").forEach(function (p) { p.classList.remove("active"); });
-      pin.classList.add("active");
-      if (inspectorMeta) inspectorMeta.textContent = `${node.day} · ${node.time} — ${node.zone}`;
-      if (inspectorText) inspectorText.textContent = node.text;
-      playPinTone(idx);
+      pin.addEventListener("click", function (e) {
+        e.stopPropagation();
+        pinsLayer.querySelectorAll(".map-pin").forEach(function (p) { p.classList.remove("active"); });
+        pin.classList.add("active");
+        if (inspectorMeta) {
+          inspectorMeta.textContent = [node.day, node.time, node.zone].filter(Boolean).join(" · ");
+        }
+        if (inspectorText) {
+          inspectorText.textContent = node.text;
+        }
+        playPinTone(idx);
+      });
+
+      pinsLayer.appendChild(pin);
     });
 
-    pinsLayer.appendChild(pin);
+    routeLine.setAttribute("points", points.join(" "));
+  }
+
+  loadTypographyObservationsForEditions().then(function (obsList) {
+    if (obsList.length > 0) {
+      const mappedNodes = obsList.map(function (obs, idx) {
+        const spot = zoneSpots[idx % zoneSpots.length];
+        const offsetCycle = Math.floor(idx / zoneSpots.length);
+        return {
+          day: obs.day,
+          time: obs.time,
+          text: obs.text,
+          x: Math.max(120, Math.min(WORLD_W - 140, spot.x + offsetCycle * 65)),
+          y: Math.max(120, Math.min(WORLD_H - 120, spot.y + ((offsetCycle % 2 === 0 ? 1 : -1) * 55))),
+          zone: spot.zone
+        };
+      });
+      renderMapNodes(mappedNodes);
+    } else {
+      renderMapNodes(fallbackNodes);
+    }
+    applyPan();
   });
 
-  routeLine.setAttribute("points", points.join(" "));
   window.addEventListener("resize", applyPan);
   applyPan();
 })();
