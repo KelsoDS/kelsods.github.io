@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editie 05 — De pagina is één dag</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <button type="button" id="menu-toggle" class="btn">MENU</button>
+    <nav class="page-links" aria-label="Paginanavigatie">
+      <a href="index.html">TYPOGRAFIE</a>
+      <a href="photos.html">FOTO'S</a>
+      <a href="editie-05.html" aria-current="page">EDITIE 05</a>
+    </nav>
+  </header>
+
+  <div id="drawer-overlay"></div>
+  <aside id="nav-drawer" aria-hidden="true">
+    <button type="button" id="close-drawer" class="btn">SLUIT</button>
+    <ul>
+      <li><a href="index.html">Typografie</a></li>
+      <li><a href="photos.html">Foto's</a></li>
+      <li><a href="editie-05.html">Editie 05: De pagina is één dag</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <section id="edition-05-day" aria-label="Editie 05: De pagina is één dag">
+      <header id="day-clock-header">
+        <span id="day-clock-label">EDITIE 05 · DAGVERLOOP</span>
+        <strong id="day-clock-hour">00:00</strong>
+        <span id="day-clock-phase">NACHT</span>
+      </header>
+      <div id="day-timeline-track"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
