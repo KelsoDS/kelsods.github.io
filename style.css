@@ -774,7 +774,7 @@ body {
 }
 
 #map-inspector-meta {
-  font-size: 0.75rem;
+  font-size: 100px;
   color: #ffcf56;
   margin-bottom: 6px;
 }
