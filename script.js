@@ -916,7 +916,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateDayByScroll();
 })();
 
-// Editie 06: De pagina is een kaart (gekoppeld aan typografie-observaties)
+// Editie 06: De pagina is een kaart (random zoom + chronologisch bladeren met pijltjes)
 (function initEdition06Map() {
   const section = document.getElementById("edition-06-map");
   const viewport = document.getElementById("map-viewport");
@@ -926,11 +926,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const readoutEl = document.getElementById("map-coord-readout");
   const inspectorMeta = document.getElementById("map-inspector-meta");
   const inspectorText = document.getElementById("map-inspector-text");
+  const randomZoomBtn = document.getElementById("map-random-zoom-btn");
+  const resetZoomBtn = document.getElementById("map-reset-zoom-btn");
 
   if (!section || !viewport || !world || !pinsLayer || !routeLine) return;
 
   const WORLD_W = 1600;
   const WORLD_H = 1100;
+  const ZOOMED_SCALE = 1.65;
 
   const fallbackNodes = [
     { day: "MON 5 OCT", time: "2AM", text: "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA", x: 240, y: 520, zone: "KADE & REGENKRUISING" },
@@ -952,24 +955,174 @@ document.addEventListener("DOMContentLoaded", function () {
     { x: 520, y: 860, zone: "ZUIDKRUISING" }
   ];
 
+  function parseTimeToMinutes(timeStr) {
+    if (!timeStr) return 12 * 60;
+    const clean = timeStr.trim().toUpperCase();
+
+    const amPm = clean.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);
+    if (amPm) {
+      let hours = parseInt(amPm[1], 10) % 12;
+      const mins = amPm[2] ? parseInt(amPm[2], 10) : 0;
+      if (amPm[3] === "PM") hours += 12;
+      return hours * 60 + mins;
+    }
+
+    const h24 = clean.match(/^(\d{1,2})(?::(\d{2}))?$/);
+    if (h24) {
+      const hours = Math.max(0, Math.min(23, parseInt(h24[1], 10)));
+      const mins = h24[2] ? Math.max(0, Math.min(59, parseInt(h24[2], 10))) : 0;
+      return hours * 60 + mins;
+    }
+
+    return 12 * 60;
+  }
+
+  function parseDayScore(dayStr, fallbackIdx) {
+    if (!dayStr) return fallbackIdx * 100000;
+    const parsedDate = Date.parse(dayStr);
+    if (!Number.isNaN(parsedDate)) return parsedDate;
+
+    const weekdayOrder = {
+      mon: 1, maandag: 1,
+      tue: 2, dinsdag: 2,
+      wed: 3, woensdag: 3,
+      thu: 4, donderdag: 4,
+      fri: 5, vrijdag: 5,
+      sat: 6, zaterdag: 6,
+      sun: 7, zondag: 7
+    };
+    const lower = dayStr.toLowerCase();
+    const dayNumMatch = lower.match(/\b(\d{1,2})\b/);
+    const dayNum = dayNumMatch ? parseInt(dayNumMatch[1], 10) : 0;
+
+    for (const key in weekdayOrder) {
+      if (lower.includes(key)) {
+        return (dayNum * 100 + weekdayOrder[key]) * 100000;
+      }
+    }
+    if (dayNum > 0) return dayNum * 100000;
+    return fallbackIdx * 100000;
+  }
+
+  function getChronologicalOrder(nodes) {
+    return nodes
+      .map(function (node, idx) {
+        return {
+          idx: idx,
+          score: parseDayScore(node.day, idx) + parseTimeToMinutes(node.time)
+        };
+      })
+      .sort(function (a, b) {
+        if (a.score !== b.score) return a.score - b.score;
+        return a.idx - b.idx;
+      })
+      .map(function (entry) {
+        return entry.idx;
+      });
+  }
+
+  let activeNodes = fallbackNodes.slice();
+  let chronoOrder = getChronologicalOrder(activeNodes);
   let panX = 0;
   let panY = 0;
+  let zoomScale = 1;
+  let focusedNodeIndex = null;
 
-  function applyPan() {
+  function applyTransform() {
     const vw = viewport.clientWidth;
     const vh = viewport.clientHeight;
-    const minX = Math.min(0, vw - WORLD_W);
-    const minY = Math.min(0, vh - WORLD_H);
+    const scaledW = WORLD_W * zoomScale;
+    const scaledH = WORLD_H * zoomScale;
+
+    const minX = Math.min(0, vw - scaledW);
+    const minY = Math.min(0, vh - scaledH);
     panX = Math.max(minX, Math.min(0, panX));
     panY = Math.max(minY, Math.min(0, panY));
-    world.style.transform = `translate3d(${Math.round(panX)}px, ${Math.round(panY)}px, 0)`;
+
+    world.style.transform = `translate3d(${Math.round(panX)}px, ${Math.round(panY)}px, 0) scale(${zoomScale})`;
 
     if (readoutEl) {
-      const centerX = Math.abs(panX) + vw / 2;
-      const centerY = Math.abs(panY) + vh / 2;
+      const centerX = (Math.abs(panX) + vw / 2) / zoomScale;
+      const centerY = (Math.abs(panY) + vh / 2) / zoomScale;
       const zoneName = centerX < 520 ? "KADE & WATER" : centerX < 980 ? "STADSBLOKKEN & TRAM" : "PARKSTROOK";
-      readoutEl.textContent = `SECTIE: ${zoneName} · X:${Math.round(centerX)} Y:${Math.round(centerY)}`;
+      const chronoPos = focusedNodeIndex !== null ? chronoOrder.indexOf(focusedNodeIndex) + 1 : 0;
+      const zoomLabel = focusedNodeIndex !== null
+        ? ` · CHRONO ${chronoPos}/${chronoOrder.length}`
+        : "";
+      readoutEl.textContent = `SECTIE: ${zoneName} · X:${Math.round(centerX)} Y:${Math.round(centerY)}${zoomLabel}`;
     }
+  }
+
+  function focusObservationAtIndex(idx, playSound) {
+    if (!activeNodes.length) return;
+    const total = activeNodes.length;
+    const safeIdx = ((idx % total) + total) % total;
+    const node = activeNodes[safeIdx];
+
+    focusedNodeIndex = safeIdx;
+    zoomScale = ZOOMED_SCALE;
+
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    panX = vw / 2 - node.x * zoomScale;
+    panY = vh / 2 - node.y * zoomScale;
+    applyTransform();
+
+    const pinButtons = pinsLayer.querySelectorAll(".map-pin");
+    pinButtons.forEach(function (btn, i) {
+      btn.classList.toggle("active", i === safeIdx);
+      btn.classList.toggle("zoomed-focus", i === safeIdx);
+    });
+
+    const chronoPos = chronoOrder.indexOf(safeIdx) + 1;
+    if (inspectorMeta) {
+      inspectorMeta.textContent = [node.day, node.time, node.zone, `CHRONOLOGISCH ${chronoPos}/${total}`]
+        .filter(Boolean)
+        .join(" · ");
+    }
+    if (inspectorText) {
+      inspectorText.textContent = node.text;
+    }
+
+    if (playSound) {
+      playPinTone(safeIdx);
+    }
+  }
+
+  function stepChronological(delta) {
+    if (!chronoOrder.length) return;
+    const currentPos = focusedNodeIndex !== null ? chronoOrder.indexOf(focusedNodeIndex) : -1;
+    const basePos = currentPos >= 0 ? currentPos : 0;
+    const nextPos = ((basePos + delta) % chronoOrder.length + chronoOrder.length) % chronoOrder.length;
+    focusObservationAtIndex(chronoOrder[nextPos], true);
+  }
+
+  function resetZoomView() {
+    focusedNodeIndex = null;
+    zoomScale = 1;
+    pinsLayer.querySelectorAll(".map-pin").forEach(function (btn) {
+      btn.classList.remove("zoomed-focus");
+    });
+    applyTransform();
+  }
+
+  if (randomZoomBtn) {
+    randomZoomBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (!activeNodes.length) return;
+      let randomIdx = Math.floor(Math.random() * activeNodes.length);
+      if (activeNodes.length > 1 && randomIdx === focusedNodeIndex) {
+        randomIdx = (randomIdx + 1) % activeNodes.length;
+      }
+      focusObservationAtIndex(randomIdx, true);
+    });
+  }
+
+  if (resetZoomBtn) {
+    resetZoomBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      resetZoomView();
+    });
   }
 
   let dragging = false;
@@ -994,7 +1147,7 @@ document.addEventListener("DOMContentLoaded", function () {
     panY += e.clientY - lastY;
     lastX = e.clientX;
     lastY = e.clientY;
-    applyPan();
+    applyTransform();
   });
 
   function stopDragging(e) {
@@ -1010,11 +1163,30 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", function (e) {
     const isEdition06 = document.body.classList.contains("page-edition-06") || section.offsetParent !== null;
     if (!isEdition06) return;
+
+    if (focusedNodeIndex !== null && activeNodes.length > 0) {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        stepChronological(1);
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        stepChronological(-1);
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        resetZoomView();
+        return;
+      }
+    }
+
     const step = 80;
-    if (e.key === "ArrowLeft") { e.preventDefault(); panX += step; applyPan(); }
-    else if (e.key === "ArrowRight") { e.preventDefault(); panX -= step; applyPan(); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); panY += step; applyPan(); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); panY -= step; applyPan(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); panX += step; applyTransform(); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); panX -= step; applyTransform(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); panY += step; applyTransform(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); panY -= step; applyTransform(); }
   });
 
   function playPinTone(idx) {
@@ -1037,6 +1209,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderMapNodes(nodes) {
+    activeNodes = nodes;
+    chronoOrder = getChronologicalOrder(activeNodes);
+    focusedNodeIndex = null;
     pinsLayer.innerHTML = "";
     const points = [];
 
@@ -1053,15 +1228,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       pin.addEventListener("click", function (e) {
         e.stopPropagation();
-        pinsLayer.querySelectorAll(".map-pin").forEach(function (p) { p.classList.remove("active"); });
-        pin.classList.add("active");
-        if (inspectorMeta) {
-          inspectorMeta.textContent = [node.day, node.time, node.zone].filter(Boolean).join(" · ");
-        }
-        if (inspectorText) {
-          inspectorText.textContent = node.text;
-        }
-        playPinTone(idx);
+        focusObservationAtIndex(idx, true);
       });
 
       pinsLayer.appendChild(pin);
@@ -1088,11 +1255,11 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       renderMapNodes(fallbackNodes);
     }
-    applyPan();
+    applyTransform();
   });
 
-  window.addEventListener("resize", applyPan);
-  applyPan();
+  window.addEventListener("resize", applyTransform);
+  applyTransform();
 })();
 
 // Gedeelde helper: haalt observaties uit de typografie-opslag (en optioneel data.json)
