@@ -1334,3 +1334,90 @@ function parseObservationHour(timeStr, fallbackIndex) {
   // Gelijkmatige spreiding over de dag als er geen geldige tijd staat
   return Math.floor((fallbackIndex * 24) / Math.max(1, fallbackIndex + 6)) % 24;
 }
+
+// Forceer dat de observaties uit data.json worden gebruikt wanneer street_observations_v4 is gewist
+(function syncDataJsonOnEmptyStorage() {
+  const STORAGE_KEY = "street_observations_v4";
+
+  async function applyDataJsonObservations() {
+    const existingRaw = localStorage.getItem(STORAGE_KEY);
+    let hasSavedItems = false;
+
+    if (existingRaw) {
+      try {
+        const parsed = JSON.parse(existingRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          hasSavedItems = true;
+        }
+      } catch (_) {}
+    }
+
+    if (hasSavedItems) return;
+
+    try {
+      const res = await fetch("data.json", { cache: "no-store" });
+      if (!res.ok) return;
+
+      const json = await res.json();
+      const rawList = Array.isArray(json)
+        ? json
+        : (json && Array.isArray(json.observations) ? json.observations : []);
+
+      if (!rawList.length) return;
+
+      const normalized = rawList
+        .map(function (entry, idx) {
+          if (typeof entry === "string") {
+            return {
+              id: entry + "_" + idx,
+              day: "LOG",
+              time: "",
+              text: entry.trim()
+            };
+          }
+          return {
+            id: entry.id || ((entry.text || "") + "_" + idx),
+            day: (entry.day || entry.date || "LOG").toString().trim(),
+            time: (entry.time || entry.hour || "").toString().trim(),
+            text: (entry.text || entry.observation || entry.title || "").toString().trim()
+          };
+        })
+        .filter(function (item) {
+          return item.text.length > 0;
+        });
+
+      if (!normalized.length) return;
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+
+      // Als de typografie-lijst op de pagina al gerenderd is met de standaarditems,
+      // werk de zichtbare tekstknopen/kaarten dan bij met de data.json-items
+      const obsContainer = document.querySelector(
+        "#observations-list, #observation-list, .observations-grid, .observations-container, [data-observations]"
+      );
+      if (obsContainer) {
+        const cards = obsContainer.querySelectorAll(
+          ".observation-item, .obs-card, .observation-card, article, li"
+        );
+        if (cards.length > 0) {
+          cards.forEach(function (card, idx) {
+            const item = normalized[idx % normalized.length];
+            const textEl = card.querySelector(
+              ".obs-text, .observation-text, .text, p, h2, h3, [data-obs-text]"
+            ) || card;
+            textEl.textContent = item.text;
+          });
+        }
+      }
+
+      // Laat Editie 05 en Editie 06 opnieuw inladen met de verse data.json-items
+      window.dispatchEvent(new CustomEvent("observations:reloaded", { detail: normalized }));
+    } catch (_) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyDataJsonObservations);
+  } else {
+    applyDataJsonObservations();
+  }
+})();
