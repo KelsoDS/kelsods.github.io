@@ -1,7 +1,13 @@
 {
   "observations": [
-    { "day": "MON 5 OCT", "time": "2AM", "text": "MAN STANDING STILL IN THE RAIN WITHOUT UMBRELLA" },
-    { "day": "TUE 6 OCT", "time": "11PM", "text": "NEON SIGN FLICKERING ABOVE EMPTY TRAM STOP" }
+    { "day": "THU 8 OCT", "time": "3AM", "text": "GROUP OF PEOPLE YELLING" },
+    { "day": "THU 15 OCT", "time": "12:30PM", "text": "POLICE CAR WITH SIRENS ON" }
+    { "day": "THU 22 OCT", "time": "8:45PM", "text": "KIDS BEING LOUD AND OBNOXIOUS" }
+    { "day": "THU 29 OCT", "time": "4AM", "text": "DRUNK PEOPLE YELLING IN THE STREET" }
+    { "day": "THU 5 NOV", "time": "2AM", "text": "2 PEOPLE ARGUING WAY TOO LOUD" }
+    { "day": "THU 12 NOV", "time": "11:30PM", "text": "NEIGHBORS BEING REALLY LOUD" }
+    { "day": "THU 19 NOV", "time": "4:50PM", "text": "PARENTS YELLING AT CHILD AND CHILD CRYING BACK" }
+    { "day": "THU 26 NOV", "time": "1AM", "text": "GUY WHO FELL FROM HIS BIKE" }
   ],
   "photos": []
 }
