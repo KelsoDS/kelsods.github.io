@@ -778,3 +778,93 @@ document.addEventListener("DOMContentLoaded", function () {
     renderGallery();
   }
 });
+
+// Editie 05: De pagina is één dag (alleen op aparte pagina actief)
+(function initEdition05Day() {
+  const section = document.getElementById("edition-05-day");
+  const track = document.getElementById("day-timeline-track");
+  const hourEl = document.getElementById("day-clock-hour");
+  const phaseEl = document.getElementById("day-clock-phase");
+
+  if (!section || !track || !hourEl || !phaseEl) return;
+
+  const PX_PER_HOUR = 150;
+  const TOTAL_HOURS = 24;
+  track.style.height = TOTAL_HOURS * PX_PER_HOUR + "px";
+
+  const streetArtifacts = [
+    { hour: 0, xPct: 18, tilt: -3, title: "Verdwaald winkelkarretje", note: "Blijft haken achter een stoeprand" },
+    { hour: 2, xPct: 62, tilt: 4, title: "Vergeten paraplu", note: "Binnenstebuiten in de wind" },
+    { hour: 4, xPct: 30, tilt: -2, title: "Melkkrat voor bakkerij", note: "Eerste metaalklik op het asfalt" },
+    { hour: 6, xPct: 70, tilt: 2, title: "Koffiekop op een paaltje", note: "Laatste slok koud geworden" },
+    { hour: 8, xPct: 14, tilt: -1, title: "Losgeslagen krant", note: "Schuift langs schoenpunten" },
+    { hour: 10, xPct: 56, tilt: 3, title: "Gele markeringstape", note: "Om een scheur in de stoep" },
+    { hour: 12, xPct: 24, tilt: 0, title: "Zonnebril op een bankje", note: "Hard licht, korte schaduwen" },
+    { hour: 14, xPct: 68, tilt: -2, title: "Krijttekeningen op tegels", note: "Halverwege uitgeveegd" },
+    { hour: 16, xPct: 20, tilt: 2, title: "Verdwaalde ballon", note: "Vast in een lage boomtak" },
+    { hour: 18, xPct: 58, tilt: -3, title: "Groene bezorgtas", note: "Even neergezet tegen gevel" },
+    { hour: 20, xPct: 16, tilt: 1, title: "Neonschijn op natte klinkers", note: "Eerste reflecties na schemer" },
+    { hour: 22, xPct: 64, tilt: -4, title: "Eenzame linkerhandschoen", note: "Bij de nachtbushalte" },
+    { hour: 23, xPct: 36, tilt: 2, title: "Knipperende straatlantaarn", note: "Telt de laatste stappen" }
+  ];
+
+  for (let h = 0; h < TOTAL_HOURS; h++) {
+    const band = document.createElement("div");
+    band.className = "day-hour-band";
+    band.style.top = h * PX_PER_HOUR + "px";
+    track.appendChild(band);
+  }
+
+  streetArtifacts.forEach(function (item) {
+    const el = document.createElement("article");
+    el.className = "day-street-item";
+    const hh = String(item.hour).padStart(2, "0") + ":00";
+    el.style.top = item.hour * PX_PER_HOUR + 22 + "px";
+    el.style.left = item.xPct + "%";
+    el.style.transform = `rotate(${item.tilt}deg)`;
+    el.innerHTML = `
+      <span class="item-hour">${hh}</span>
+      <span class="item-title">${item.title}</span>
+      <span class="item-note">${item.note}</span>
+    `;
+    track.appendChild(el);
+  });
+
+  function getDayAtmosphere(hourFloat) {
+    if (hourFloat < 5 || hourFloat >= 21) {
+      return { phase: "NACHT", bg: "#090b10", fg: "#eef1f7", accent: "#7aa2ff" };
+    }
+    if (hourFloat < 9) {
+      return { phase: "OCHTEND", bg: "#f4ede2", fg: "#181818", accent: "#c85a17" };
+    }
+    if (hourFloat < 17) {
+      return { phase: "DAG", bg: "#ffffff", fg: "#111111", accent: "#0057b8" };
+    }
+    return { phase: "AVOND", bg: "#1f1826", fg: "#f7efe6", accent: "#ff9f43" };
+  }
+
+  function updateDayByScroll() {
+    const rect = section.getBoundingClientRect();
+    const trackHeight = track.offsetHeight || TOTAL_HOURS * PX_PER_HOUR;
+    const rawOffset = -rect.top;
+    const clampedOffset = Math.max(0, Math.min(trackHeight - 1, rawOffset));
+    const hourFloat = Math.min(23.99, clampedOffset / PX_PER_HOUR);
+
+    const wholeHour = Math.floor(hourFloat);
+    const minutes = Math.floor((hourFloat - wholeHour) * 60);
+    const formattedTime =
+      String(wholeHour).padStart(2, "0") + ":" + String(minutes).padStart(2, "0");
+
+    const mood = getDayAtmosphere(hourFloat);
+    hourEl.textContent = formattedTime;
+    phaseEl.textContent = mood.phase;
+
+    section.style.setProperty("--day-bg", mood.bg);
+    section.style.setProperty("--day-fg", mood.fg);
+    section.style.setProperty("--day-accent", mood.accent);
+  }
+
+  window.addEventListener("scroll", updateDayByScroll, { passive: true });
+  window.addEventListener("resize", updateDayByScroll);
+  updateDayByScroll();
+})();
