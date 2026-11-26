@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Street Observations — Editie 06</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="page-edition-06">
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
+  <aside id="nav-drawer" class="nav-drawer" aria-label="Navigatie">
+    <button type="button" id="close-drawer" class="drawer-close" aria-label="Sluit menu">&times;</button>
+    <p class="drawer-title">STREET OBSERVATIONS</p>
+    <ul class="drawer-links">
+      <li><a href="index.html">TYPOGRAPHY LOG</a></li>
+      <li><a href="photos.html">PHOTO GALLERY</a></li>
+      <li><a href="editie05.html">Editie 05</a></li>
+      <li><a href="editie06.html" class="active">Editie 06</a></li>
+    </ul>
+  </aside>
+
+  <header class="control-panel">
+    <div class="panel-left">
+      <button type="button" id="menu-toggle" class="btn-icon" aria-label="Open menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      <span class="panel-brand">STREET OBSERVATIONS</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="edition-06-map" aria-label="Editie 06: De pagina is een kaart">
+      <div id="map-hud">
+        <span>EDITIE 06 · PLATTEGROND &amp; ROUTE</span>
+        <span id="map-coord-readout">SECTIE: KADE &amp; TRAM</span>
+      </div>
+
+      <div id="map-viewport">
+        <div id="map-world">
+          <!-- Schematische plattegrond van een stadswijk (geen Google Maps) -->
+          <div class="map-zone zone-water" style="left: 4%; top: 10%; width: 28%; height: 76%;">
+            <span>KADE / WATER</span>
+          </div>
+          <div class="map-zone zone-park" style="left: 64%; top: 14%; width: 30%; height: 34%;">
+            <span>PARKSTROOK</span>
+          </div>
+          <div class="map-zone zone-block" style="left: 38%; top: 14%; width: 20%; height: 28%;">
+            <span>BLOK NOORD</span>
+          </div>
+          <div class="map-zone zone-block" style="left: 38%; top: 54%; width: 20%; height: 30%;">
+            <span>BLOK ZUID</span>
+          </div>
+          <div class="map-road road-h" style="left: 0; top: 47%; width: 100%; height: 18px;"></div>
+          <div class="map-road road-v" style="left: 34%; top: 0; width: 18px; height: 100%;"></div>
+          <div class="map-road road-v" style="left: 61%; top: 0; width: 14px; height: 100%;"></div>
+
+          <svg id="map-route-svg" viewBox="0 0 1600 1100" preserveAspectRatio="none">
+            <polyline id="map-route-line" points="" fill="none" />
+          </svg>
+
+          <div id="map-pins-layer"></div>
+        </div>
+      </div>
+
+      <aside id="map-inspector" aria-live="polite">
+        <div id="map-inspector-meta">KLIK OP EEN PUNT OP DE KAART</div>
+        <div id="map-inspector-text">Sleep over de kaart of gebruik de pijltjestoetsen om erdoor te bewegen.</div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
