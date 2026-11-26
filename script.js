@@ -1035,3 +1035,76 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", applyPan);
   applyPan();
 })();
+
+// Gedeelde helper: haalt observaties uit de typografie-opslag (en optioneel data.json)
+async function loadTypographyObservationsForEditions() {
+  const STORAGE_KEY = "street_observations_v4";
+  let items = [];
+
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (Array.isArray(raw) && raw.length > 0) {
+      items = raw.slice();
+    }
+  } catch (_) {}
+
+  if (items.length === 0) {
+    try {
+      const res = await fetch("data.json", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json)) {
+          items = json;
+        } else if (json && Array.isArray(json.observations)) {
+          items = json.observations;
+        }
+      }
+    } catch (_) {}
+  }
+
+  return items
+    .map(function (entry, index) {
+      if (typeof entry === "string") {
+        return {
+          id: index,
+          day: "LOG",
+          time: "",
+          text: entry.trim()
+        };
+      }
+      return {
+        id: entry.id || index,
+        day: (entry.day || entry.date || "LOG").toString().trim(),
+        time: (entry.time || entry.hour || "").toString().trim(),
+        text: (entry.text || entry.observation || entry.title || "").toString().trim()
+      };
+    })
+    .filter(function (item) {
+      return item.text.length > 0;
+    });
+}
+
+// Zet een tijdstring (zoals "2AM", "11PM", "08:30", "16:00") om naar een uur tussen 0 en 23
+function parseObservationHour(timeStr, fallbackIndex) {
+  if (timeStr) {
+    const clean = timeStr.trim().toUpperCase();
+
+    // 12-uurs notatie zoals "2AM", "11:30 PM"
+    const amPmMatch = clean.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);
+    if (amPmMatch) {
+      let h = parseInt(amPmMatch[1], 10) % 12;
+      if (amPmMatch[3] === "PM") h += 12;
+      return Math.max(0, Math.min(23, h));
+    }
+
+    // 24-uurs notatie zoals "8:00", "21:15", "09"
+    const h24Match = clean.match(/^(\d{1,2})(?::(\d{2}))?$/);
+    if (h24Match) {
+      const h = parseInt(h24Match[1], 10);
+      if (h >= 0 && h <= 23) return h;
+    }
+  }
+
+  // Gelijkmatige spreiding over de dag als er geen geldige tijd staat
+  return Math.floor((fallbackIndex * 24) / Math.max(1, fallbackIndex + 6)) % 24;
+}
