@@ -577,3 +577,84 @@ body {
   display: block;
   background: #000000;
 }
+
+/* Editie 05: De pagina is één dag (aparte pagina) */
+#edition-05-day {
+  position: relative;
+  width: 100%;
+  --day-bg: #08090d;
+  --day-fg: #f3f3f3;
+  --day-accent: #ffcf56;
+  background: var(--day-bg);
+  color: var(--day-fg);
+  transition: background-color 180ms linear, color 180ms linear;
+}
+
+#day-clock-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(10, 10, 12, 0.85);
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+#day-clock-hour {
+  font-size: 1rem;
+  color: var(--day-accent);
+}
+
+#day-timeline-track {
+  position: relative;
+  width: 100%;
+  height: 3600px; /* 24 uur * 150px */
+  overflow: hidden;
+}
+
+.day-hour-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 150px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.day-street-item {
+  position: absolute;
+  max-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.day-street-item .item-hour {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+
+.day-street-item .item-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.day-street-item .item-note {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-top: 4px;
+}
