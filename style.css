@@ -791,3 +791,33 @@ body {
   background-size: 80px 80px;
   will-change: transform;
 }
+
+/* Editie 06: zoomknoppen en actieve ingezoomde observatie */
+#map-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#map-random-zoom-btn,
+#map-reset-zoom-btn {
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  background: #1b212c;
+  color: #ffcf56;
+  border: 1px solid #ffcf56;
+  cursor: pointer;
+}
+
+#map-random-zoom-btn:hover,
+#map-reset-zoom-btn:hover {
+  background: #ffcf56;
+  color: #111111;
+}
+
+.map-pin.zoomed-focus {
+  outline: 2px solid #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 207, 86, 0.45);
+}
